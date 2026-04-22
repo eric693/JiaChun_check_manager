@@ -24,7 +24,9 @@ async function initOvertimeTab() {
     bindOvertimeFormEvents();
 }
 
-const MAX_MONTHLY_OVERTIME = 46; // 每月加班時數上限
+const MAX_MONTHLY_OVERTIME = 46;      // 每月加班時數上限
+const OVERTIME_THRESHOLD_MIN = 19 * 60 + 30; // 加班起算：19:30（下班 19:00 + 30 分緩衝）
+const OVERTIME_UNIT_MIN = 30;                 // 每 30 分鐘計 0.5 小時
 
 /**
  * 載入員工的加班申請記錄（修改版 - 計算本月統計）
@@ -246,24 +248,20 @@ function bindOvertimeFormEvents() {
     const endTimeInput = document.getElementById('overtime-end-time');
     
     if (startTimeInput && endTimeInput) {
+        const toMin = t => parseInt(t.split(':')[0]) * 60 + parseInt(t.split(':')[1]);
+
         const calculateHours = () => {
-            const start = startTimeInput.value;
             const end = endTimeInput.value;
-            
-            if (start && end) {
-                const startHour = parseInt(start.split(':')[0]);
-                const startMin = parseInt(start.split(':')[1]);
-                const endHour = parseInt(end.split(':')[0]);
-                const endMin = parseInt(end.split(':')[1]);
-                
-                let hours = (endHour - startHour) + (endMin - startMin) / 60;
-                
-                if (hours < 0) hours += 24; // 跨日計算
-                
-                document.getElementById('overtime-hours').value = hours.toFixed(1);
-            }
+            if (!end) return;
+
+            const endMin = toMin(end);
+            const hours = endMin <= OVERTIME_THRESHOLD_MIN
+                ? 0
+                : Math.ceil((endMin - OVERTIME_THRESHOLD_MIN) / OVERTIME_UNIT_MIN) * 0.5;
+
+            document.getElementById('overtime-hours').value = hours.toFixed(1);
         };
-        
+
         startTimeInput.addEventListener('change', calculateHours);
         endTimeInput.addEventListener('change', calculateHours);
     }
