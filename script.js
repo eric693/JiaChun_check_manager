@@ -65,7 +65,7 @@ function renderTranslations(container = document) {
         }
     });
 
-    // ✨ 新增邏輯：處理動態內容的翻譯，使用 [data-i18n-key]
+    //  新增邏輯：處理動態內容的翻譯，使用 [data-i18n-key]
     const dynamicElements = container.querySelectorAll('[data-i18n-key]');
     dynamicElements.forEach(element => {
         const key = element.getAttribute('data-i18n-key');
@@ -79,7 +79,7 @@ function renderTranslations(container = document) {
         }
     });
 
-    // 👇 新增：處理 select option 的翻譯
+    //  新增：處理 select option 的翻譯
     const selectElements = container.querySelectorAll('select');
     selectElements.forEach(select => {
         const options = select.querySelectorAll('option[data-i18n-option]');
@@ -116,7 +116,7 @@ async function callApifetch(action, loadingId = "loading") {
         
         const data = await response.json();
         
-        // ✅✅✅ 雙向格式統一（關鍵修正）
+        //  雙向格式統一（關鍵修正）
         // 1. 如果後端回傳 success，轉換為 ok
         if (data.success !== undefined && data.ok === undefined) {
             data.ok = data.success;
@@ -147,7 +147,7 @@ async function callApifetch(action, loadingId = "loading") {
     }
 }
 
-// ==================== 📊 管理員匯出所有員工報表功能 ====================
+// ====================  管理員匯出所有員工報表功能 ====================
 
 /**
  * 管理員匯出所有員工的出勤報表
@@ -172,14 +172,14 @@ async function exportAllEmployeesReport(monthKey) {
             return;
         }
         
-        // 👇 修正：先檢查資料結構
+        //  修正：先檢查資料結構
         console.log('API 回傳的資料:', res.records[0]); // 除錯用
         
         // 按員工分組
         const employeeData = {};
         
         res.records.forEach(record => {
-            // 👇 修正：確保正確讀取 userId 和 name
+            //  修正：確保正確讀取 userId 和 name
             const userId = record.userId || 'unknown';
             const userName = record.name || '未知員工';
             
@@ -271,9 +271,9 @@ async function exportAllEmployeesReport(monthKey) {
     }
 }
 
-// ==================== 📊 管理員匯出功能結束 ====================
+// ====================  管理員匯出功能結束 ====================
 
-// ==================== 📊 匯出出勤報表功能 ====================
+// ====================  匯出出勤報表功能 ====================
 
 /**
  * 匯出指定月份的出勤報表為 Excel 檔案
@@ -388,7 +388,7 @@ async function exportAttendanceReport(date) {
     }
 }
 
-// ==================== 📊 匯出功能結束 ====================
+// ====================  匯出功能結束 ====================
 
 /* ===== 共用訊息顯示 ===== */
 const showNotification = (message, type = 'success') => {
@@ -422,14 +422,14 @@ async function ensureLogin()
         return;
       }
       
-      // ⭐⭐⭐ 關鍵新增：檢查本地快取
+      //  關鍵新增：檢查本地快取
       const cachedUser = localStorage.getItem("cachedUser");
       const cacheTime = localStorage.getItem("cacheTime");
       const now = Date.now();
       
       // 如果快取存在且未過期（5 分鐘內）
       if (cachedUser && cacheTime && (now - parseInt(cacheTime)) < 5 * 60 * 1000) {
-        console.log('✅ 使用快取，秒速登入');
+        console.log(' 使用快取，秒速登入');
         
         const user = JSON.parse(cachedUser);
         
@@ -463,9 +463,9 @@ async function ensureLogin()
         const res = await callApifetch("initApp");
         
         if (res.ok) {
-          console.log('✅ initApp 成功，儲存快取');
+          console.log(' initApp 成功，儲存快取');
           
-          // ⭐ 儲存快取
+          //  儲存快取
           localStorage.setItem("cachedUser", JSON.stringify(res.user));
           localStorage.setItem("cacheTime", Date.now().toString());
           
@@ -487,18 +487,18 @@ async function ensureLogin()
           
           resolve(true);
         } else {
-          console.error('❌ initApp 失敗');
+          console.error(' initApp 失敗');
           
           // 清除快取
           localStorage.removeItem("cachedUser");
           localStorage.removeItem("cacheTime");
           
           showLoginUI();
-          showNotification(`❌ ${t(res.code || "UNKNOWN_ERROR")}`, "error");
+          showNotification(` ${t(res.code || "UNKNOWN_ERROR")}`, "error");
           resolve(false);
         }
       } catch (err) {
-        console.error('❌ ensureLogin 錯誤:', err);
+        console.error(' ensureLogin 錯誤:', err);
         
         localStorage.removeItem("cachedUser");
         localStorage.removeItem("cacheTime");
@@ -517,7 +517,7 @@ async function checkSessionInBackground(token) {
       const res = await callApifetch("checkSession&token=" + token);
       
       if (!res.ok) {
-        console.log('⚠️ Session 已失效');
+        console.log(' Session 已失效');
         localStorage.removeItem("cachedUser");
         localStorage.removeItem("cacheTime");
         showNotification('登入已過期，請重新登入', 'warning');
@@ -558,10 +558,10 @@ function showLoginUI() {
 }
 
 /**
- * ⭐ 渲染異常記錄（從 initApp 返回的資料）
+ *  渲染異常記錄（從 initApp 返回的資料）
  */
 function renderAbnormalRecords(records) {
-    console.log('📋 renderAbnormalRecords 開始', records);
+    console.log(' renderAbnormalRecords 開始', records);
     
     const recordsLoading = document.getElementById("abnormal-records-loading");
     const abnormalRecordsSection = document.getElementById("abnormal-records-section");
@@ -569,7 +569,7 @@ function renderAbnormalRecords(records) {
     const recordsEmpty = document.getElementById("abnormal-records-empty");
     
     if (!recordsLoading || !abnormalRecordsSection || !abnormalList || !recordsEmpty) {
-        console.error('❌ 找不到必要的 DOM 元素');
+        console.error(' 找不到必要的 DOM 元素');
         return;
     }
     
@@ -577,7 +577,7 @@ function renderAbnormalRecords(records) {
     abnormalRecordsSection.style.display = 'block';
     
     if (records && records.length > 0) {
-        console.log(`✅ 有 ${records.length} 筆異常記錄`);
+        console.log(` 有 ${records.length} 筆異常記錄`);
         
         recordsEmpty.style.display = 'none';
         abnormalList.innerHTML = '';
@@ -591,7 +591,7 @@ function renderAbnormalRecords(records) {
             
             let reasonClass, displayReason, buttonHtml;
             
-            // ⭐⭐⭐ 新增翻譯映射函數
+            //  新增翻譯映射函數
             function translatePunchTypes(punchTypes) {
                 if (!punchTypes) return '';
                 
@@ -609,7 +609,7 @@ function renderAbnormalRecords(records) {
             
             switch(record.reason) {
                 case 'STATUS_REPAIR_PENDING':
-                    // 👇 修改這段
+                    //  修改這段
                     const isToday = record.date === new Date().toISOString().split('T')[0];
                     const isTodayAdjust = record.punchTypes && record.punchTypes.includes('當日修正');
                     const isHistoryAdjust = record.punchTypes && record.punchTypes.includes('歷史補打');
@@ -617,7 +617,7 @@ function renderAbnormalRecords(records) {
                     if (isTodayAdjust) {
                         // 當日修正：橘色標示
                         reasonClass = 'text-orange-600 dark:text-orange-400';
-                        displayReason = `🔧 ${translatePunchTypes(record.punchTypes)}（當日修正）`;
+                        displayReason = ` ${translatePunchTypes(record.punchTypes)}（當日修正）`;
                         buttonHtml = `
                             <span class="text-sm font-semibold text-orange-600 dark:text-orange-400">
                                 ⏳ ${displayReason}
@@ -626,7 +626,7 @@ function renderAbnormalRecords(records) {
                     } else if (isHistoryAdjust) {
                         // 歷史補打：黃色標示
                         reasonClass = 'text-yellow-600 dark:text-yellow-400';
-                        displayReason = `📅 ${translatePunchTypes(record.punchTypes)}（歷史補打）`;
+                        displayReason = ` ${translatePunchTypes(record.punchTypes)}（歷史補打）`;
                         buttonHtml = `
                             <span class="text-sm font-semibold text-yellow-600 dark:text-yellow-400">
                                 ⏳ ${displayReason}
@@ -649,7 +649,7 @@ function renderAbnormalRecords(records) {
                     displayReason = translatePunchTypes(record.punchTypes);
                     buttonHtml = `
                         <span class="text-sm font-semibold text-green-600 dark:text-green-400">
-                            ✓ ${translatePunchTypes(record.punchTypes)}
+                             ${translatePunchTypes(record.punchTypes)}
                         </span>
                     `;
                     break;
@@ -658,7 +658,7 @@ function renderAbnormalRecords(records) {
                     reasonClass = 'text-orange-600 dark:text-orange-400';
                     displayReason = translatePunchTypes(record.punchTypes);
                     
-                    // ⭐ 判斷是上班還是下班
+                    //  判斷是上班還是下班
                     const isIn = record.punchTypes && record.punchTypes.includes('上班');
                     const punchType = isIn ? '上班' : '下班';
                     
@@ -717,24 +717,24 @@ function renderAbnormalRecords(records) {
             abnormalList.appendChild(li);
         });
         
-        console.log('✅ 渲染完成');
+        console.log(' 渲染完成');
         
     } else {
-        console.log('ℹ️  沒有異常記錄');
+        console.log('ℹ  沒有異常記錄');
         recordsEmpty.style.display = 'block';
         abnormalList.innerHTML = '';
     }
 }
 /**
 /**
- * ✅ 檢查本月打卡異常（完整修正版 - 支援多語言）
+ *  檢查本月打卡異常（完整修正版 - 支援多語言）
  */
 async function checkAbnormal() {
     const now = new Date();
     const month = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0");
     const userId = localStorage.getItem("sessionUserId");
     
-    console.log('🔍 開始檢查異常記錄');
+    console.log(' 開始檢查異常記錄');
     
     const recordsLoading = document.getElementById("abnormal-records-loading");
     const abnormalRecordsSection = document.getElementById("abnormal-records-section");
@@ -742,14 +742,14 @@ async function checkAbnormal() {
     const recordsEmpty = document.getElementById("abnormal-records-empty");
     
     if (!recordsLoading || !abnormalRecordsSection || !abnormalList || !recordsEmpty) {
-        console.error('❌ 找不到必要的 DOM 元素');
+        console.error(' 找不到必要的 DOM 元素');
         return;
     }
     
     recordsLoading.style.display = 'block';
     abnormalRecordsSection.style.display = 'none';
     
-    // ⭐⭐⭐ 翻譯映射函數
+    //  翻譯映射函數
     function translatePunchTypes(punchTypes) {
         if (!punchTypes) return '';
         
@@ -768,7 +768,7 @@ async function checkAbnormal() {
     try {
         const res = await callApifetch(`getAbnormalRecords&month=${month}&userId=${userId}`);
         
-        console.log('📤 API 回傳結果:', res);
+        console.log(' API 回傳結果:', res);
         console.log('   記錄數量:', res.records?.length || 0);
         
         recordsLoading.style.display = 'none';
@@ -777,12 +777,12 @@ async function checkAbnormal() {
             abnormalRecordsSection.style.display = 'block';
             
             if (res.records && res.records.length > 0) {
-                console.log('✅ 有異常記錄，開始渲染');
+                console.log(' 有異常記錄，開始渲染');
                 
                 recordsEmpty.style.display = 'none';
                 abnormalList.innerHTML = '';
                 
-                // ✅ 按日期排序（由新到舊）
+                //  按日期排序（由新到舊）
                 const sortedRecords = res.records.sort((a, b) => {
                     return new Date(b.date) - new Date(a.date);
                 });
@@ -810,7 +810,7 @@ async function checkAbnormal() {
                             displayReason = translatePunchTypes(record.punchTypes);
                             buttonHtml = `
                                 <span class="text-sm font-semibold text-green-600 dark:text-green-400">
-                                    ✓ ${translatePunchTypes(record.punchTypes)}
+                                     ${translatePunchTypes(record.punchTypes)}
                                 </span>
                             `;
                             break;
@@ -842,11 +842,11 @@ async function checkAbnormal() {
                             break;
 
                         case 'STATUS_REPAIR_REJECTED':
-                            // ❌ 被拒絕 - 橘色，可重新申請
+                            //  被拒絕 - 橘色，可重新申請
                             reasonClass = 'text-orange-600 dark:text-orange-400';
                             displayReason = translatePunchTypes(record.punchTypes);
                             
-                            // ⭐ 判斷是上班還是下班
+                            //  判斷是上班還是下班
                             const isIn = record.punchTypes && record.punchTypes.includes('上班');
                             const punchType = isIn ? '上班' : '下班';
                             
@@ -881,19 +881,19 @@ async function checkAbnormal() {
                     abnormalList.appendChild(li);
                 });
                 
-                console.log('✅ 渲染完成');
+                console.log(' 渲染完成');
                 
             } else {
-                console.log('ℹ️  沒有異常記錄');
+                console.log('ℹ  沒有異常記錄');
                 recordsEmpty.style.display = 'block';
                 abnormalList.innerHTML = '';
             }
         } else {
-            console.error("❌ API 返回失敗:", res.msg || res.code);
+            console.error(" API 返回失敗:", res.msg || res.code);
             showNotification(t("ERROR_FETCH_RECORDS") || "無法取得記錄", "error");
         }
     } catch (err) {
-        console.error('❌ 發生錯誤:', err);
+        console.error(' 發生錯誤:', err);
         recordsLoading.style.display = 'none';
         showNotification(t("ERROR_FETCH_RECORDS") || "無法取得記錄", "error");
     }
@@ -915,7 +915,7 @@ async function renderCalendar(date) {
         const records = monthDataCache[monthkey];
         renderCalendarWithData(year, month, today, records, calendarGrid, monthTitle);
         
-        // ✨ 新增：更新統計資料
+        //  新增：更新統計資料
         updateMonthlyStats(records);
         
     } else {
@@ -936,7 +936,7 @@ async function renderCalendar(date) {
                 const records = monthDataCache[monthkey] || [];
                 renderCalendarWithData(year, month, today, records, calendarGrid, monthTitle);
                 
-                // ✨ 新增：更新統計資料
+                //  新增：更新統計資料
                 updateMonthlyStats(records);
                 
             } else {
@@ -950,7 +950,7 @@ async function renderCalendar(date) {
 }
 
 /**
- * ✅ 更新本月出勤統計（修正小數問題）
+ *  更新本月出勤統計（修正小數問題）
  */
 async function updateMonthlyStats(records) {
     const workDaysEl = document.getElementById('stats-work-days-value');
@@ -982,11 +982,11 @@ async function updateMonthlyStats(records) {
                 let totalHoursRaw = diffMs / (1000 * 60 * 60);
                 
                 if (totalHoursRaw > 0) {
-                    // ⭐⭐⭐ 修正：智能計算午休時間
+                    //  修正：智能計算午休時間
                     const lunchBreak = calculateLunchBreak(inTime, outTime);
                     dayWorkHours = Math.max(0, totalHoursRaw - lunchBreak);
                     
-                    // ⭐⭐⭐ 修正：四捨五入到 0.5 小時
+                    //  修正：四捨五入到 0.5 小時
                     dayWorkHours = Math.round(dayWorkHours * 2) / 2;
                     
                     totalWorkHours += dayWorkHours;
@@ -1034,7 +1034,7 @@ async function updateMonthlyStats(records) {
         }
     });
     
-    // ⭐⭐⭐ 修正：顯示為整數（如果小數部分為 .0）
+    //  修正：顯示為整數（如果小數部分為 .0）
     workDaysEl.textContent = formatHours(totalWorkHours);
     abnormalCountEl.textContent = abnormalCount;
     normalDaysEl.textContent = formatHours(normalWorkHours);
@@ -1045,7 +1045,7 @@ async function updateMonthlyStats(records) {
 }
 
 /**
- * ⭐ 修改：根據薪資類型決定午休時間
+ *  修改：根據薪資類型決定午休時間
  */
 function calculateLunchBreak(inTime, outTime, salaryType) {
     const lunchStart = new Date(inTime);
@@ -1053,7 +1053,7 @@ function calculateLunchBreak(inTime, outTime, salaryType) {
     
     const lunchEnd = new Date(inTime);
     
-    // ⭐⭐⭐ 關鍵修改：月薪扣 1 小時，時薪扣 0.5 小時
+    //  關鍵修改：月薪扣 1 小時，時薪扣 0.5 小時
     if (salaryType === '月薪') {
         lunchEnd.setHours(13, 0, 0, 0); // 12:00-13:00 = 1 小時
     } else {
@@ -1080,7 +1080,7 @@ function calculateLunchBreak(inTime, outTime, salaryType) {
 }
 
 /**
- * ⭐ 新增：格式化小時顯示
+ *  新增：格式化小時顯示
  */
 function formatHours(hours) {
     if (hours === 0) return '0';
@@ -1131,7 +1131,7 @@ async function submitAdjustPunch(date, type, note) {
         if (res.ok) {
             showNotification("補打卡申請成功！等待管理員審核", "success");
             
-            // ⭐⭐⭐ 關鍵：補打卡成功後，重新檢查異常記錄
+            //  關鍵：補打卡成功後，重新檢查異常記錄
             await checkAbnormal();
             
             // 關閉對話框
@@ -1173,14 +1173,14 @@ function renderCalendarWithData(year, month, today, records, calendarGrid, month
         
         const todayRecords = records.filter(r => r.date === dateKey);
         
-        // ✅ 移除：不再添加 emoji 圖示
+        //  移除：不再添加 emoji 圖示
         // const statusIcons = [];
         
         if (todayRecords.length > 0) {
             const record = todayRecords[0];
             const reason = record.reason;
             
-            // 👉 判斷打卡狀態
+            //  判斷打卡狀態
             switch (reason) {
                 case "STATUS_PUNCH_IN_MISSING":
                 case "STATUS_PUNCH_OUT_MISSING":
@@ -1208,25 +1208,25 @@ function renderCalendarWithData(year, month, today, records, calendarGrid, month
                     break;
             }
             
-            // ✅ 移除：不再添加加班和請假的 emoji
+            //  移除：不再添加加班和請假的 emoji
             /*
-            // 👉 如果有加班記錄，加上特殊標記
+            //  如果有加班記錄，加上特殊標記
             if (record.overtime) {
-                statusIcons.push('⏰');
+                statusIcons.push('');
             }
             
-            // 👉 如果有請假記錄，加上特殊標記
+            //  如果有請假記錄，加上特殊標記
             if (record.leave) {
                 const leaveStatus = record.leave.status;
                 
                 // 根據請假狀態設定不同圖示
                 if (leaveStatus === 'APPROVED') {
-                    statusIcons.push('🏖️');
+                    statusIcons.push('');
                     dateClass = 'leave-day'; // 新的 CSS 類別
                 } else if (leaveStatus === 'PENDING') {
                     statusIcons.push('⏳');
                 } else if (leaveStatus === 'REJECTED') {
-                    statusIcons.push('❌');
+                    statusIcons.push('');
                 }
             }
             */
@@ -1242,9 +1242,9 @@ function renderCalendarWithData(year, month, today, records, calendarGrid, month
             dayCell.classList.add(dateClass);
         }
         
-        // ✅ 移除：不再顯示 emoji 圖示
+        //  移除：不再顯示 emoji 圖示
         /*
-        // 👉 將日期和圖示組合顯示
+        //  將日期和圖示組合顯示
         if (statusIcons.length > 0) {
             dayCell.innerHTML = `
                 <div class="day-cell-content">
@@ -1265,7 +1265,7 @@ function renderCalendarWithData(year, month, today, records, calendarGrid, month
 }
 
 /**
- * ✅ 渲染每日打卡記錄（改進版 - 請假資訊顯示在打卡記錄下方）
+ *  渲染每日打卡記錄（改進版 - 請假資訊顯示在打卡記錄下方）
  * 
  * 修改說明：
  * 1. 添加標題區塊，清楚標示日期
@@ -1283,7 +1283,7 @@ async function renderDailyRecords(dateKey) {
     const adjustmentFormContainer = document.getElementById('daily-adjustment-form-container');
     
     if (!dailyRecordsCard || !dailyRecordsTitle || !dailyRecordsList || !dailyRecordsEmpty) {
-        console.error('❌ renderDailyRecords: 找不到必要的 DOM 元素');
+        console.error(' renderDailyRecords: 找不到必要的 DOM 元素');
         showNotification('介面元素載入失敗，請重新整理頁面', 'error');
         return;
     }
@@ -1345,16 +1345,16 @@ async function renderDailyRecords(dateKey) {
                 let hasOvertime = false;
                 let punchInRecord = null;
                 let punchOutRecord = null;
-                // 📋 標題區塊
+                //  標題區塊
                 const titleHtml = `
                     <div class="flex items-center justify-between mb-3 pb-2 border-b-2 border-gray-300 dark:border-gray-600">
                         <h4 class="text-lg font-bold text-gray-800 dark:text-white">
-                            📅 ${dateKey} <span data-i18n="DAILY_ATTENDANCE_TITLE">出勤記錄</span>
+                             ${dateKey} <span data-i18n="DAILY_ATTENDANCE_TITLE">出勤記錄</span>
                         </h4>
                     </div>
                 `;
                 
-                // ⏰ 打卡記錄區塊
+                //  打卡記錄區塊
                 let recordHtml = '';
                 if (recordData.record && recordData.record.length > 0) {
                     recordHtml = `
@@ -1377,9 +1377,9 @@ async function renderDailyRecords(dateKey) {
                                                     ${r.time} - <span data-i18n="${typeKey}">${t(typeKey)}</span>
                                                 </p>
                                                 <p class="text-sm text-gray-500 dark:text-gray-400">
-                                                    📍 ${r.location}
+                                                     ${r.location}
                                                 </p>
-                                                ${r.note ? `<p class="text-xs text-gray-500 dark:text-gray-400 mt-1">💭 ${r.note}</p>` : ''}
+                                                ${r.note ? `<p class="text-xs text-gray-500 dark:text-gray-400 mt-1"> ${r.note}</p>` : ''}
                                             </div>
                                         </div>
                                     `;
@@ -1391,7 +1391,7 @@ async function renderDailyRecords(dateKey) {
                     recordHtml = `
                         <div class="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
                             <p class="text-sm text-gray-500 dark:text-gray-400 italic text-center py-2">
-                                ⚠️ <span data-i18n="DAILY_RECORDS_EMPTY">該日沒有打卡紀錄</span>
+                                 <span data-i18n="DAILY_RECORDS_EMPTY">該日沒有打卡紀錄</span>
                             </p>
                         </div>
                     `;
@@ -1479,12 +1479,12 @@ async function renderDailyRecords(dateKey) {
                         statusClass = 'bg-green-50 border-green-300 dark:bg-green-900/20 dark:border-green-700';
                         statusBadgeClass = 'bg-green-600 text-white';
                         statusText = t('APPROVED');
-                        statusIcon = '✅';
+                        statusIcon = '';
                     } else if (leave.status === 'REJECTED') {
                         statusClass = 'bg-red-50 border-red-300 dark:bg-red-900/20 dark:border-red-700';
                         statusBadgeClass = 'bg-red-600 text-white';
                         statusText = t('REJECTED');
-                        statusIcon = '❌';
+                        statusIcon = '';
                     }
                     
                     leaveHtml = `
@@ -1523,7 +1523,7 @@ async function renderDailyRecords(dateKey) {
                     `;
                 }
                 
-                // 📊 系統判斷狀態
+                //  系統判斷狀態
                 const statusHtml = `
                     <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-2 text-center">
                         <p class="text-sm text-gray-600 dark:text-gray-400">
@@ -1667,7 +1667,7 @@ function initRadiusSlider() {
         const value = e.target.value;
         valueDisplay.textContent = value;
         
-        // ✅ 修正：先檢查 circle 是否存在
+        //  修正：先檢查 circle 是否存在
         if (circle && currentCoords) {
             circle.setRadius(parseInt(value));
         }
@@ -1684,8 +1684,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const tabLocationBtn = document.getElementById('tab-location-btn');
     const tabAdminBtn = document.getElementById('tab-admin-btn');
     const tabOvertimeBtn = document.getElementById('tab-overtime-btn');
-    const tabLeaveBtn = document.getElementById('tab-leave-btn'); // 👈 新增請假按鈕
-    const tabSalaryBtn = document.getElementById('tab-salary-btn'); // 👈 新增
+    const tabLeaveBtn = document.getElementById('tab-leave-btn'); //  新增請假按鈕
+    const tabSalaryBtn = document.getElementById('tab-salary-btn'); //  新增
     const tabWorklogBtn = document.getElementById('tab-worklog-btn');
     const abnormalList = document.getElementById('abnormal-list');
     const adjustmentFormContainer = document.getElementById('adjustment-form-container');
@@ -1695,7 +1695,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const locationLatInput = document.getElementById('location-lat');
     const locationLngInput = document.getElementById('location-lng');
     const addLocationBtn = document.getElementById('add-location-btn');
-    // 👇 新增：綁定用戶管理按鈕
+    //  新增：綁定用戶管理按鈕
     const refreshUsersBtn = document.getElementById('refresh-users-btn');
     if (refreshUsersBtn) {
         refreshUsersBtn.addEventListener('click', loadAllUsers);
@@ -1709,7 +1709,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (historyAdjustBtn) {
         historyAdjustBtn.addEventListener('click', openHistoryAdjustDialog);
     }
-    // 👇 新增：綁定搜尋功能
+    //  新增：綁定搜尋功能
     const searchUsersInput = document.getElementById('search-users-input');
     if (searchUsersInput) {
         searchUsersInput.addEventListener('input', (e) => {
@@ -1786,7 +1786,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const li = document.createElement('li');
             li.className = 'p-4 bg-gray-50 rounded-lg shadow-sm flex flex-col space-y-3 dark:bg-gray-700';
             
-            // 👇 優化顯示布局
+            //  優化顯示布局
             li.innerHTML = `
                 <div class="flex items-start justify-between">
                     <div class="flex-1">
@@ -1805,11 +1805,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                             ${req.applicationPeriod}
                         </p>
                         
-                        <!-- 👇 新增：顯示補打卡理由 -->
+                        <!--  新增：顯示補打卡理由 -->
                         ${req.note ? `
                             <div class="mt-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-400 dark:border-yellow-600 rounded">
                                 <p class="text-sm font-semibold text-yellow-800 dark:text-yellow-300 mb-1">
-                                    📝 補打卡理由：
+                                     補打卡理由：
                                 </p>
                                 <p class="text-sm text-yellow-700 dark:text-yellow-400">
                                     ${req.note}
@@ -2218,9 +2218,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             initOvertimeTab();
         } else if (tabId === 'leave-view') {
             initLeaveTab();
-        } else if (tabId === 'salary-view') { // 👈 新增
+        } else if (tabId === 'salary-view') { //  新增
             initSalaryTab();
-        } else if (tabId === 'worklog-view') { // 👈 新增
+        } else if (tabId === 'worklog-view') { //  新增
             initWorklogTab();
         }
         
@@ -2229,7 +2229,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 初始化拉桿
     initRadiusSlider();
     
-    // 🔍 搜尋功能事件綁定
+    //  搜尋功能事件綁定
     const searchBtn = document.getElementById('search-location-btn');
     const searchInput = document.getElementById('location-search');
     
@@ -2308,7 +2308,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // 儲存 Session Token
                 localStorage.setItem("sessionToken", res.sToken);
                 
-                // ⭐ 新增：儲存使用者快取
+                //  新增：儲存使用者快取
                 localStorage.setItem("cachedUser", JSON.stringify(res.user));
                 localStorage.setItem("cacheTime", Date.now().toString());
                 localStorage.setItem("sessionUserId", res.user.userId);
@@ -2316,7 +2316,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // 清除 URL 參數
                 history.replaceState({}, '', window.location.pathname);
                 
-                // ⭐⭐⭐ 關鍵：不需要再呼叫 ensureLogin 或 initApp
+                //  關鍵：不需要再呼叫 ensureLogin 或 initApp
                 // 直接顯示介面
                 
                 if (res.user.dept === "管理員") {
@@ -2330,14 +2330,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 document.getElementById('user-header').style.display = 'flex';
                 document.getElementById('main-app').style.display = 'block';
                 
-                // ⭐ 直接渲染異常記錄（資料已經在 res 裡）
+                //  直接渲染異常記錄（資料已經在 res 裡）
                 if (res.abnormalRecords) {
                   renderAbnormalRecords(res.abnormalRecords);
                 }
                 
                 showNotification(t("LOGIN_SUCCESS"), "success");
 
-                // ⭐⭐⭐ 關鍵：UI 顯示後才載入異常記錄（不阻塞登入）
+                //  關鍵：UI 顯示後才載入異常記錄（不阻塞登入）
                 loadAbnormalRecordsInBackground();
                 
                 // 初始化生物辨識（背景執行）
@@ -2429,7 +2429,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     /**
-     * ⭐ 新增：將打卡時間進位到最近的 15 分鐘
+     *  新增：將打卡時間進位到最近的 15 分鐘
      */
     function roundPunchTime(timeString) {
         const [hours, minutes] = timeString.split(':').map(Number);
@@ -2511,7 +2511,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const defaultTime = type === '上班' ? '09:00' : '18:00';
             adjustDateTimeInput.value = `${date}T${defaultTime}`;
             
-            // 👇 新增：平滑滾動到補打卡表單
+            //  新增：平滑滾動到補打卡表單
             setTimeout(() => {
                 adjustmentFormContainer.scrollIntoView({ 
                     behavior: 'smooth',  // 平滑滾動
@@ -2567,7 +2567,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
             
-            // 👇 修改：改為至少 2 個字
+            //  修改：改為至少 2 個字
             if (!reason || reason.length < 2) {
                 showNotification(t('ADJUST_REASON_REQUIRED') || "請填寫補打卡理由（至少 2 個字）", "error");
                 return;
@@ -2597,7 +2597,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
                 
                 const res = await callApifetch(`adjustPunch&${params.toString()}`);
-                console.log('📤 前端提交補打卡:', {
+                console.log(' 前端提交補打卡:', {
                     type: type,
                     datetime: datetime,
                     reason: reason,
@@ -2642,7 +2642,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         initOvertimeTab();
     });
 
-    // 👈 新增請假按鈕事件
+    //  新增請假按鈕事件
     tabLeaveBtn.addEventListener('click', () => {
         switchTab('leave-view');
         initLeaveTab();
@@ -2658,21 +2658,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         generalButtonState(button, 'processing', loadingText);
         
         try {
-            // ✅ 修正：改用 initApp（與 ensureLogin 一致）
+            //  修正：改用 initApp（與 ensureLogin 一致）
             const res = await callApifetch("initApp");
             
-            console.log('🔍 管理員權限檢查:', res);
+            console.log(' 管理員權限檢查:', res);
             console.log('   - ok:', res.ok);
             console.log('   - user:', res.user);
             console.log('   - dept:', res.user?.dept);
             
             // 檢查回傳的結果和權限
             if (res.ok && res.user && res.user.dept === "管理員") {
-                console.log('✅ 管理員權限驗證通過');
+                console.log(' 管理員權限驗證通過');
                 // 如果 Session 有效且是管理員，執行頁籤切換
                 switchTab('admin-view');
             } else {
-                console.log('❌ 權限驗證失敗');
+                console.log(' 權限驗證失敗');
                 console.log('   實際部門:', res.user?.dept);
                 // 如果權限不足或 Session 無效，給予錯誤提示
                 showNotification(t("ERR_NO_PERMISSION") || "您沒有權限執行此操作", "error");
@@ -2680,7 +2680,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             
         } catch (err) {
             // 處理網路錯誤或 API 呼叫失敗
-            console.error('❌ API 呼叫錯誤:', err);
+            console.error(' API 呼叫錯誤:', err);
             showNotification(t("NETWORK_ERROR") || '網絡錯誤', "error");
             
         } finally {
@@ -2689,12 +2689,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // 👇 新增：綁定查詢按鈕
+    //  新增：綁定查詢按鈕
     const loadAnalysisBtn = document.getElementById('load-punch-analysis-btn');
     if (loadAnalysisBtn) {
         loadAnalysisBtn.addEventListener('click', loadPunchAnalysis);
     }
-    // 👇 新增：綁定匯出按鈕
+    //  新增：綁定匯出按鈕
     const exportEmployeePunchBtn = document.getElementById('export-employee-punch-btn');
     if (exportEmployeePunchBtn) {
         exportEmployeePunchBtn.addEventListener('click', exportEmployeePunchReport);
@@ -2798,15 +2798,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // ⭐ 在這裡加入基本資料的初始化和事件綁定
+    //  在這裡加入基本資料的初始化和事件綁定
     await initEmployeeBasicInfo();
     
     const saveBasicInfoBtn = document.getElementById('save-basic-info-btn');
     if (saveBasicInfoBtn) {
         saveBasicInfoBtn.addEventListener('click', saveEmployeeBasicInfo);
-        console.log('✅ 基本資料儲存按鈕已綁定');
+        console.log(' 基本資料儲存按鈕已綁定');
     } else {
-        console.warn('⚠️ 找不到基本資料儲存按鈕');
+        console.warn(' 找不到基本資料儲存按鈕');
     }
     displayAnnouncements();
 });
@@ -2875,14 +2875,14 @@ function displayTodayShift(res) {
 }
 
 /**
- * ✅ 載入未來 7 天排班（完全修正版 - 強制清除舊快取）
+ *  載入未來 7 天排班（完全修正版 - 強制清除舊快取）
  */
 async function loadWeekShift() {
     const loadingEl = document.getElementById('week-shift-loading');
     const emptyEl = document.getElementById('week-shift-empty');
     const listEl = document.getElementById('week-shift-list');
     
-    // ✅ 步驟 1: 計算「今天到未來 7 天」的範圍
+    //  步驟 1: 計算「今天到未來 7 天」的範圍
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     
@@ -2893,28 +2893,28 @@ async function loadWeekShift() {
     const startDateStr = startOfWeek.toISOString().split('T')[0];
     const endDateStr = endOfWeek.toISOString().split('T')[0];
     
-    console.log('📅 未來排班範圍:', {
+    console.log(' 未來排班範圍:', {
         today: today.toISOString().split('T')[0],
         startOfWeek: startDateStr,
         endOfWeek: endDateStr
     });
     
-    // ✅ 步驟 2: 生成快取鍵值
+    //  步驟 2: 生成快取鍵值
     const cacheKey = `${startDateStr}_${endDateStr}`;
     
-    // ✅ 步驟 3: 檢查快取（但只有在「分頁初次載入」時才使用）
+    //  步驟 3: 檢查快取（但只有在「分頁初次載入」時才使用）
     // 如果快取存在且日期範圍相同，才使用快取
     if (weekShiftCache !== null && 
         weekShiftCache.cacheKey === cacheKey &&
         Date.now() - weekShiftCache.timestamp < 60000) { // 快取 1 分鐘有效
         
-        console.log('✅ 使用有效快取（1 分鐘內）');
+        console.log(' 使用有效快取（1 分鐘內）');
         displayWeekShift(weekShiftCache.data);
         return;
     }
     
-    // ✅ 步驟 4: 清除舊快取，強制重新載入
-    console.log('🗑️ 清除舊快取，重新載入');
+    //  步驟 4: 清除舊快取，強制重新載入
+    console.log(' 清除舊快取，重新載入');
     weekShiftCache = null;
     
     try {
@@ -2930,28 +2930,28 @@ async function loadWeekShift() {
             endDate: endDateStr
         };
         
-        console.log('📡 呼叫 API，篩選條件:', filters);
+        console.log(' 呼叫 API，篩選條件:', filters);
         
         const res = await callApifetch(`getShifts&filters=${encodeURIComponent(JSON.stringify(filters))}`);
         
-        console.log('📤 API 回應:', res);
+        console.log(' API 回應:', res);
         
         loadingEl.style.display = 'none';
         
-        // ✅ 步驟 5: 快取新資料
+        //  步驟 5: 快取新資料
         weekShiftCache = {
             cacheKey: cacheKey,
             data: res,
             timestamp: Date.now()
         };
         
-        console.log('💾 已快取新資料:', weekShiftCache);
+        console.log(' 已快取新資料:', weekShiftCache);
         
-        // ✅ 步驟 6: 顯示資料
+        //  步驟 6: 顯示資料
         displayWeekShift(res);
         
     } catch (error) {
-        console.error('❌ 載入未來排班失敗:', error);
+        console.error(' 載入未來排班失敗:', error);
         loadingEl.style.display = 'none';
         emptyEl.style.display = 'block';
     }
@@ -2963,12 +2963,12 @@ function displayWeekShift(res) {
     const emptyEl = document.getElementById('week-shift-empty');
     const listEl = document.getElementById('week-shift-list');
     
-    console.log('📋 displayWeekShift 收到的資料:', res);
+    console.log(' displayWeekShift 收到的資料:', res);
     
     if (res.ok && res.data && res.data.length > 0) {
         listEl.innerHTML = '';
         
-        console.log('✅ 開始渲染', res.data.length, '筆排班');
+        console.log(' 開始渲染', res.data.length, '筆排班');
         
         res.data.forEach((shift, index) => {
             console.log(`   ${index + 1}. ${shift.date} - ${shift.shiftType}`);
@@ -2993,7 +2993,7 @@ function displayWeekShift(res) {
         
         emptyEl.style.display = 'none';
     } else {
-        console.log('⚠️ 沒有排班資料或資料格式錯誤');
+        console.log(' 沒有排班資料或資料格式錯誤');
         emptyEl.style.display = 'block';
         listEl.innerHTML = '';
     }
@@ -3028,7 +3028,7 @@ function clearShiftCache() {
     weekShiftCache = null;
 }
 
-// ==================== 📢 佈告欄功能 ====================
+// ====================  佈告欄功能 ====================
 function displayAnnouncements() {
     const list = document.getElementById('announcements-list');
     const empty = document.getElementById('announcements-empty');
@@ -3046,7 +3046,7 @@ function displayAnnouncements() {
     list.innerHTML = '';
     
     announcements.forEach(a => {
-        const icon = a.priority === 'high' ? '🔴' : a.priority === 'medium' ? '🟡' : '🔵';
+        const icon = a.priority === 'high' ? '' : a.priority === 'medium' ? '' : '';
         const div = document.createElement('div');
         div.className = 'bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 mb-3';
         div.innerHTML = `
@@ -3111,29 +3111,29 @@ let punchTimeChart = null;
 async function initAdminAnalysis() {
     await loadEmployeeListForAnalysis();
     
-    // ⭐⭐⭐ 新增：為工作日誌匯出載入員工列表
+    //  新增：為工作日誌匯出載入員工列表
     const worklogExportSelect = document.getElementById('worklog-export-employee');
     if (worklogExportSelect) {
         try {
             const res = await callApifetch('getAllUsers');
             
             if (res.ok && res.users) {
-                // ⭐ 清空現有選項
+                //  清空現有選項
                 worklogExportSelect.innerHTML = '';
                 
-                // ⭐ 加入「請選擇員工」
+                //  加入「請選擇員工」
                 const defaultOption = document.createElement('option');
                 defaultOption.value = '';
                 defaultOption.textContent = '-- 請選擇員工 --';
                 worklogExportSelect.appendChild(defaultOption);
                 
-                // ⭐⭐⭐ 加入「全部員工」選項
+                //  加入「全部員工」選項
                 const allOption = document.createElement('option');
                 allOption.value = 'ALL';
                 allOption.textContent = '全部員工';
                 worklogExportSelect.appendChild(allOption);
                 
-                // ⭐ 加入每個員工
+                //  加入每個員工
                 res.users.forEach(user => {
                     const option = document.createElement('option');
                     option.value = user.userId;
@@ -3141,10 +3141,10 @@ async function initAdminAnalysis() {
                     worklogExportSelect.appendChild(option);
                 });
                 
-                console.log('✅ 工作日誌匯出員工選單載入成功');
+                console.log(' 工作日誌匯出員工選單載入成功');
             }
         } catch (error) {
-            console.error('❌ 載入員工列表失敗:', error);
+            console.error(' 載入員工列表失敗:', error);
         }
     }
     
@@ -3799,7 +3799,7 @@ function resetBiometric() {
      */
 async function doPunch(type) {
 
-    // 🔒 防止重複提交
+    //  防止重複提交
     if (_isPunching) {
         showNotification('打卡處理中，請勿重複點擊', 'warning');
         return;
@@ -3890,12 +3890,12 @@ async function doPunch(type) {
             console.error(err);
         } finally {
             generalButtonState(button, 'idle');
-            _isPunching = false;  // 🔓 釋放鎖
+            _isPunching = false;  //  釋放鎖
         }
     }, (err) => {
         showNotification(t("ERROR_GEOLOCATION", { msg: err.message }), "error");
         generalButtonState(button, 'idle');
-        _isPunching = false;  // 🔓 釋放鎖（定位失敗也要釋放）
+        _isPunching = false;  //  釋放鎖（定位失敗也要釋放）
     });
 }
 
@@ -3913,7 +3913,7 @@ function getTimeDifference(time1, time2) {
 }
 
 /**
- * ⭐ 新增：將打卡時間進位到最近的 15 分鐘
+ *  新增：將打卡時間進位到最近的 15 分鐘
  */
 function roundPunchTime(timeString) {
     const [hours, minutes] = timeString.split(':').map(Number);
@@ -3977,11 +3977,11 @@ async function loadAllUsers() {
     }
 }
 
-// ✅ 在 script.js 的 changeUserRole 函數中新增排班人員選項
+//  在 script.js 的 changeUserRole 函數中新增排班人員選項
 async function changeUserRole(userId, userName, newRole) {
     const roleMap = {
         'admin': '管理員',
-        'scheduler': '排班人員',  // 👈 新增
+        'scheduler': '排班人員',  //  新增
         'employee': '員工'
     };
     
@@ -3994,7 +3994,7 @@ async function changeUserRole(userId, userName, newRole) {
     // ...後續邏輯
 }
 
-// ✅ 修改用戶列表渲染函數
+//  修改用戶列表渲染函數
 function renderUsersList(users) {
     const listEl = document.getElementById('users-list');
     if (!listEl) return;
@@ -4006,7 +4006,7 @@ function renderUsersList(users) {
     users.forEach((user, index) => {
         const isCurrentUser = user.userId === currentUserId;
         const isAdmin = user.dept === '管理員';
-        const isScheduler = user.dept === '排班人員';  // 👈 新增
+        const isScheduler = user.dept === '排班人員';  //  新增
         
         const div = document.createElement('div');
         div.className = 'bg-gray-50 dark:bg-gray-700 rounded-lg p-4 flex items-center justify-between hover:shadow-md transition-shadow';
@@ -4037,7 +4037,7 @@ function renderUsersList(users) {
                     <div class="flex flex-wrap gap-2">
                         <button onclick="openEditNameDialog('${user.userId}', '${user.name}')"
                                 class="px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold rounded-md transition-colors">
-                            ✏️ 編輯姓名
+                             編輯姓名
                         </button>
                         
                         ${isAdmin ? `
@@ -4129,7 +4129,7 @@ async function changeUserRole(userId, userName, newRole) {
     
     const roleMap = {
         'admin': '管理員',
-        'scheduler': '排班人員',  // 👈 新增
+        'scheduler': '排班人員',  //  新增
         'employee': '員工'
     };
 
@@ -4173,7 +4173,7 @@ async function changeUserRole(userId, userName, newRole) {
  * 確認刪除用戶
  */
 function confirmDeleteUser(userId, userName) {
-    if (!confirm(`⚠️ 警告：確定要刪除用戶「${userName}」嗎？\n\n此操作無法復原！`)) {
+    if (!confirm(` 警告：確定要刪除用戶「${userName}」嗎？\n\n此操作無法復原！`)) {
         return;
     }
     
@@ -4219,7 +4219,7 @@ function openEditNameDialog(userId, currentName) {
     dialog.innerHTML = `
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 max-w-md w-full mx-4">
             <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-4">
-                ✏️ 編輯員工姓名
+                 編輯員工姓名
             </h3>
             
             <div class="mb-4">
@@ -4242,7 +4242,7 @@ function openEditNameDialog(userId, currentName) {
                        maxlength="50"
                        class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                 <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    ℹ️ 修改後將立即生效
+                    ℹ 修改後將立即生效
                 </p>
             </div>
             
@@ -4326,7 +4326,7 @@ async function saveNewName(userId) {
         );
         
         if (res.ok) {
-            showNotification(`✅ 姓名已更新為「${res.newName}」`, 'success');
+            showNotification(` 姓名已更新為「${res.newName}」`, 'success');
             
             // 關閉對話框
             closeEditNameDialog();
@@ -4343,7 +4343,7 @@ async function saveNewName(userId) {
     }
 }
 
-// ==================== 📢 佈告欄功能 (改用後端) ====================
+// ====================  佈告欄功能 (改用後端) ====================
 
 /**
  * 載入公告 (從後端)
@@ -4386,7 +4386,7 @@ async function displayAnnouncements() {
     list.innerHTML = '';
     
     displayAnnouncements.forEach(a => {
-        const icon = a.priority === 'high' ? '🔴' : a.priority === 'medium' ? '🟡' : '🔵';
+        const icon = a.priority === 'high' ? '' : a.priority === 'medium' ? '' : '';
         const div = document.createElement('div');
         div.className = 'bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 mb-3';
         div.innerHTML = `
@@ -4464,15 +4464,15 @@ async function deleteAnnouncement(id) {
 
 // ==================== 員工基本資料功能 ====================
 /**
- * ✅ 初始化員工基本資料（自動載入）
+ *  初始化員工基本資料（自動載入）
  */
 async function initEmployeeBasicInfo() {
     try {
-        console.log('📋 初始化員工基本資料'); // ⭐ 改這裡
+        console.log(' 初始化員工基本資料'); //  改這裡
         
         const token = localStorage.getItem('sessionToken');
         if (!token) {
-            console.log('⚠️ 未登入，跳過載入'); // ⭐ 改這裡
+            console.log(' 未登入，跳過載入'); //  改這裡
             return;
         }
         
@@ -4488,7 +4488,7 @@ async function initEmployeeBasicInfo() {
         if (formEl) formEl.style.display = 'block';
         
         if (res.ok && res.data) {
-            console.log('✅ 載入成功，填入資料'); // ⭐ 改這裡
+            console.log(' 載入成功，填入資料'); //  改這裡
             
             // 填入表單
             document.getElementById('employee-id-number').value = res.data.idNumber || '';
@@ -4508,24 +4508,24 @@ async function initEmployeeBasicInfo() {
                 }
             }
         } else {
-            console.log('ℹ️ 尚未填寫基本資料'); // ⭐ 改這裡
+            console.log('ℹ 尚未填寫基本資料'); //  改這裡
         }
         
     } catch (error) {
-        console.error('❌ initEmployeeBasicInfo 錯誤:', error); // ⭐ 改這裡
+        console.error(' initEmployeeBasicInfo 錯誤:', error); //  改這裡
     }
 }
 
 /**
- * ✅ 初始化員工基本資料（自動載入）
+ *  初始化員工基本資料（自動載入）
  */
 async function initEmployeeBasicInfo() {
     try {
-        console.log('📋 初始化員工基本資料'); // ⭐ 改這裡
+        console.log(' 初始化員工基本資料'); //  改這裡
         
         const token = localStorage.getItem('sessionToken');
         if (!token) {
-            console.log('⚠️ 未登入，跳過載入'); // ⭐ 改這裡
+            console.log(' 未登入，跳過載入'); //  改這裡
             return;
         }
         
@@ -4541,7 +4541,7 @@ async function initEmployeeBasicInfo() {
         if (formEl) formEl.style.display = 'block';
         
         if (res.ok && res.data) {
-            console.log('✅ 載入成功，填入資料'); // ⭐ 改這裡
+            console.log(' 載入成功，填入資料'); //  改這裡
             
             // 填入表單
             document.getElementById('employee-id-number').value = res.data.idNumber || '';
@@ -4561,20 +4561,20 @@ async function initEmployeeBasicInfo() {
                 }
             }
         } else {
-            console.log('ℹ️ 尚未填寫基本資料'); // ⭐ 改這裡
+            console.log('ℹ 尚未填寫基本資料'); //  改這裡
         }
         
     } catch (error) {
-        console.error('❌ initEmployeeBasicInfo 錯誤:', error); // ⭐ 改這裡
+        console.error(' initEmployeeBasicInfo 錯誤:', error); //  改這裡
     }
 }
 
 /**
- * ✅ 儲存員工基本資料
+ *  儲存員工基本資料
  */
 async function saveEmployeeBasicInfo() {
     try {
-        console.log('💾 儲存員工基本資料'); // ⭐ 改這裡
+        console.log(' 儲存員工基本資料'); //  改這裡
         
         const saveBtn = document.getElementById('save-basic-info-btn');
         const loadingText = t('SAVING') || '儲存中...';
@@ -4625,7 +4625,7 @@ async function saveEmployeeBasicInfo() {
         }
         
     } catch (error) {
-        console.error('❌ saveEmployeeBasicInfo 錯誤:', error); // ⭐ 改這裡
+        console.error(' saveEmployeeBasicInfo 錯誤:', error); //  改這裡
         showNotification('儲存失敗', 'error');
         
     } finally {
@@ -4638,7 +4638,7 @@ async function saveEmployeeBasicInfo() {
 
 
 /**
-     * 🆕 打開當日異常修正對話框
+     *  打開當日異常修正對話框
      */
 function openAdjustTodayDialog() {
     const dialog = document.createElement('div');
@@ -4652,11 +4652,11 @@ function openAdjustTodayDialog() {
     dialog.innerHTML = `
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 max-w-md w-full mx-4">
             <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-4">
-                🔧 當日異常修正
+                 當日異常修正
             </h3>
             
             <p class="text-sm text-yellow-600 dark:text-yellow-400 mb-4">
-                ⚠️ 此功能用於修正今天的打卡記錄。例如：忘記打上班卡、打錯類型等。
+                 此功能用於修正今天的打卡記錄。例如：忘記打上班卡、打錯類型等。
             </p>
             
             <!-- 選擇要修正的類型 -->
@@ -4719,7 +4719,7 @@ function openAdjustTodayDialog() {
 }
 
 /**
- * 🆕 關閉當日異常修正對話框
+ *  關閉當日異常修正對話框
  */
 function closeAdjustTodayDialog() {
     const dialog = document.getElementById('adjust-today-dialog');
@@ -4730,7 +4730,7 @@ function closeAdjustTodayDialog() {
 
 let _isSubmittingToday = false;
 /**
- * 🆕 提交當日異常修正
+ *  提交當日異常修正
  */
 async function submitAdjustToday() {
     if (_isSubmittingToday) { showNotification('處理中，請勿重複點擊', 'warning'); return; }
@@ -4807,7 +4807,7 @@ async function submitAdjustToday() {
 // ==================== 歷史補打卡功能 ====================
 
 /**
- * 🆕 打開歷史補打卡對話框
+ *  打開歷史補打卡對話框
  */
 function openHistoryAdjustDialog() {
     const dialog = document.createElement('div');
@@ -4822,13 +4822,13 @@ function openHistoryAdjustDialog() {
     dialog.innerHTML = `
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
             <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-4">
-                📅 歷史補打卡
+                 歷史補打卡
             </h3>
             
             <!-- 說明提示 -->
             <div class="bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-400 dark:border-yellow-600 rounded p-3 mb-4">
                 <p class="text-sm text-yellow-800 dark:text-yellow-300">
-                    <strong>⚠️ 注意事項：</strong>
+                    <strong> 注意事項：</strong>
                 </p>
                 <ul class="text-xs text-yellow-700 dark:text-yellow-400 mt-2 space-y-1 list-disc list-inside">
                     <li>只能補打<strong>本月</strong>的打卡記錄</li>
@@ -4848,7 +4848,7 @@ function openHistoryAdjustDialog() {
                        max="${today}"
                        class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent">
                 <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    📅 可選範圍：${monthStart} ~ ${today}
+                     可選範圍：${monthStart} ~ ${today}
                 </p>
             </div>
             
@@ -4886,7 +4886,7 @@ function openHistoryAdjustDialog() {
                           placeholder="請詳細說明為什麼需要補打卡（至少 10 個字）&#10;例如：&#10;- 當天忘記打卡&#10;- 系統故障無法打卡&#10;- 外出洽公不在打卡範圍&#10;- 手機沒電無法打卡"
                           class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"></textarea>
                 <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    💡 理由越詳細，主管審核通過率越高
+                     理由越詳細，主管審核通過率越高
                 </p>
             </div>
             
@@ -4916,7 +4916,7 @@ function openHistoryAdjustDialog() {
 }
 
 /**
- * 🆕 關閉歷史補打卡對話框
+ *  關閉歷史補打卡對話框
  */
 function closeHistoryAdjustDialog() {
     const dialog = document.getElementById('history-adjust-dialog');
@@ -4926,7 +4926,7 @@ function closeHistoryAdjustDialog() {
 }
 let _isSubmittingHistory = false;
 /**
- * 🆕 提交歷史補打卡申請
+ *  提交歷史補打卡申請
  */
 async function submitHistoryAdjust() {
     if (_isSubmittingHistory) { showNotification('處理中，請勿重複點擊', 'warning'); return; }
@@ -5017,7 +5017,7 @@ async function submitHistoryAdjust() {
         // 組合完整日期時間
         const datetime = `${date}T${time}:00`;
         
-        // ⭐ 加上特殊標記，讓後端知道這是「歷史補打」
+        //  加上特殊標記，讓後端知道這是「歷史補打」
         const noteWithTag = `【歷史補打】${reason}`;
         
         const params = new URLSearchParams({
@@ -5032,7 +5032,7 @@ async function submitHistoryAdjust() {
         const res = await callApifetch(`adjustPunch&${params.toString()}`);
         
         if (res.ok) {
-            showNotification('✅ 歷史補打卡申請已提交！等待主管審核', 'success');
+            showNotification(' 歷史補打卡申請已提交！等待主管審核', 'success');
             closeHistoryAdjustDialog();
             
             // 重新載入異常記錄

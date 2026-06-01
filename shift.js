@@ -8,10 +8,10 @@ let currentShifts = [];
 let allEmployees = [];
 let allLocations = [];
 let batchData = [];
-let translations = {}; // 👈 新增：翻譯物件
-let currentLang = localStorage.getItem("lang") || "zh-TW"; // 👈 新增：當前語言
+let translations = {}; //  新增：翻譯物件
+let currentLang = localStorage.getItem("lang") || "zh-TW"; //  新增：當前語言
 
-// 👉 新增：權限控制變數
+//  新增：權限控制變數
 let currentUserRole = null;
 let isAdmin = false;
 let isScheduler = false;
@@ -20,7 +20,7 @@ let currentYear = new Date().getFullYear();
 let currentMonth = new Date().getMonth(); // 0-11
 let allMonthShifts = [];
 
-// 👇 新增：翻譯函式
+//  新增：翻譯函式
 function t(code, params = {}) {
     let text = translations[code] || code;
     
@@ -34,7 +34,7 @@ function t(code, params = {}) {
     return text;
 }
 
-// 👇 新增：載入翻譯檔案
+//  新增：載入翻譯檔案
 async function loadTranslations(lang) {
     try {
         const res = await fetch(`https://eric693.github.io/ice_check_manager/i18n/${lang}.json`);
@@ -50,7 +50,7 @@ async function loadTranslations(lang) {
     }
 }
 
-// 👇 新增：渲染翻譯
+//  新增：渲染翻譯
 function renderTranslations(container = document) {
     if (container === document) {
         document.title = t("SHIFT_PAGE_TITLE");
@@ -121,9 +121,9 @@ function initializeTabs() {
     tabs.forEach(tab => {
         tab.addEventListener('click', function() {
             const tabName = this.getAttribute('data-tab');
-            // 👉 檢查權限
+            //  檢查權限
             if ((tabName === 'add' || tabName === 'batch') && !isAdmin && !isScheduler) {
-                showMessage('⛔ 權限不足：只有管理員可以使用此功能', 'error');
+                showMessage(' 權限不足：只有管理員可以使用此功能', 'error');
                 return;
             }
             switchTab(tabName);
@@ -172,13 +172,13 @@ function setupEventListeners() {
 }
 
 
-// ========== 👉 權限控制（新增）==========
+// ==========  權限控制（新增）==========
 
 async function loadUserPermissions() {
     try {
         const token = localStorage.getItem('sessionToken');
         if (!token) {
-            console.warn('⚠️ 沒有 token');
+            console.warn(' 沒有 token');
             isAdmin = false;
             isScheduler = false;
             updateUIForPermissions();
@@ -188,27 +188,27 @@ async function loadUserPermissions() {
         const response = await fetch(`${apiUrl}?action=checkSession&token=${token}`);
         const data = await response.json();
 
-        console.log('📋 checkSession 回應:', data);
+        console.log(' checkSession 回應:', data);
 
         if (data.ok && data.user) {
             currentUserRole = data.user.dept;
             isAdmin = (currentUserRole === '管理員');
             isScheduler = (currentUserRole === '排班人員');
             
-            console.log('✅ 權限載入成功');
+            console.log(' 權限載入成功');
             console.log('   角色:', currentUserRole);
             console.log('   isAdmin:', isAdmin);
             console.log('   isScheduler:', isScheduler);
             
             updateUIForPermissions();
         } else {
-            console.warn('⚠️ Session 無效');
+            console.warn(' Session 無效');
             isAdmin = false;
             isScheduler = false;
             updateUIForPermissions();
         }
     } catch (error) {
-        console.error('❌ 權限載入失敗:', error);
+        console.error(' 權限載入失敗:', error);
         isAdmin = false;
         isScheduler = false;
         updateUIForPermissions();
@@ -224,7 +224,7 @@ function updateUIForPermissions() {
     
     const canSchedule = isAdmin || isScheduler;
     
-    console.log('🔧 更新 UI 權限');
+    console.log(' 更新 UI 權限');
     console.log('   canSchedule:', canSchedule);
     console.log('   isAdmin:', isAdmin);
     console.log('   isScheduler:', isScheduler);
@@ -247,16 +247,16 @@ function updateUIForPermissions() {
  * 檢查管理員權限
  */
 function checkSchedulingPermission(actionName) {
-    console.log('🔐 檢查排班權限:', actionName);
+    console.log(' 檢查排班權限:', actionName);
     console.log('   isAdmin:', isAdmin);
     console.log('   isScheduler:', isScheduler);
     
     if (!isAdmin && !isScheduler) {
-        showMessage(`⛔ 權限不足：只有管理員或排班人員可以${actionName}`, 'error');
+        showMessage(` 權限不足：只有管理員或排班人員可以${actionName}`, 'error');
         return false;
     }
     
-    console.log('✅ 權限檢查通過');
+    console.log(' 權限檢查通過');
     return true;
 }
 function autoFillShiftTime(shiftType) {
@@ -318,45 +318,45 @@ function autoFillShiftTime(shiftType) {
 // ==================== 員工載入函式（完整除錯版） ====================
 
 /**
- * ✅ 載入員工列表（加強除錯版）
+ *  載入員工列表（加強除錯版）
  */
 async function loadEmployees() {
     try {
         const token = localStorage.getItem('sessionToken');
         
-        // ✅ 步驟 1: 檢查 token
+        //  步驟 1: 檢查 token
         if (!token) {
-            console.error('❌ 沒有 session token');
+            console.error(' 沒有 session token');
             showMessage(t('SHIFT_LOGIN_REQUIRED'), 'error');
             return;
         }
         
         console.log('═══════════════════════════════════════');
-        console.log('📋 載入員工列表');
+        console.log(' 載入員工列表');
         console.log('═══════════════════════════════════════');
-        console.log('📡 Token:', token.substring(0, 20) + '...');
-        console.log('📡 API URL:', apiUrl);
+        console.log(' Token:', token.substring(0, 20) + '...');
+        console.log(' API URL:', apiUrl);
         console.log('');
         
-        // ✅ 步驟 2: 呼叫 API
+        //  步驟 2: 呼叫 API
         const url = `${apiUrl}?action=getAllUsers&token=${token}`;
-        console.log('📡 完整 URL:', url);
-        console.log('📡 開始呼叫 API...');
+        console.log(' 完整 URL:', url);
+        console.log(' 開始呼叫 API...');
         
         const response = await fetch(url);
         
-        // ✅ 步驟 3: 檢查 HTTP 狀態
-        console.log('📤 HTTP 狀態:', response.status, response.statusText);
+        //  步驟 3: 檢查 HTTP 狀態
+        console.log(' HTTP 狀態:', response.status, response.statusText);
         
         if (!response.ok) {
             throw new Error(`HTTP 錯誤: ${response.status} ${response.statusText}`);
         }
         
-        // ✅ 步驟 4: 解析 JSON
+        //  步驟 4: 解析 JSON
         const data = await response.json();
         
         console.log('');
-        console.log('📤 API 回應:');
+        console.log(' API 回應:');
         console.log('   - ok:', data.ok);
         console.log('   - msg:', data.msg || '無');
         console.log('   - count:', data.count || '無');
@@ -365,22 +365,22 @@ async function loadEmployees() {
         console.log('   - users 長度:', data.users ? data.users.length : 'null');
         console.log('');
         
-        // ✅ 步驟 5: 檢查回應
+        //  步驟 5: 檢查回應
         if (data.ok) {
             allEmployees = data.users || [];
             
-            console.log('✅ API 回傳成功');
+            console.log(' API 回傳成功');
             console.log('   員工數量:', allEmployees.length);
             
             if (allEmployees.length === 0) {
-                console.warn('⚠️ 員工列表是空的');
+                console.warn(' 員工列表是空的');
                 console.warn('   可能原因:');
                 console.warn('   1. 員工工作表沒有資料');
                 console.warn('   2. 所有員工都不是「啟用」狀態');
                 console.warn('   3. 資料格式不正確');
                 showMessage(t('SHIFT_NO_EMPLOYEE_DATA'), 'warning');
             } else {
-                console.log('✅ 員工列表預覽（前 5 筆）:');
+                console.log(' 員工列表預覽（前 5 筆）:');
                 allEmployees.slice(0, 5).forEach((emp, index) => {
                     console.log(`   ${index + 1}. ${emp.name} (${emp.userId}) - ${emp.dept}`);
                 });
@@ -390,13 +390,13 @@ async function loadEmployees() {
                 }
             }
             
-            // ✅ 步驟 6: 填入下拉選單
+            //  步驟 6: 填入下拉選單
             console.log('');
-            console.log('📝 開始填入員工下拉選單...');
+            console.log(' 開始填入員工下拉選單...');
             populateEmployeeSelect();
             
         } else {
-            console.error('❌ API 回傳失敗');
+            console.error(' API 回傳失敗');
             console.error('   原因:', data.msg || '未知錯誤');
             showMessage(data.msg || t('SHIFT_LOAD_EMPLOYEES_FAILED'), 'error');
         }
@@ -405,7 +405,7 @@ async function loadEmployees() {
         
     } catch (error) {
         console.error('');
-        console.error('❌❌❌ 載入員工列表失敗');
+        console.error(' 載入員工列表失敗');
         console.error('錯誤訊息:', error.message);
         console.error('錯誤堆疊:', error.stack);
         console.error('═══════════════════════════════════════');
@@ -416,38 +416,38 @@ async function loadEmployees() {
 
 function populateEmployeeSelect() {
     console.log('');
-    console.log('📝 populateEmployeeSelect 開始');
+    console.log(' populateEmployeeSelect 開始');
     console.log('───────────────────────────────────────');
     
     const select = document.getElementById('employee-select');
     
     if (!select) {
-        console.error('❌ 找不到 employee-select 元素');
+        console.error(' 找不到 employee-select 元素');
         return;
     }
     
-    console.log('✅ 找到 employee-select 元素');
+    console.log(' 找到 employee-select 元素');
     
     if (!allEmployees || !Array.isArray(allEmployees)) {
-        console.error('❌ allEmployees 不是有效的陣列');
+        console.error(' allEmployees 不是有效的陣列');
         return;
     }
     
-    console.log('✅ allEmployees 驗證通過');
+    console.log(' allEmployees 驗證通過');
     console.log('   員工數量:', allEmployees.length);
     
     // 清空並重設為預設選項
     select.innerHTML = '<option value="">請選擇員工</option>';
-    console.log('✅ 已重設為預設選項');
+    console.log(' 已重設為預設選項');
     
     if (allEmployees.length === 0) {
-        console.warn('⚠️ 沒有員工可以填入');
+        console.warn(' 沒有員工可以填入');
         select.innerHTML = '<option value="">目前沒有員工資料</option>';
         return;
     }
     
     // 填入員工選項
-    console.log('📝 開始逐筆填入...');
+    console.log(' 開始逐筆填入...');
     
     let successCount = 0;
     let failCount = 0;
@@ -455,7 +455,7 @@ function populateEmployeeSelect() {
     allEmployees.forEach((emp, index) => {
         try {
             if (!emp.userId || !emp.name) {
-                console.warn(`   ⚠️ 第 ${index + 1} 筆: 缺少必要欄位，跳過`);
+                console.warn(`    第 ${index + 1} 筆: 缺少必要欄位，跳過`);
                 failCount++;
                 return;
             }
@@ -473,11 +473,11 @@ function populateEmployeeSelect() {
             successCount++;
             
             if (index < 5) {
-                console.log(`   ✅ ${index + 1}. ${emp.name} (${emp.userId})`);
+                console.log(`    ${index + 1}. ${emp.name} (${emp.userId})`);
             }
             
         } catch (error) {
-            console.error(`   ❌ 第 ${index + 1} 筆失敗:`, error.message);
+            console.error(`    第 ${index + 1} 筆失敗:`, error.message);
             failCount++;
         }
     });
@@ -487,35 +487,35 @@ function populateEmployeeSelect() {
     }
     
     console.log('');
-    console.log('📊 填入結果:');
+    console.log(' 填入結果:');
     console.log('   成功:', successCount, '筆');
     console.log('   失敗:', failCount, '筆');
     console.log('───────────────────────────────────────');
-    console.log('✅ populateEmployeeSelect 完成');
+    console.log(' populateEmployeeSelect 完成');
     console.log('');
     
-    // ⭐⭐⭐ 新增：同時填入篩選下拉框
+    //  新增：同時填入篩選下拉框
     populateEmployeeFilter();
 }
 
 /**
- * ⭐ 新增：填入員工篩選下拉框
+ *  新增：填入員工篩選下拉框
  */
 function populateEmployeeFilter() {
     const filterSelect = document.getElementById('filter-employees');
     
     if (!filterSelect) {
-        console.warn('⚠️ 找不到 filter-employees 元素');
+        console.warn(' 找不到 filter-employees 元素');
         return;
     }
     
-    console.log('📝 開始填入員工篩選下拉框...');
+    console.log(' 開始填入員工篩選下拉框...');
     
     // 保留「全部」選項
     filterSelect.innerHTML = '<option value="">全部</option>';
     
     if (!allEmployees || allEmployees.length === 0) {
-        console.warn('⚠️ 沒有員工可以填入篩選框');
+        console.warn(' 沒有員工可以填入篩選框');
         return;
     }
     
@@ -533,50 +533,50 @@ function populateEmployeeFilter() {
         filterSelect.appendChild(option);
     });
     
-    console.log(`✅ 員工篩選下拉框已填入 ${allEmployees.length} 位員工`);
+    console.log(` 員工篩選下拉框已填入 ${allEmployees.length} 位員工`);
 }
 // ==================== 除錯工具函式 ====================
 
 /**
- * 🧪 手動測試載入員工
+ *  手動測試載入員工
  * 在瀏覽器 Console 中執行: testLoadEmployees()
  */
 async function testLoadEmployees() {
-    console.log('🧪 手動測試載入員工');
+    console.log(' 手動測試載入員工');
     console.log('');
     
     // 檢查 apiUrl
-    console.log('1️⃣ 檢查 apiUrl:');
-    console.log('   apiUrl:', typeof apiUrl !== 'undefined' ? apiUrl : '❌ undefined');
+    console.log('1⃣ 檢查 apiUrl:');
+    console.log('   apiUrl:', typeof apiUrl !== 'undefined' ? apiUrl : ' undefined');
     console.log('');
     
     // 檢查 token
-    console.log('2️⃣ 檢查 token:');
+    console.log('2⃣ 檢查 token:');
     const token = localStorage.getItem('sessionToken');
-    console.log('   token 存在:', token ? '✅ 是' : '❌ 否');
+    console.log('   token 存在:', token ? ' 是' : ' 否');
     if (token) {
         console.log('   token 預覽:', token.substring(0, 20) + '...');
     }
     console.log('');
     
     // 檢查 HTML 元素
-    console.log('3️⃣ 檢查 HTML 元素:');
+    console.log('3⃣ 檢查 HTML 元素:');
     const select = document.getElementById('employee-select');
-    console.log('   employee-select 存在:', select ? '✅ 是' : '❌ 否');
+    console.log('   employee-select 存在:', select ? ' 是' : ' 否');
     if (select) {
         console.log('   當前選項數量:', select.options.length);
     }
     console.log('');
     
     // 執行載入
-    console.log('4️⃣ 開始載入員工列表...');
+    console.log('4⃣ 開始載入員工列表...');
     console.log('');
     
     await loadEmployees();
     
     console.log('');
-    console.log('5️⃣ 檢查結果:');
-    console.log('   allEmployees 存在:', typeof allEmployees !== 'undefined' ? '✅ 是' : '❌ 否');
+    console.log('5⃣ 檢查結果:');
+    console.log('   allEmployees 存在:', typeof allEmployees !== 'undefined' ? ' 是' : ' 否');
     if (typeof allEmployees !== 'undefined') {
         console.log('   allEmployees 長度:', allEmployees.length);
     }
@@ -591,7 +591,7 @@ async function loadLocations() {
         const response = await fetch(`${apiUrl}?action=getLocations&token=${token}`);
         const data = await response.json();
         
-        console.log('✅ 地點列表回應:', data);
+        console.log(' 地點列表回應:', data);
         
         if (data.ok) {
             allLocations = data.locations || [];
@@ -656,17 +656,17 @@ async function loadShifts(filters = {}) {
         const response = await fetch(`${apiUrl}?${queryParams}`);
         const data = await response.json();
         
-        console.log('✅ 排班回應:', data);
+        console.log(' 排班回應:', data);
         
         if (data.ok) {
             currentShifts = data.data || [];
             displayShifts(currentShifts);
         } else {
-            listContainer.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📋</div><p>${t('SHIFT_LOAD_FAILED')}: ${data.msg}</p></div>`;
+            listContainer.innerHTML = `<div class="empty-state"><div class="empty-state-icon"></div><p>${t('SHIFT_LOAD_FAILED')}: ${data.msg}</p></div>`;
         }
     } catch (error) {
-        console.error('❌ 載入排班失敗:', error);
-        listContainer.innerHTML = `<div class="empty-state"><div class="empty-state-icon">❌</div><p>${t('SHIFT_LOAD_ERROR')}</p></div>`;
+        console.error(' 載入排班失敗:', error);
+        listContainer.innerHTML = `<div class="empty-state"><div class="empty-state-icon"></div><p>${t('SHIFT_LOAD_ERROR')}</p></div>`;
     }
 }
 
@@ -677,7 +677,7 @@ function displayShifts(shifts) {
     if (shifts.length === 0) {
         listContainer.innerHTML = `
             <div class="empty-state">
-                <div class="empty-state-icon">📅</div>
+                <div class="empty-state-icon"></div>
                 <p>${t('SHIFT_NO_DATA')}</p>
             </div>
         `;
@@ -810,14 +810,14 @@ async function addShift() {
         note: shiftNoteEl ? shiftNoteEl.value : ''
     };
     
-    console.log('📝 新增排班:', shiftData);
+    console.log(' 新增排班:', shiftData);
     
     try {
         const queryParams = new URLSearchParams(shiftData);
         const response = await fetch(`${apiUrl}?${queryParams}`);
         const data = await response.json();
         
-        console.log('✅ 新增回應:', data);
+        console.log(' 新增回應:', data);
         
         if (data.ok) {
             showMessage(t('SHIFT_ADD_SUCCESS'), 'success');
@@ -828,7 +828,7 @@ async function addShift() {
             showMessage(data.msg || t('SHIFT_ADD_FAILED'), 'error');
         }
     } catch (error) {
-        console.error('❌ 新增排班失敗:', error);
+        console.error(' 新增排班失敗:', error);
         showMessage(t('SHIFT_ADD_ERROR'), 'error');
     }
 }
@@ -904,7 +904,7 @@ async function updateShift(shiftId) {
             showMessage(data.msg || t('SHIFT_UPDATE_FAILED'), 'error');
         }
     } catch (error) {
-        console.error('❌ 更新排班失敗:', error);
+        console.error(' 更新排班失敗:', error);
         showMessage(t('SHIFT_UPDATE_ERROR'), 'error');
     }
 }
@@ -927,7 +927,7 @@ async function deleteShift(shiftId) {
             showMessage(data.msg || t('SHIFT_DELETE_FAILED'), 'error');
         }
     } catch (error) {
-        console.error('❌ 刪除排班失敗:', error);
+        console.error(' 刪除排班失敗:', error);
         showMessage(t('SHIFT_DELETE_ERROR'), 'error');
     }
 }
@@ -940,7 +940,7 @@ function filterShifts() {
     const shiftTypeEl = document.getElementById('filter-shift-type');
     const locationEl = document.getElementById('filter-location');
     
-    // ⭐⭐⭐ 新增：取得選擇的員工（多選）
+    //  新增：取得選擇的員工（多選）
     const employeesEl = document.getElementById('filter-employees');
     const selectedEmployees = Array.from(employeesEl.selectedOptions)
         .map(opt => opt.value)
@@ -951,24 +951,24 @@ function filterShifts() {
     if (shiftTypeEl && shiftTypeEl.value) filters.shiftType = shiftTypeEl.value;
     if (locationEl && locationEl.value) filters.location = locationEl.value;
     
-    // ⭐⭐⭐ 新增：如果有選擇員工，加入篩選條件
+    //  新增：如果有選擇員工，加入篩選條件
     if (selectedEmployees.length > 0) {
         filters.employeeIds = selectedEmployees;
     }
     
-    console.log('🔍 篩選條件:', filters);
+    console.log(' 篩選條件:', filters);
     
     loadShiftsWithMultipleEmployees(filters);
 }
 function clearFilters() {
     const shiftTypeEl = document.getElementById('filter-shift-type');
     const locationEl = document.getElementById('filter-location');
-    const employeesEl = document.getElementById('filter-employees');  // ⭐ 新增
+    const employeesEl = document.getElementById('filter-employees');  //  新增
     
     if (shiftTypeEl) shiftTypeEl.value = '';
     if (locationEl) locationEl.value = '';
     
-    // ⭐⭐⭐ 新增：清除員工多選
+    //  新增：清除員工多選
     if (employeesEl) {
         Array.from(employeesEl.options).forEach(option => {
             option.selected = false;
@@ -1081,7 +1081,7 @@ function setupBatchUpload() {
 
 
 /**
- * ⭐ 新增：支援多員工篩選的載入函數
+ *  新增：支援多員工篩選的載入函數
  */
 async function loadShiftsWithMultipleEmployees(filters = {}) {
     const listContainer = document.getElementById('shift-list');
@@ -1100,11 +1100,11 @@ async function loadShiftsWithMultipleEmployees(filters = {}) {
             if (endDateEl && endDateEl.value) filters.endDate = endDateEl.value;
         }
         
-        // ⭐ 如果有多個員工，需要多次呼叫 API 然後合併結果
+        //  如果有多個員工，需要多次呼叫 API 然後合併結果
         let allShifts = [];
         
         if (filters.employeeIds && filters.employeeIds.length > 0) {
-            console.log(`📋 查詢 ${filters.employeeIds.length} 位員工的排班...`);
+            console.log(` 查詢 ${filters.employeeIds.length} 位員工的排班...`);
             
             for (const employeeId of filters.employeeIds) {
                 const queryParams = new URLSearchParams({
@@ -1126,7 +1126,7 @@ async function loadShiftsWithMultipleEmployees(filters = {}) {
                 }
             }
             
-            console.log(`✅ 總共找到 ${allShifts.length} 筆排班`);
+            console.log(` 總共找到 ${allShifts.length} 筆排班`);
             
         } else {
             // 沒有選擇員工，使用原本的邏輯
@@ -1160,8 +1160,8 @@ async function loadShiftsWithMultipleEmployees(filters = {}) {
         displayShifts(currentShifts);
         
     } catch (error) {
-        console.error('❌ 載入排班失敗:', error);
-        listContainer.innerHTML = `<div class="empty-state"><div class="empty-state-icon">❌</div><p>${t('SHIFT_LOAD_ERROR')}</p></div>`;
+        console.error(' 載入排班失敗:', error);
+        listContainer.innerHTML = `<div class="empty-state"><div class="empty-state-icon"></div><p>${t('SHIFT_LOAD_ERROR')}</p></div>`;
     }
 }
 function handleBatchFile(file) {
@@ -1181,13 +1181,13 @@ function handleBatchFile(file) {
         reader.onload = function(e) {
             try {
                 const data = new Uint8Array(e.target.result);
-                // ⭐ 加上 cellDates: true，讓日期保持 Date 物件
+                //  加上 cellDates: true，讓日期保持 Date 物件
                 const workbook = XLSX.read(data, { type: 'array', cellDates: true });
                 
                 const sheetName = workbook.SheetNames[0];
                 const worksheet = workbook.Sheets[sheetName];
                 
-                // ⭐ 指定日期格式為 YYYY-MM-DD
+                //  指定日期格式為 YYYY-MM-DD
                 const csv = XLSX.utils.sheet_to_csv(worksheet, { 
                     dateNF: 'yyyy-mm-dd' 
                 });
@@ -1213,7 +1213,7 @@ function parseBatchData(content, filename) {
     const data = [];
     
     console.log('═══════════════════════════════════════');
-    console.log('📤 開始解析批量上傳檔案');
+    console.log(' 開始解析批量上傳檔案');
     console.log('═══════════════════════════════════════');
     console.log('檔案名稱:', filename);
     console.log('總行數:', lines.length);
@@ -1224,28 +1224,28 @@ function parseBatchData(content, filename) {
         const line = lines[i].trim();
         if (!line) continue;
         
-        // ⭐ 正確處理 CSV 引號
+        //  正確處理 CSV 引號
         const values = parseCSVLine(line);
         
         console.log(`第 ${i + 1} 行解析結果:`);
         console.log('  原始內容:', line.substring(0, 100) + (line.length > 100 ? '...' : ''));
         console.log('  解析欄位數:', values.length);
         
-        // ✅ 修正：CSV 範本格式為：員工ID, 員工姓名, 日期, 班別, 上班時間, 下班時間, 地點, 備註
+        //  修正：CSV 範本格式為：員工ID, 員工姓名, 日期, 班別, 上班時間, 下班時間, 地點, 備註
         // 檢查是否有足夠的欄位(至少 6 個)
         if (values.length >= 6) {
             const shift = {
-                employeeId: values[0],      // ✅ 第 1 欄: 員工ID
-                employeeName: values[1],    // ✅ 第 2 欄: 員工姓名
-                date: values[2],            // ✅ 第 3 欄: 日期
-                shiftType: values[3],       // ✅ 第 4 欄: 班別
-                startTime: values[4],       // ✅ 第 5 欄: 上班時間
-                endTime: values[5],         // ✅ 第 6 欄: 下班時間
-                location: values[6] || '',  // ✅ 第 7 欄: 地點
-                note: values[7] || ''       // ✅ 第 8 欄: 備註
+                employeeId: values[0],      //  第 1 欄: 員工ID
+                employeeName: values[1],    //  第 2 欄: 員工姓名
+                date: values[2],            //  第 3 欄: 日期
+                shiftType: values[3],       //  第 4 欄: 班別
+                startTime: values[4],       //  第 5 欄: 上班時間
+                endTime: values[5],         //  第 6 欄: 下班時間
+                location: values[6] || '',  //  第 7 欄: 地點
+                note: values[7] || ''       //  第 8 欄: 備註
             };
             
-            console.log('  ✅ 解析結果:');
+            console.log('   解析結果:');
             console.log('    員工ID:', shift.employeeId);
             console.log('    員工姓名:', shift.employeeName);
             console.log('    日期:', shift.date);
@@ -1254,7 +1254,7 @@ function parseBatchData(content, filename) {
             console.log('    下班時間:', shift.endTime);
             console.log('    地點:', shift.location);
             
-            // ⭐ 標準化日期格式（處理 2026/2/2 → 2026-02-02）
+            //  標準化日期格式（處理 2026/2/2 → 2026-02-02）
             if (shift.date && shift.date.includes('/')) {
                 const parts = shift.date.split('/');
                 shift.date = `${parts[0]}-${String(parts[1]).padStart(2, '0')}-${String(parts[2]).padStart(2, '0')}`;
@@ -1262,16 +1262,16 @@ function parseBatchData(content, filename) {
             // 驗證必填欄位
             if (shift.employeeId && shift.date && shift.shiftType) {
                 data.push(shift);
-                console.log('  ✅ 第', i + 1, '行資料有效');
+                console.log('   第', i + 1, '行資料有效');
             } else {
-                console.warn('  ⚠️ 第', i + 1, '行資料不完整,已略過');
+                console.warn('   第', i + 1, '行資料不完整,已略過');
                 console.warn('    缺少欄位:');
                 if (!shift.employeeId) console.warn('      - 員工ID');
                 if (!shift.date) console.warn('      - 日期');
                 if (!shift.shiftType) console.warn('      - 班別');
             }
         } else {
-            console.warn('  ⚠️ 第', i + 1, '行欄位不足');
+            console.warn('   第', i + 1, '行欄位不足');
             console.warn('    需要: 至少 6 欄 (員工ID, 姓名, 日期, 班別, 開始, 結束)');
             console.warn('    實際:', values.length, '欄');
             console.warn('    內容:', values);
@@ -1280,7 +1280,7 @@ function parseBatchData(content, filename) {
     }
     
     console.log('═══════════════════════════════════════');
-    console.log('📊 解析完成');
+    console.log(' 解析完成');
     console.log('有效資料筆數:', data.length);
     console.log('═══════════════════════════════════════');
     console.log('');
@@ -1295,7 +1295,7 @@ function parseBatchData(content, filename) {
 }
 
 /**
- * ⭐ 正確解析 CSV 行(處理引號)
+ *  正確解析 CSV 行(處理引號)
  */
 function parseCSVLine(line) {
     const values = [];
@@ -1339,7 +1339,7 @@ function displayBatchPreview(data) {
     let html = '<div style="overflow-x: auto;">'; // 加入水平捲動容器
     html += '<table style="width: 100%; border-collapse: collapse; min-width: 1200px;">'; // 設定最小寬度
     
-    // ✅ 表頭：顯示所有欄位
+    //  表頭：顯示所有欄位
     html += '<tr style="background: #f5f5f5;">';
     html += '<th style="padding: 12px; border: 1px solid #ddd; text-align: left; white-space: nowrap;">員工ID</th>';
     html += '<th style="padding: 12px; border: 1px solid #ddd; text-align: left; white-space: nowrap;">員工姓名</th>';
@@ -1348,10 +1348,10 @@ function displayBatchPreview(data) {
     html += '<th style="padding: 12px; border: 1px solid #ddd; text-align: left; white-space: nowrap;">上班時間</th>';
     html += '<th style="padding: 12px; border: 1px solid #ddd; text-align: left; white-space: nowrap;">下班時間</th>';
     html += '<th style="padding: 12px; border: 1px solid #ddd; text-align: left; white-space: nowrap;">地點</th>';
-    html += '<th style="padding: 12px; border: 1px solid #ddd; text-align: left; min-width: 150px;">備註</th>'; // ✅ 新增備註欄
+    html += '<th style="padding: 12px; border: 1px solid #ddd; text-align: left; min-width: 150px;">備註</th>'; //  新增備註欄
     html += '</tr>';
     
-    // ✅ 資料列：顯示前 20 筆資料（增加顯示筆數）
+    //  資料列：顯示前 20 筆資料（增加顯示筆數）
     data.slice(0, 20).forEach((row, index) => {
         html += '<tr style="border-bottom: 1px solid #eee;">';
         html += `<td style="padding: 10px; border: 1px solid #ddd; font-size: 12px; font-family: monospace;">${row.employeeId || ''}</td>`;
@@ -1361,11 +1361,11 @@ function displayBatchPreview(data) {
         html += `<td style="padding: 10px; border: 1px solid #ddd; text-align: center;">${row.startTime || ''}</td>`;
         html += `<td style="padding: 10px; border: 1px solid #ddd; text-align: center;">${row.endTime || ''}</td>`;
         html += `<td style="padding: 10px; border: 1px solid #ddd;">${row.location || ''}</td>`;
-        html += `<td style="padding: 10px; border: 1px solid #ddd; max-width: 200px; word-wrap: break-word;">${row.note || ''}</td>`; // ✅ 顯示備註
+        html += `<td style="padding: 10px; border: 1px solid #ddd; max-width: 200px; word-wrap: break-word;">${row.note || ''}</td>`; //  顯示備註
         html += '</tr>';
     });
     
-    // ✅ 如果資料超過 20 筆，顯示提示
+    //  如果資料超過 20 筆，顯示提示
     if (data.length > 20) {
         html += `<tr><td colspan="8" style="text-align: center; padding: 10px; color: #666; background: #f9f9f9;">還有 ${data.length - 20} 筆資料...</td></tr>`;
     }
@@ -1377,11 +1377,11 @@ function displayBatchPreview(data) {
     previewDiv.style.display = 'block';
     document.getElementById('upload-area').style.display = 'none';
     
-    console.log('✅ 預覽表格已顯示，共', data.length, '筆資料');
+    console.log(' 預覽表格已顯示，共', data.length, '筆資料');
 }
 
 /**
- * ✅ 批量上傳（使用 FormData 避免 CORS）
+ *  批量上傳（使用 FormData 避免 CORS）
  */
 async function confirmBatchUpload() {
     if (!checkSchedulingPermission('批量上傳')) return;
@@ -1390,10 +1390,10 @@ async function confirmBatchUpload() {
     try {
         const token = localStorage.getItem('sessionToken');
         
-        console.log('📤 準備上傳批量資料:', batchData.length, '筆');
-        console.log('📋 前 3 筆資料預覽:', batchData.slice(0, 3));
+        console.log(' 準備上傳批量資料:', batchData.length, '筆');
+        console.log(' 前 3 筆資料預覽:', batchData.slice(0, 3));
         
-        // ✅ 使用 URLSearchParams（不會觸發 preflight）
+        //  使用 URLSearchParams（不會觸發 preflight）
         const formData = new URLSearchParams();
         formData.append('action', 'batchAddShifts');
         formData.append('token', token);
@@ -1407,7 +1407,7 @@ async function confirmBatchUpload() {
             body: formData
         });
         
-        console.log('📡 HTTP 狀態:', response.status);
+        console.log(' HTTP 狀態:', response.status);
         
         if (!response.ok) {
             throw new Error(`HTTP 錯誤: ${response.status}`);
@@ -1415,8 +1415,8 @@ async function confirmBatchUpload() {
         
         const data = await response.json();
         
-        console.log('📥 批量上傳回應:', data);
-        console.log('📊 詳細結果:');
+        console.log(' 批量上傳回應:', data);
+        console.log(' 詳細結果:');
         console.log('   成功:', data.results?.success || 0);
         console.log('   失敗:', data.results?.failed || 0);
         if (data.results?.errors && data.results.errors.length > 0) {
@@ -1445,7 +1445,7 @@ async function confirmBatchUpload() {
         }
         
     } catch (error) {
-        console.error('❌ 批量上傳失敗:', error);
+        console.error(' 批量上傳失敗:', error);
         console.error('錯誤堆疊:', error.stack);
         
         let errorMsg = '批量上傳失敗：' + error.message;
@@ -1471,7 +1471,7 @@ function cancelBatchUpload() {
 }
 
 function downloadTemplate() {
-    // ✅ 包含所有班別類型：廚房、外場、年假（特休）、過年假、排休
+    //  包含所有班別類型：廚房、外場、年假（特休）、過年假、排休
     const template = '員工ID,員工姓名,日期,班別,上班時間,下班時間,地點,備註\n' +
                     'Ue76b65367821240ac26387d2972a5adf,洪培瑜Eric,2026-02-01,廚房A班,11:00,20:00,總公司,\n' +
                     'Ue76b65367821240ac26387d2972a5adf,洪培瑜Eric,2026-02-02,廚房B班,11:30,20:30,分公司,\n' +
@@ -1488,12 +1488,12 @@ function downloadTemplate() {
     
     downloadCSV(template, '排班範本.csv');
     
-    console.log('✅ 範本檔案已下載');
+    console.log(' 範本檔案已下載');
     console.log('   共 12 筆測試資料');
     console.log('   包含：廚房班別、外場班別、年假(特休)、過年假、國定假日、排休');
     console.log('   格式: 員工ID, 員工姓名, 日期, 班別, 上班時間, 下班時間, 地點, 備註');
     
-    showMessage('✅ 範本下載成功！包含所有班別類型（含年假和過年假），請依照範本格式填寫', 'success');
+    showMessage(' 範本下載成功！包含所有班別類型（含年假和過年假），請依照範本格式填寫', 'success');
 }
 
 
@@ -1577,7 +1577,7 @@ async function loadMonthlyStats() {
         const response = await fetch(`${apiUrl}?${queryParams}`);
         const data = await response.json();
         
-        console.log('📊 月度統計:', data);
+        console.log(' 月度統計:', data);
         
         if (data.ok && data.data) {
             allMonthShifts = data.data;
@@ -1642,7 +1642,7 @@ function displayMonthlyStats(shifts) {
             <div class="stat-label">過年假</div>
             <div class="stat-value" style="color: #f44336;">${stats.cnyLeave}</div>
         </div>
-        <!-- ⭐ 新增國定假日統計 -->
+        <!--  新增國定假日統計 -->
         <div class="stat-card">
             <div class="stat-label">國定假日</div>
             <div class="stat-value" style="color: #ff9800;">${stats.nationalHoliday}</div>
@@ -1843,7 +1843,7 @@ function displayShiftDistribution(shifts) {
     const maxCount = Math.max(...Object.values(employeeStats), 1);
     
     let html = '<div class="distribution-section">';
-    html += '<h3 class="distribution-title">📊 本月員工排班分布</h3>';
+    html += '<h3 class="distribution-title"> 本月員工排班分布</h3>';
     html += '<div class="distribution-bars">';
     
     const sortedEmployees = Object.entries(employeeStats)
@@ -1867,7 +1867,7 @@ function displayShiftDistribution(shifts) {
     html += '</div></div>';
     
     html += '<div class="distribution-section">';
-    html += '<h3 class="distribution-title">🎨 本月班別分布</h3>';
+    html += '<h3 class="distribution-title"> 本月班別分布</h3>';
     html += '<div class="shift-type-distribution">';
     
     const totalShifts = Object.values(shiftTypeStats).reduce((a, b) => a + b, 0);
@@ -1918,7 +1918,7 @@ function formatDateYMD(date) {
  * - Date 物件 → "HH:MM"
  */
 function formatTimeOnly(timeValue) {
-    // ⭐ 修正：改用 == null 而非 !timeValue，避免 0 被當成 false
+    //  修正：改用 == null 而非 !timeValue，避免 0 被當成 false
     if (timeValue == null || timeValue === '') return '00:00';
     
     // 已經是 HH:MM 格式
@@ -1926,7 +1926,7 @@ function formatTimeOnly(timeValue) {
         return timeValue;
     }
     
-    // ⭐ 新增：處理 "0:00" 或 "0" 這種格式
+    //  新增：處理 "0:00" 或 "0" 這種格式
     if (typeof timeValue === 'string' && /^\d{1}:\d{2}$/.test(timeValue)) {
         return '0' + timeValue; // "0:00" → "00:00"
     }
@@ -1988,4 +1988,4 @@ function goBack() {
     window.history.back();
 }
 
-console.log('✅ 排班管理系統(含月曆功能)已載入');
+console.log(' 排班管理系統(含月曆功能)已載入');

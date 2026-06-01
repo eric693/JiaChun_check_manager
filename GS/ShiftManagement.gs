@@ -109,7 +109,7 @@ function getShiftSheet() {
 }
 
 /**
- * ✅ 新增排班（修正版）
+ *  新增排班（修正版）
  */
 function addShift(shiftData) {
   try {
@@ -183,7 +183,7 @@ function addShift(shiftData) {
 }
 
 /**
- * ✅ 統一版：檢查重複排班
+ *  統一版：檢查重複排班
  * 重複定義：同一員工 + 同一日期 + 同一班別
  * 
  * @param {string} employeeId - 員工ID
@@ -198,7 +198,7 @@ function checkDuplicateShift(employeeId, date, shiftType) {
     
     const targetDate = formatDateOnly(date);
     
-    Logger.log(`🔍 檢查重複: ${employeeId} - ${targetDate} - ${shiftType}`);
+    Logger.log(` 檢查重複: ${employeeId} - ${targetDate} - ${shiftType}`);
     
     for (let i = 1; i < data.length; i++) {
       // 跳過已刪除的記錄
@@ -210,23 +210,23 @@ function checkDuplicateShift(employeeId, date, shiftType) {
       if (data[i][1] === employeeId && 
           shiftDate === targetDate && 
           data[i][4] === shiftType) {
-        Logger.log(`⚠️ 發現重複: Row ${i + 1}`);
+        Logger.log(` 發現重複: Row ${i + 1}`);
         return true;
       }
     }
     
-    Logger.log(`✅ 無重複`);
+    Logger.log(` 無重複`);
     return false;
     
   } catch (error) {
-    Logger.log('❌ checkDuplicateShift 錯誤: ' + error);
+    Logger.log(' checkDuplicateShift 錯誤: ' + error);
     return false; // 錯誤時允許新增
   }
 }
 
 
 /**
- * ✅ 批量新增排班（精細重複檢查版 - 已統一邏輯）
+ *  批量新增排班（精細重複檢查版 - 已統一邏輯）
  */
 function batchAddShifts(shiftsArray) {
   try {
@@ -240,7 +240,7 @@ function batchAddShifts(shiftsArray) {
     };
     
     Logger.log('═══════════════════════════════════════');
-    Logger.log('📦 開始批量新增（精細重複檢查）');
+    Logger.log(' 開始批量新增（精細重複檢查）');
     Logger.log('   總筆數: ' + shiftsArray.length);
     Logger.log('   重複定義: 員工ID + 日期 + 班別');
     Logger.log('═══════════════════════════════════════');
@@ -259,13 +259,13 @@ function batchAddShifts(shiftsArray) {
       }
     }
     
-    Logger.log('📊 工作表中已有 ' + existingShifts.size + ' 個排班');
+    Logger.log(' 工作表中已有 ' + existingShifts.size + ' 個排班');
     Logger.log('');
     
     // 處理每筆資料
     shiftsArray.forEach((shiftData, index) => {
       try {
-        Logger.log(`📝 處理第 ${index + 1}/${shiftsArray.length} 筆`);
+        Logger.log(` 處理第 ${index + 1}/${shiftsArray.length} 筆`);
         Logger.log(`   員工: ${shiftData.employeeName}`);
         Logger.log(`   日期: ${shiftData.date}`);
         Logger.log(`   班別: ${shiftData.shiftType}`);
@@ -277,7 +277,7 @@ function batchAddShifts(shiftsArray) {
         
         // 檢查 1：本批次中是否已處理過
         if (processedInBatch.has(key)) {
-          Logger.log(`   ❌ 批次內重複`);
+          Logger.log(`    批次內重複`);
           results.failed++;
           results.errors.push(
             `第 ${index + 1} 筆 (${shiftData.employeeName} ${formattedDate} ${shiftData.shiftType}): 批次中已有相同的排班`
@@ -287,7 +287,7 @@ function batchAddShifts(shiftsArray) {
         
         // 檢查 2：工作表中是否已存在
         if (existingShifts.has(key)) {
-          Logger.log(`   ❌ 工作表中已存在`);
+          Logger.log(`    工作表中已存在`);
           results.failed++;
           results.errors.push(
             `第 ${index + 1} 筆 (${shiftData.employeeName} ${formattedDate} ${shiftData.shiftType}): 該員工在此日期已有此班別`
@@ -321,10 +321,10 @@ function batchAddShifts(shiftsArray) {
         sheet.appendRow(rowData);
         results.success++;
         
-        Logger.log(`   ✅ 新增成功`);
+        Logger.log(`    新增成功`);
         
       } catch (e) {
-        Logger.log(`   ❌ 例外錯誤: ${e.message}`);
+        Logger.log(`    例外錯誤: ${e.message}`);
         results.failed++;
         results.errors.push(`第 ${index + 1} 筆: ${e.message}`);
       }
@@ -332,9 +332,9 @@ function batchAddShifts(shiftsArray) {
     
     Logger.log('');
     Logger.log('═══════════════════════════════════════');
-    Logger.log('📊 批量新增完成');
-    Logger.log(`   ✅ 成功: ${results.success} 筆`);
-    Logger.log(`   ❌ 失敗: ${results.failed} 筆`);
+    Logger.log(' 批量新增完成');
+    Logger.log(`    成功: ${results.success} 筆`);
+    Logger.log(`    失敗: ${results.failed} 筆`);
     Logger.log('═══════════════════════════════════════');
     
     return {
@@ -344,7 +344,7 @@ function batchAddShifts(shiftsArray) {
     };
     
   } catch (error) {
-    Logger.log('❌ batchAddShifts 整體錯誤: ' + error);
+    Logger.log(' batchAddShifts 整體錯誤: ' + error);
     return {
       success: false,
       message: '批量新增失敗: ' + error.message
@@ -422,7 +422,7 @@ function getShiftById(shiftId) {
     
     for (let i = 1; i < data.length; i++) {
       if (data[i][0] === shiftId) {
-        // ✅ 格式化回傳資料
+        //  格式化回傳資料
         return {
           success: true,
           data: {
@@ -553,7 +553,7 @@ function getEmployeeShiftForDate(employeeId, date) {
         const shiftDate = formatDateOnly(data[i][3]);
         
         if (shiftDate === targetDate) {
-          // ✅ 格式化回傳資料
+          //  格式化回傳資料
           return {
             success: true,
             hasShift: true,

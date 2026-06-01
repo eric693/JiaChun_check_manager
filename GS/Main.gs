@@ -165,6 +165,15 @@ function doGet(e) {
       //   return respond1(handleSaveMonthlySalary(e.parameter));
       case "getAllMonthlySalary":
         return respond1(handleGetAllMonthlySalary(e.parameter));
+
+      // ==================== 三節獎金系統 ====================
+      case "setBonusRecord":
+        return respond1(handleSetBonusRecord(e.parameter));
+      case "getMyBonusRecords":
+        return respond1(handleGetMyBonusRecords(e.parameter));
+      case "getAllBonusRecords":
+        return respond1(handleGetAllBonusRecords(e.parameter));
+
        // ==================== 日薪系統 ====================
       case "setDailyEmployee":
         return respond1(handleSetDailyEmployee(e.parameter));
@@ -184,14 +193,14 @@ function doGet(e) {
 
       case 'exportAllSalaryExcel':
         try {
-          Logger.log('📊 收到 exportAllSalaryExcel 请求');
+          Logger.log(' 收到 exportAllSalaryExcel 请求');
           Logger.log('   action: ' + action);
           Logger.log('   token: ' + (e.parameter.token ? '有' : '无'));
           Logger.log('   yearMonth: ' + e.parameter.yearMonth);
           
           // ⭐ 验证 session
           if (!e.parameter.token) {
-            Logger.log('❌ 缺少 token');
+            Logger.log(' 缺少 token');
             return respond1({ 
               ok: false, 
               msg: '缺少 token',
@@ -200,7 +209,7 @@ function doGet(e) {
           }
           
           if (!validateSession(e.parameter.token)) {
-            Logger.log('❌ token 验证失败');
+            Logger.log(' token 验证失败');
             return respond1({ 
               ok: false, 
               msg: '未授權或 session 已過期',
@@ -208,12 +217,12 @@ function doGet(e) {
             });
           }
           
-          Logger.log('✅ token 验证成功');
+          Logger.log(' token 验证成功');
           
           const sessionResult = handleCheckSession(e.parameter.token);
           
           if (!sessionResult.ok || !sessionResult.user) {
-            Logger.log('❌ 无法取得使用者资讯');
+            Logger.log(' 无法取得使用者资讯');
             return respond1({ 
               ok: false, 
               msg: 'Session 資料無效',
@@ -222,11 +231,11 @@ function doGet(e) {
           }
           
           const user = sessionResult.user;
-          Logger.log('👤 使用者: ' + user.name);
-          Logger.log('🔐 權限: ' + user.dept);
+          Logger.log(' 使用者: ' + user.name);
+          Logger.log(' 權限: ' + user.dept);
           
           if (user.dept !== '管理員') {
-            Logger.log('❌ 权限不足');
+            Logger.log(' 权限不足');
             return respond1({ 
               ok: false, 
               msg: '此功能僅限管理員使用',
@@ -236,7 +245,7 @@ function doGet(e) {
           
           const yearMonth = e.parameter.yearMonth;
           if (!yearMonth) {
-            Logger.log('❌ 缺少 yearMonth');
+            Logger.log(' 缺少 yearMonth');
             return respond1({ 
               ok: false, 
               msg: '缺少年月參數',
@@ -244,7 +253,7 @@ function doGet(e) {
             });
           }
           
-          Logger.log(`📊 管理員 ${user.name} 請求匯出 ${yearMonth} 薪資總表`);
+          Logger.log(` 管理員 ${user.name} 請求匯出 ${yearMonth} 薪資總表`);
           
           // ⭐⭐⭐ 關鍵修正：設定 globalThis.currentRequest
           globalThis.currentRequest = e;
@@ -252,14 +261,14 @@ function doGet(e) {
           // ⭐⭐⭐ 呼叫匯出函数（不傳參數）
           const result = exportAllSalaryExcel();
           
-          Logger.log('📤 exportAllSalaryExcel 回传类型: ' + typeof result);
+          Logger.log(' exportAllSalaryExcel 回传类型: ' + typeof result);
           
           // ⭐⭐⭐ 修正：result 是 ContentService 物件，需要解析
           try {
             const resultContent = result.getContent();
             const resultJson = JSON.parse(resultContent);
             
-            Logger.log('📤 解析後的結果: ' + JSON.stringify(resultJson));
+            Logger.log(' 解析後的結果: ' + JSON.stringify(resultJson));
             
             if (resultJson.ok) {
               return respond1({ 
@@ -276,7 +285,7 @@ function doGet(e) {
               });
             }
           } catch (parseError) {
-            Logger.log('❌ 解析結果失敗: ' + parseError);
+            Logger.log(' 解析結果失敗: ' + parseError);
             return respond1({ 
               ok: false, 
               msg: '結果解析失敗: ' + parseError.message 
@@ -284,8 +293,8 @@ function doGet(e) {
           }
           
         } catch (error) {
-          Logger.log('❌ exportAllSalaryExcel 錯誤: ' + error);
-          Logger.log('❌ 錯誤堆疊: ' + error.stack);
+          Logger.log(' exportAllSalaryExcel 錯誤: ' + error);
+          Logger.log(' 錯誤堆疊: ' + error.stack);
           return respond1({ 
             ok: false, 
             msg: '系統錯誤: ' + error.message 
@@ -337,12 +346,12 @@ function doGet(e) {
 function doPost(e) {
   try {
     Logger.log('═══════════════════════════════════════');
-    Logger.log('📥 收到 POST 請求');
+    Logger.log(' 收到 POST 請求');
     Logger.log('═══════════════════════════════════════');
     
-    // ✅ 先嘗試從 parameter 讀取（FormData）
+    //  先嘗試從 parameter 讀取（FormData）
     if (e.parameter && e.parameter.action) {
-      Logger.log('🔧 識別為 Form Data 請求');
+      Logger.log(' 識別為 Form Data 請求');
       
       const action = e.parameter.action;
       const token = e.parameter.token;
@@ -352,36 +361,36 @@ function doPost(e) {
       
       // ========== 處理批量上傳排班 ==========
       if (action === 'batchAddShifts') {
-        Logger.log('📦 處理批量上傳排班');
+        Logger.log(' 處理批量上傳排班');
         
         // 驗證 token
         if (!token || !validateSession(token)) {
-          Logger.log('❌ Token 驗證失敗');
+          Logger.log(' Token 驗證失敗');
           return ContentService.createTextOutput(JSON.stringify({
             ok: false,
             msg: '未授權或 session 已過期'
           })).setMimeType(ContentService.MimeType.JSON);
         }
         
-        Logger.log('✅ Token 驗證成功');
+        Logger.log(' Token 驗證成功');
         
         // 檢查權限
         const permCheck = checkSchedulingPermission(token);
         if (!permCheck.ok) {
-          Logger.log('❌ 權限檢查失敗');
+          Logger.log(' 權限檢查失敗');
           return ContentService.createTextOutput(JSON.stringify(permCheck))
             .setMimeType(ContentService.MimeType.JSON);
         }
         
-        Logger.log('✅ 權限驗證通過（by ' + permCheck.user.name + '）');
+        Logger.log(' 權限驗證通過（by ' + permCheck.user.name + '）');
         
-        // ✅ 從 Form Data 解析 shiftsArray
+        //  從 Form Data 解析 shiftsArray
         let shiftsArray;
         try {
           shiftsArray = JSON.parse(e.parameter.shiftsArray);
-          Logger.log('✅ 成功解析 shiftsArray: ' + shiftsArray.length + ' 筆');
+          Logger.log(' 成功解析 shiftsArray: ' + shiftsArray.length + ' 筆');
         } catch (parseError) {
-          Logger.log('❌ 解析 shiftsArray 失敗: ' + parseError);
+          Logger.log(' 解析 shiftsArray 失敗: ' + parseError);
           return ContentService.createTextOutput(JSON.stringify({
             ok: false,
             msg: '資料格式錯誤'
@@ -389,7 +398,7 @@ function doPost(e) {
         }
         
         if (!Array.isArray(shiftsArray)) {
-          Logger.log('❌ shiftsArray 不是陣列');
+          Logger.log(' shiftsArray 不是陣列');
           return ContentService.createTextOutput(JSON.stringify({
             ok: false,
             msg: 'shiftsArray 必須是陣列'
@@ -397,20 +406,20 @@ function doPost(e) {
         }
         
         if (shiftsArray.length === 0) {
-          Logger.log('❌ shiftsArray 是空的');
+          Logger.log(' shiftsArray 是空的');
           return ContentService.createTextOutput(JSON.stringify({
             ok: false,
             msg: '批量資料不能為空'
           })).setMimeType(ContentService.MimeType.JSON);
         }
         
-        Logger.log('📊 準備批量新增: ' + shiftsArray.length + ' 筆排班');
+        Logger.log(' 準備批量新增: ' + shiftsArray.length + ' 筆排班');
         
         // 呼叫核心函數
         const result = batchAddShifts(shiftsArray);
         
         Logger.log('');
-        Logger.log('📊 批量新增結果:');
+        Logger.log(' 批量新增結果:');
         Logger.log('   成功: ' + result.results.success + ' 筆');
         Logger.log('   失敗: ' + result.results.failed + ' 筆');
         Logger.log('═══════════════════════════════════════');
@@ -423,21 +432,21 @@ function doPost(e) {
       }
     }
     
-    // ✅ 如果不是 Form Data，嘗試解析 JSON（LINE Webhook）
+    //  如果不是 Form Data，嘗試解析 JSON（LINE Webhook）
     if (e.postData && e.postData.contents) {
-      Logger.log('📋 postData.contents: ' + e.postData.contents.substring(0, 200) + '...');
+      Logger.log(' postData.contents: ' + e.postData.contents.substring(0, 200) + '...');
       
       const postData = JSON.parse(e.postData.contents);
       
       // LINE Webhook（有 events 屬性）
       if (postData.events && Array.isArray(postData.events)) {
-        Logger.log('📱 識別為 LINE Webhook 請求');
-        Logger.log('📊 收到 ' + postData.events.length + ' 個事件');
+        Logger.log(' 識別為 LINE Webhook 請求');
+        Logger.log(' 收到 ' + postData.events.length + ' 個事件');
         
         // 處理每個事件
         postData.events.forEach((event, index) => {
           Logger.log('');
-          Logger.log(`📌 處理事件 ${index + 1}/${postData.events.length}`);
+          Logger.log(` 處理事件 ${index + 1}/${postData.events.length}`);
           Logger.log('   type: ' + event.type);
           
           const eventId = event.webhookEventId || 
@@ -446,7 +455,7 @@ function doPost(e) {
           Logger.log('   eventId: ' + eventId);
           
           if (isEventProcessed_(eventId)) {
-            Logger.log('⏭️ 跳過已處理的事件');
+            Logger.log('⏭ 跳過已處理的事件');
             return;
           }
           
@@ -464,13 +473,13 @@ function doPost(e) {
               }
             }
           } catch (eventError) {
-            Logger.log('❌ 事件處理錯誤: ' + eventError);
+            Logger.log(' 事件處理錯誤: ' + eventError);
             Logger.log('   錯誤堆疊: ' + eventError.stack);
           }
         });
         
         Logger.log('');
-        Logger.log('✅ LINE Webhook 處理完成');
+        Logger.log(' LINE Webhook 處理完成');
         Logger.log('═══════════════════════════════════════');
         
         return ContentService.createTextOutput(JSON.stringify({
@@ -480,7 +489,7 @@ function doPost(e) {
     }
     
     // 未知的請求類型
-    Logger.log('⚠️ 無法識別的請求類型');
+    Logger.log(' 無法識別的請求類型');
     Logger.log('═══════════════════════════════════════');
     
     return ContentService.createTextOutput(JSON.stringify({
@@ -490,7 +499,7 @@ function doPost(e) {
     
   } catch (error) {
     Logger.log('');
-    Logger.log('❌ doPost 錯誤: ' + error);
+    Logger.log(' doPost 錯誤: ' + error);
     Logger.log('   錯誤訊息: ' + error.message);
     Logger.log('   錯誤堆疊: ' + error.stack);
     Logger.log('═══════════════════════════════════════');
@@ -515,7 +524,7 @@ function isEventProcessed_(eventId) {
   return false;
 }
 /**
- * ✅ 檢查事件是否已處理（去重機制）
+ *  檢查事件是否已處理（去重機制）
  */
 function isEventProcessed_(eventId) {
   const cache = CacheService.getScriptCache();
@@ -537,64 +546,64 @@ function isEventProcessed_(eventId) {
  * 驗證 LINE Signature（測試模式：暫時停用）
  */
 /**
- * ⚠️ Signature 驗證（測試模式：已停用）
+ *  Signature 驗證（測試模式：已停用）
  * 
  * 正式上線時請啟用此函數
  */
 function verifyLineSignature_(body, signature) {
   // 測試期間暫時返回 true
-  Logger.log('⚠️ Signature 驗證已暫時停用（測試模式）');
+  Logger.log(' Signature 驗證已暫時停用（測試模式）');
   return true;
   
   /* 
-  // ✅ 正式上線時請啟用以下程式碼：
+  //  正式上線時請啟用以下程式碼：
   try {
     const channelSecret = PropertiesService.getScriptProperties().getProperty('LINE_CHANNEL_SECRET');
     
     if (!channelSecret) {
-      Logger.log('❌ 找不到 LINE_CHANNEL_SECRET');
+      Logger.log(' 找不到 LINE_CHANNEL_SECRET');
       return false;
     }
     
     const hash = Utilities.computeHmacSha256Signature(body, channelSecret);
     const expectedSignature = Utilities.base64Encode(hash);
     
-    Logger.log('🔐 Expected Signature: ' + expectedSignature);
-    Logger.log('🔐 Received Signature: ' + signature);
+    Logger.log(' Expected Signature: ' + expectedSignature);
+    Logger.log(' Received Signature: ' + signature);
     
     return expectedSignature === signature;
     
   } catch (error) {
-    Logger.log('❌ Signature 驗證錯誤: ' + error);
+    Logger.log(' Signature 驗證錯誤: ' + error);
     return false;
   }
   */
 }
 // function verifyLineSignature_(body, signature) {
-//   // ⚠️ 測試期間暫時返回 true
-//   Logger.log('⚠️ Signature 驗證已暫時停用（測試模式）');
+//   //  測試期間暫時返回 true
+//   Logger.log(' Signature 驗證已暫時停用（測試模式）');
 //   return true;
 
 //   /* 
-//   // ✅ 正式上線時請啟用以下程式碼：
+//   //  正式上線時請啟用以下程式碼：
 //   try {
 //     const channelSecret = PropertiesService.getScriptProperties().getProperty('LINE_CHANNEL_SECRET');
     
 //     if (!channelSecret) {
-//       Logger.log('❌ 找不到 LINE_CHANNEL_SECRET');
+//       Logger.log(' 找不到 LINE_CHANNEL_SECRET');
 //       return false;
 //     }
     
 //     const hash = Utilities.computeHmacSha256Signature(body, channelSecret);
 //     const expectedSignature = Utilities.base64Encode(hash);
     
-//     Logger.log('🔐 Expected Signature: ' + expectedSignature);
-//     Logger.log('🔐 Received Signature: ' + signature);
+//     Logger.log(' Expected Signature: ' + expectedSignature);
+//     Logger.log(' Received Signature: ' + signature);
     
 //     return expectedSignature === signature;
     
 //   } catch (error) {
-//     Logger.log('❌ Signature 驗證錯誤: ' + error);
+//     Logger.log(' Signature 驗證錯誤: ' + error);
 //     return false;
 //   }
 //   */
@@ -622,7 +631,7 @@ function handleAddShift(params) {
       return permCheck;  // 返回權限錯誤
     }
     
-    Logger.log('📝 收到新增排班請求（by ' + permCheck.user.name + '）');
+    Logger.log(' 收到新增排班請求（by ' + permCheck.user.name + '）');
     
     const shiftData = {
       employeeId: params.employeeId,
@@ -647,7 +656,7 @@ function handleAddShift(params) {
     };
     
   } catch (error) {
-    Logger.log('❌ handleAddShift 錯誤: ' + error);
+    Logger.log(' handleAddShift 錯誤: ' + error);
     return { ok: false, msg: error.message };
   }
 }
@@ -663,9 +672,9 @@ function handleBatchAddShifts(params) {
       return permCheck;
     }
     
-    Logger.log('📦 收到批量新增排班請求（by ' + permCheck.user.name + '）');
+    Logger.log(' 收到批量新增排班請求（by ' + permCheck.user.name + '）');
     
-    // ✅ 從 URL 參數取得資料
+    //  從 URL 參數取得資料
     let shiftsArray;
     
     if (params.shiftsArray) {
@@ -673,16 +682,16 @@ function handleBatchAddShifts(params) {
         if (typeof params.shiftsArray === 'string') {
           const decoded = decodeURIComponent(params.shiftsArray);
           shiftsArray = JSON.parse(decoded);
-          Logger.log('✅ 成功解析 shiftsArray: ' + shiftsArray.length + ' 筆');
+          Logger.log(' 成功解析 shiftsArray: ' + shiftsArray.length + ' 筆');
         } else {
           shiftsArray = params.shiftsArray;
         }
       } catch (parseError) {
-        Logger.log('❌ 解析失敗: ' + parseError);
+        Logger.log(' 解析失敗: ' + parseError);
         return { ok: false, msg: "資料格式錯誤: 無法解析 JSON" };
       }
     } else {
-      Logger.log('❌ 缺少 shiftsArray 參數');
+      Logger.log(' 缺少 shiftsArray 參數');
       return { ok: false, msg: "缺少 shiftsArray 參數" };
     }
     
@@ -694,11 +703,11 @@ function handleBatchAddShifts(params) {
       return { ok: false, msg: "批量資料不能為空" };
     }
     
-    Logger.log('📊 準備批量新增: ' + shiftsArray.length + ' 筆排班');
+    Logger.log(' 準備批量新增: ' + shiftsArray.length + ' 筆排班');
     
     const result = batchAddShifts(shiftsArray);
     
-    Logger.log('✅ 批量新增結果: ' + JSON.stringify(result));
+    Logger.log(' 批量新增結果: ' + JSON.stringify(result));
     
     return { 
       ok: result.success, 
@@ -707,7 +716,7 @@ function handleBatchAddShifts(params) {
     };
     
   } catch (error) {
-    Logger.log('❌ handleBatchAddShifts 錯誤: ' + error);
+    Logger.log(' handleBatchAddShifts 錯誤: ' + error);
     return { ok: false, msg: "批量新增失敗: " + error.message };
   }
 }
@@ -722,7 +731,7 @@ function handleGetShifts(params) {
       return { ok: false, msg: "未授權或 session 已過期" };
     }
     
-    Logger.log('🔍 收到查詢排班請求');
+    Logger.log(' 收到查詢排班請求');
     
     const filters = {
       employeeId: params.employeeId,
@@ -741,7 +750,7 @@ function handleGetShifts(params) {
     };
     
   } catch (error) {
-    Logger.log('❌ handleGetShifts 錯誤: ' + error);
+    Logger.log(' handleGetShifts 錯誤: ' + error);
     return { ok: false, msg: error.message };
   }
 }
@@ -759,7 +768,7 @@ function handleGetShiftById(params) {
       return { ok: false, msg: "缺少 shiftId 參數" };
     }
     
-    Logger.log('🔍 查詢排班詳情: ' + params.shiftId);
+    Logger.log(' 查詢排班詳情: ' + params.shiftId);
     
     const result = getShiftById(params.shiftId);
     return { 
@@ -769,7 +778,7 @@ function handleGetShiftById(params) {
     };
     
   } catch (error) {
-    Logger.log('❌ handleGetShiftById 錯誤: ' + error);
+    Logger.log(' handleGetShiftById 錯誤: ' + error);
     return { ok: false, msg: error.message };
   }
 }
@@ -789,7 +798,7 @@ function handleUpdateShift(params) {
       return { ok: false, msg: "缺少 shiftId 參數" };
     }
     
-    Logger.log('✏️ 更新排班: ' + params.shiftId + '（by ' + permCheck.user.name + '）');
+    Logger.log(' 更新排班: ' + params.shiftId + '（by ' + permCheck.user.name + '）');
     
     const updateData = {
       date: params.date,
@@ -807,7 +816,7 @@ function handleUpdateShift(params) {
     };
     
   } catch (error) {
-    Logger.log('❌ handleUpdateShift 錯誤: ' + error);
+    Logger.log(' handleUpdateShift 錯誤: ' + error);
     return { ok: false, msg: error.message };
   }
 }
@@ -827,7 +836,7 @@ function handleDeleteShift(params) {
       return { ok: false, msg: "缺少 shiftId 參數" };
     }
     
-    Logger.log('🗑️ 刪除排班: ' + params.shiftId + '（by ' + permCheck.user.name + '）');
+    Logger.log(' 刪除排班: ' + params.shiftId + '（by ' + permCheck.user.name + '）');
     
     const result = deleteShift(params.shiftId);
     return { 
@@ -836,7 +845,7 @@ function handleDeleteShift(params) {
     };
     
   } catch (error) {
-    Logger.log('❌ handleDeleteShift 錯誤: ' + error);
+    Logger.log(' handleDeleteShift 錯誤: ' + error);
     return { ok: false, msg: error.message };
   }
 }
@@ -854,7 +863,7 @@ function handleGetEmployeeShiftForDate(params) {
       return { ok: false, msg: "缺少必要參數" };
     }
     
-    Logger.log('📅 查詢員工排班: ' + params.employeeId + ', 日期: ' + params.date);
+    Logger.log(' 查詢員工排班: ' + params.employeeId + ', 日期: ' + params.date);
     
     const result = getEmployeeShiftForDate(params.employeeId, params.date);
     return { 
@@ -865,7 +874,7 @@ function handleGetEmployeeShiftForDate(params) {
     };
     
   } catch (error) {
-    Logger.log('❌ handleGetEmployeeShiftForDate 錯誤: ' + error);
+    Logger.log(' handleGetEmployeeShiftForDate 錯誤: ' + error);
     return { ok: false, msg: error.message };
   }
 }
@@ -879,7 +888,7 @@ function handleGetWeeklyShiftStats(params) {
       return { ok: false, msg: "未授權或 session 已過期" };
     }
     
-    Logger.log('📊 查詢本週排班統計');
+    Logger.log(' 查詢本週排班統計');
     
     const result = getWeeklyShiftStats();
     return { 
@@ -889,7 +898,7 @@ function handleGetWeeklyShiftStats(params) {
     };
     
   } catch (error) {
-    Logger.log('❌ handleGetWeeklyShiftStats 錯誤: ' + error);
+    Logger.log(' handleGetWeeklyShiftStats 錯誤: ' + error);
     return { ok: false, msg: error.message };
   }
 }
@@ -905,7 +914,7 @@ function handleExportShifts(params) {
       return permCheck;
     }
     
-    Logger.log('📥 匯出排班資料（by ' + permCheck.user.name + '）');
+    Logger.log(' 匯出排班資料（by ' + permCheck.user.name + '）');
     
     const filters = {
       employeeId: params.employeeId,
@@ -923,7 +932,7 @@ function handleExportShifts(params) {
     };
     
   } catch (error) {
-    Logger.log('❌ handleExportShifts 錯誤: ' + error);
+    Logger.log(' handleExportShifts 錯誤: ' + error);
     return { ok: false, msg: error.message };
   }
 }
@@ -965,7 +974,7 @@ function testShiftAPI() {
 // ==================== 薪資系統 Handler 函數 ====================
 
 /**
- * ✅ 處理設定員工薪資（完整版 - 含所有 27 個參數）
+ *  處理設定員工薪資（完整版 - 含所有 27 個參數）
  * 
  * 修正內容：
  * 1. 補齊 6 個固定津貼參數
@@ -975,16 +984,16 @@ function testShiftAPI() {
 function handleSetEmployeeSalaryTW(params) {
   try {
     Logger.log('═══════════════════════════════════════');
-    Logger.log('💰 開始設定員工薪資（完整版）');
+    Logger.log(' 開始設定員工薪資（完整版）');
     Logger.log('═══════════════════════════════════════');
     
     // Session 驗證
     if (!params.token || !validateSession(params.token)) {
-      Logger.log('❌ Session 驗證失敗');
+      Logger.log(' Session 驗證失敗');
       return { ok: false, msg: "未授權或 session 已過期" };
     }
     
-    Logger.log('✅ Session 驗證成功');
+    Logger.log(' Session 驗證成功');
     
     // ⭐⭐⭐ 完整的 salaryData 物件（27 個參數）
     const salaryData = {
@@ -1028,7 +1037,7 @@ function handleSetEmployeeSalaryTW(params) {
       note: params.note
     };
     
-    Logger.log('📋 salaryData 組裝完成（共 27 個參數）');
+    Logger.log(' salaryData 組裝完成（共 27 個參數）');
     Logger.log('   - 基本薪資: ' + salaryData.baseSalary);
     Logger.log('   - 職務加給: ' + salaryData.positionAllowance);
     Logger.log('   - 伙食費: ' + salaryData.mealAllowance);
@@ -1041,12 +1050,12 @@ function handleSetEmployeeSalaryTW(params) {
     Logger.log('   - 團保費用: ' + salaryData.groupInsurance);
     Logger.log('   - 其他扣款: ' + salaryData.otherDeductions);
     
-    Logger.log('💾 開始儲存薪資設定...');
+    Logger.log(' 開始儲存薪資設定...');
     
     // 呼叫核心函數
     const result = setEmployeeSalaryTW(salaryData);
     
-    Logger.log('📤 儲存結果: ' + (result.success ? '成功' : '失敗'));
+    Logger.log(' 儲存結果: ' + (result.success ? '成功' : '失敗'));
     Logger.log('   訊息: ' + result.message);
     Logger.log('═══════════════════════════════════════');
     
@@ -1057,8 +1066,8 @@ function handleSetEmployeeSalaryTW(params) {
     };
     
   } catch (error) {
-    Logger.log('❌ handleSetEmployeeSalaryTW 錯誤: ' + error);
-    Logger.log('❌ 錯誤堆疊: ' + error.stack);
+    Logger.log(' handleSetEmployeeSalaryTW 錯誤: ' + error);
+    Logger.log(' 錯誤堆疊: ' + error.stack);
     return { ok: false, msg: error.message };
   }
 }
@@ -1096,10 +1105,10 @@ function replyMessage(replyToken, text) {
 }
 
 /**
- * 🧪 測試函數：模擬收到「打卡」訊息
+ *  測試函數：模擬收到「打卡」訊息
  */
 function testLineBotMessage() {
-  Logger.log('🧪 測試 LINE Bot 打卡流程');
+  Logger.log(' 測試 LINE Bot 打卡流程');
   Logger.log('');
   
   // 模擬 LINE Webhook 事件
@@ -1111,7 +1120,7 @@ function testLineBotMessage() {
             type: 'message',
             replyToken: 'test-reply-token-12345',
             source: {
-              userId: 'U68e0ca9d516e63ed15bf9387fad174ac' // ⚠️ 替換成你的 LINE User ID
+              userId: 'U68e0ca9d516e63ed15bf9387fad174ac' //  替換成你的 LINE User ID
             },
             message: {
               type: 'text',
@@ -1127,19 +1136,19 @@ function testLineBotMessage() {
     }
   };
   
-  Logger.log('📥 模擬發送訊息...');
+  Logger.log(' 模擬發送訊息...');
   const result = doPost(testEvent);
   
   Logger.log('');
-  Logger.log('📤 結果:');
+  Logger.log(' 結果:');
   Logger.log(result.getContent());
 }
 
 /**
- * 🧪 測試函數：模擬收到位置訊息
+ *  測試函數：模擬收到位置訊息
  */
 function testLineBotLocation() {
-  Logger.log('🧪 測試 LINE Bot 位置打卡');
+  Logger.log(' 測試 LINE Bot 位置打卡');
   Logger.log('');
   
   // 模擬位置訊息
@@ -1151,11 +1160,11 @@ function testLineBotLocation() {
             type: 'message',
             replyToken: 'test-reply-token-67890',
             source: {
-              userId: 'U68e0ca9d516e63ed15bf9387fad174ac' // ⚠️ 替換成你的 LINE User ID
+              userId: 'U68e0ca9d516e63ed15bf9387fad174ac' //  替換成你的 LINE User ID
             },
             message: {
               type: 'location',
-              latitude: 25.0330,  // ⚠️ 替換成你的測試座標
+              latitude: 25.0330,  //  替換成你的測試座標
               longitude: 121.5654,
               address: '測試地址'
             }
@@ -1169,10 +1178,10 @@ function testLineBotLocation() {
     }
   };
   
-  Logger.log('📍 模擬傳送位置...');
+  Logger.log(' 模擬傳送位置...');
   const result = doPost(testEvent);
   
   Logger.log('');
-  Logger.log('📤 結果:');
+  Logger.log(' 結果:');
   Logger.log(result.getContent());
 }

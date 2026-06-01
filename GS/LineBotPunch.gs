@@ -8,18 +8,18 @@ function handleLineMessage(event) {
     const text = event.message.text.trim();
     const replyToken = event.replyToken;
     
-    Logger.log('📱 收到 LINE 訊息');
+    Logger.log(' 收到 LINE 訊息');
     Logger.log('   userId: ' + userId);
     Logger.log('   text: ' + text);
     
     const employee = findEmployeeByLineUserId_(userId);
     
     if (!employee.ok) {
-      replyMessage(replyToken, '❌ 您尚未註冊為系統員工\n\n請先到網頁版登入以完成註冊\n🔗 https://eric693.github.io/ice_check_manager/');
+      replyMessage(replyToken, ' 您尚未註冊為系統員工\n\n請先到網頁版登入以完成註冊\n https://eric693.github.io/ice_check_manager/');
       return;
     }
     
-    Logger.log('✅ 員工已註冊: ' + employee.name);
+    Logger.log(' 員工已註冊: ' + employee.name);
     
     if (text === '上班打卡') {
       savePunchIntent_(userId, '上班');
@@ -31,7 +31,7 @@ function handleLineMessage(event) {
     }
     else if (text === '取消打卡') {
       clearPunchIntent_(userId);
-      replyMessage(replyToken, '✅ 已取消打卡');
+      replyMessage(replyToken, ' 已取消打卡');
     }
     else if (text === '查詢' || text === '我的打卡') {
       // sendTodayPunchRecords(replyToken, userId, employee.name);
@@ -87,16 +87,16 @@ function handleLineMessage(event) {
       sendPendingLeaveRequests(replyToken, userId, employee.name);
     }
     else {
-      replyMessage(replyToken, '💡 我不太明白您的意思\n\n請輸入：\n• 上班打卡\n• 下班打卡\n• 查詢\n• 說明');
+      replyMessage(replyToken, ' 我不太明白您的意思\n\n請輸入：\n• 上班打卡\n• 下班打卡\n• 查詢\n• 說明');
     }
     
   } catch (error) {
-    Logger.log('❌ handleLineMessage 錯誤: ' + error);
+    Logger.log(' handleLineMessage 錯誤: ' + error);
   }
 }
 
 /**
- * 📅 發送月份選擇器 (Flex Message)
+ *  發送月份選擇器 (Flex Message)
  * 
  * 功能:
  * - 顯示最近 6 個月的快速選擇按鈕
@@ -105,7 +105,7 @@ function handleLineMessage(event) {
  */
 function sendMonthSelector(replyToken, userId, employeeName) {
   try {
-    Logger.log('📅 發送月份選擇器');
+    Logger.log(' 發送月份選擇器');
     Logger.log('   userId: ' + userId);
     Logger.log('   employeeName: ' + employeeName);
     
@@ -137,7 +137,7 @@ function sendMonthSelector(replyToken, userId, employeeName) {
           contents: [
             {
               type: 'text',
-              text: '📅 月份查詢',
+              text: ' 月份查詢',
               weight: 'bold',
               size: 'xl',
               color: '#FFFFFF'
@@ -176,7 +176,7 @@ function sendMonthSelector(replyToken, userId, employeeName) {
           contents: [
             {
               type: 'text',
-              text: '💡 點擊月份即可查看該月的打卡記錄',
+              text: ' 點擊月份即可查看該月的打卡記錄',
               size: 'xs',
               color: '#999999',
               wrap: true,
@@ -188,16 +188,16 @@ function sendMonthSelector(replyToken, userId, employeeName) {
     };
     
     sendLineReply_(replyToken, [message]);
-    Logger.log('✅ 月份選擇器已發送');
+    Logger.log(' 月份選擇器已發送');
     
   } catch (error) {
-    Logger.log('❌ sendMonthSelector 錯誤: ' + error);
-    replyMessage(replyToken, '❌ 系統錯誤，請稍後再試');
+    Logger.log(' sendMonthSelector 錯誤: ' + error);
+    replyMessage(replyToken, ' 系統錯誤，請稍後再試');
   }
 }
 
 /**
- * 🔢 生成最近 N 個月的選項
+ *  生成最近 N 個月的選項
  * 
  * @param {number} count - 要生成幾個月
  * @returns {Array} 月份選項陣列
@@ -223,7 +223,7 @@ function generateRecentMonths(count) {
 }
 
 /**
- * 📋 發送指定月份的打卡記錄
+ *  發送指定月份的打卡記錄
  * 
  * 功能:
  * - 顯示該月份所有的上下班打卡記錄
@@ -233,13 +233,13 @@ function generateRecentMonths(count) {
  */
 function sendMonthlyRecords(replyToken, userId, employeeName, yearMonth) {
   try {
-    Logger.log('📋 發送月份打卡記錄');
+    Logger.log(' 發送月份打卡記錄');
     Logger.log('   userId: ' + userId);
     Logger.log('   yearMonth: ' + yearMonth);
     
     // 驗證月份格式
     if (!yearMonth.match(/^\d{4}-\d{2}$/)) {
-      replyMessage(replyToken, '❌ 月份格式錯誤\n\n請重新選擇月份');
+      replyMessage(replyToken, ' 月份格式錯誤\n\n請重新選擇月份');
       return;
     }
     
@@ -248,7 +248,7 @@ function sendMonthlyRecords(replyToken, userId, employeeName, yearMonth) {
     
     if (records.length === 0) {
       const monthLabel = yearMonth.replace('-', '年') + '月';
-      replyMessage(replyToken, `📋 ${monthLabel}\n\n${employeeName}，您這個月還沒有打卡記錄`);
+      replyMessage(replyToken, ` ${monthLabel}\n\n${employeeName}，您這個月還沒有打卡記錄`);
       return;
     }
     
@@ -266,11 +266,11 @@ function sendMonthlyRecords(replyToken, userId, employeeName, yearMonth) {
       sendMonthlyRecordsSingle(replyToken, employeeName, yearMonth, groupedRecords, stats);
     }
     
-    Logger.log('✅ 月份打卡記錄已發送');
+    Logger.log(' 月份打卡記錄已發送');
     
   } catch (error) {
-    Logger.log('❌ sendMonthlyRecords 錯誤: ' + error);
-    replyMessage(replyToken, '❌ 查詢失敗，請稍後再試');
+    Logger.log(' sendMonthlyRecords 錯誤: ' + error);
+    replyMessage(replyToken, ' 查詢失敗，請稍後再試');
   }
 }
 
@@ -279,7 +279,7 @@ function getMonthlyPunchRecords(userId, yearMonth) {
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_ATTENDANCE);
     const values = sheet.getDataRange().getValues();
     
-    Logger.log('🔍 開始查詢打卡記錄');
+    Logger.log(' 開始查詢打卡記錄');
     Logger.log('   userId: ' + userId);
     Logger.log('   yearMonth: ' + yearMonth);
     Logger.log('   總行數: ' + values.length);
@@ -302,13 +302,13 @@ function getMonthlyPunchRecords(userId, yearMonth) {
       } else if (typeof rawDate === 'string') {
         recordDate = new Date(rawDate);
       } else {
-        Logger.log(`⚠️ 第 ${i + 1} 行：無法解析日期 ${rawDate}`);
+        Logger.log(` 第 ${i + 1} 行：無法解析日期 ${rawDate}`);
         continue;
       }
       
       // 檢查日期是否有效
       if (isNaN(recordDate.getTime())) {
-        Logger.log(`⚠️ 第 ${i + 1} 行：日期無效 ${rawDate}`);
+        Logger.log(` 第 ${i + 1} 行：日期無效 ${rawDate}`);
         continue;
       }
       
@@ -331,18 +331,18 @@ function getMonthlyPunchRecords(userId, yearMonth) {
           audit: values[i][8] || ''
         });
         
-        Logger.log(`   ✅ 找到記錄！`);
+        Logger.log(`    找到記錄！`);
       }
     }
     
     // 按時間排序
     records.sort((a, b) => a.timestamp - b.timestamp);
     
-    Logger.log(`✅ 共找到 ${records.length} 筆打卡記錄`);
+    Logger.log(` 共找到 ${records.length} 筆打卡記錄`);
     return records;
     
   } catch (error) {
-    Logger.log('❌ getMonthlyPunchRecords 錯誤: ' + error);
+    Logger.log(' getMonthlyPunchRecords 錯誤: ' + error);
     Logger.log('   錯誤堆疊: ' + error.stack);
     return [];
   }
@@ -350,7 +350,7 @@ function getMonthlyPunchRecords(userId, yearMonth) {
 
 
 /**
- * 📅 按日期分組打卡記錄
+ *  按日期分組打卡記錄
  */
 function groupRecordsByDate(records) {
   const grouped = {};
@@ -367,7 +367,7 @@ function groupRecordsByDate(records) {
 
 
 function debugMonthQuery() {
-  Logger.log('🔍 診斷月份查詢問題');
+  Logger.log(' 診斷月份查詢問題');
   Logger.log('═══════════════════════════════════════');
   
   const userId = 'Ue76b65367821240ac26387d2972a5adf';
@@ -376,7 +376,7 @@ function debugMonthQuery() {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_ATTENDANCE);
   const values = sheet.getDataRange().getValues();
   
-  Logger.log('📊 檢查所有該用戶的記錄:');
+  Logger.log(' 檢查所有該用戶的記錄:');
   
   for (let i = 1; i < values.length; i++) {
     if (values[i][1] === userId) {
@@ -393,7 +393,7 @@ function debugMonthQuery() {
         const recordYM = year + '-' + String(month).padStart(2, '0');
         
         Logger.log(`   解析後: ${recordYM}`);
-        Logger.log(`   匹配 ${yearMonth}? ${recordYM === yearMonth ? '✅' : '❌'}`);
+        Logger.log(`   匹配 ${yearMonth}? ${recordYM === yearMonth ? '' : ''}`);
       }
     }
   }
@@ -402,7 +402,7 @@ function debugMonthQuery() {
 }
 
 /**
- * 📊 計算月份統計資訊
+ *  計算月份統計資訊
  */
 function calculateMonthlyStats(groupedRecords) {
   const dates = Object.keys(groupedRecords);
@@ -440,7 +440,7 @@ function calculateMonthlyStats(groupedRecords) {
 }
 
 /**
- * 📱 發送單一 Bubble 的月份記錄（記錄不多時）
+ *  發送單一 Bubble 的月份記錄（記錄不多時）
  */
 function sendMonthlyRecordsSingle(replyToken, employeeName, yearMonth, groupedRecords, stats) {
   const monthLabel = yearMonth.replace('-', '年') + '月';
@@ -504,7 +504,7 @@ function sendMonthlyRecordsSingle(replyToken, employeeName, yearMonth, groupedRe
       if (record.location) {
         dailyContents.push({
           type: 'text',
-          text: `📍 ${record.location}`,
+          text: ` ${record.location}`,
           size: 'xs',
           color: '#666666',
           margin: 'xs'
@@ -536,7 +536,7 @@ function sendMonthlyRecordsSingle(replyToken, employeeName, yearMonth, groupedRe
         contents: [
           {
             type: 'text',
-            text: `📋 ${monthLabel}`,
+            text: ` ${monthLabel}`,
             weight: 'bold',
             size: 'xl',
             color: '#FFFFFF'
@@ -563,7 +563,7 @@ function sendMonthlyRecordsSingle(replyToken, employeeName, yearMonth, groupedRe
             contents: [
               {
                 type: 'text',
-                text: '📊 本月統計',
+                text: ' 本月統計',
                 weight: 'bold',
                 size: 'md',
                 color: '#333333'
@@ -620,7 +620,7 @@ function sendMonthlyRecordsSingle(replyToken, employeeName, yearMonth, groupedRe
 }
 
 /**
- * 🎠 發送 Carousel 的月份記錄（記錄很多時）
+ *  發送 Carousel 的月份記錄（記錄很多時）
  */
 function sendMonthlyRecordsCarousel(replyToken, employeeName, yearMonth, groupedRecords, stats) {
   const monthLabel = yearMonth.replace('-', '年') + '月';
@@ -740,7 +740,7 @@ function sendMonthlyRecordsCarousel(replyToken, employeeName, yearMonth, grouped
       contents: [
         {
           type: 'text',
-          text: '📊 本月統計',
+          text: ' 本月統計',
           weight: 'bold',
           size: 'md',
           color: '#FFFFFF'
@@ -808,7 +808,7 @@ function sendMonthlyRecordsCarousel(replyToken, employeeName, yearMonth, grouped
 }
 
 /**
- * 📅 格式化日期標籤
+ *  格式化日期標籤
  */
 function formatDateLabel(dateStr) {
   const date = new Date(dateStr);
@@ -834,7 +834,7 @@ function sendQuickReplyLocationRequest(replyToken, employeeName, punchType) {
           type: 'action',
           action: {
             type: 'location',
-            label: '📍 傳送位置打卡'
+            label: ' 傳送位置打卡'
           }
         }
       ]
@@ -860,7 +860,7 @@ function sendPunchLocationRequestWithConfirm(replyToken, employeeName, punchType
         contents: [
           {
             type: 'text',
-            text: `📍 ${punchType}打卡`,
+            text: ` ${punchType}打卡`,
             weight: 'bold',
             size: 'xl',
             color: '#FFFFFF'
@@ -900,7 +900,7 @@ function sendPunchLocationRequestWithConfirm(replyToken, employeeName, punchType
             contents: [
               {
                 type: 'text',
-                text: '⚠️ 重要提醒',
+                text: ' 重要提醒',
                 weight: 'bold',
                 size: 'md',
                 color: '#FF6B6B'
@@ -933,7 +933,7 @@ function sendPunchLocationRequestWithConfirm(replyToken, employeeName, punchType
             contents: [
               {
                 type: 'text',
-                text: '📱 如何傳送位置？',
+                text: ' 如何傳送位置？',
                 weight: 'bold',
                 size: 'md',
                 color: '#2196F3'
@@ -974,8 +974,8 @@ function sendPunchLocationRequestWithConfirm(replyToken, employeeName, punchType
             height: 'sm',
             action: {
               type: 'uri',
-              label: '📍 傳送位置',
-              uri: 'line://nv/location'  // ✅ 正確！會直接跳出系統對話框
+              label: ' 傳送位置',
+              uri: 'line://nv/location'  //  正確！會直接跳出系統對話框
             },
             color: punchType === '上班' ? '#4CAF50' : '#FF9800'
           }
@@ -1006,10 +1006,10 @@ function savePunchIntent_(userId, punchType) {
     };
     
     props.setProperty(key, JSON.stringify(intent));
-    Logger.log('💾 已暫存打卡意圖: ' + punchType);
+    Logger.log(' 已暫存打卡意圖: ' + punchType);
     
   } catch (error) {
-    Logger.log('❌ savePunchIntent_ 錯誤: ' + error);
+    Logger.log(' savePunchIntent_ 錯誤: ' + error);
   }
 }
 
@@ -1034,15 +1034,15 @@ function getPunchIntent_(userId) {
     // 檢查是否過期（5 分鐘 = 300000 毫秒）
     if (now - intent.timestamp > 300000) {
       props.deleteProperty(key);
-      Logger.log('⏰ 打卡意圖已過期');
+      Logger.log(' 打卡意圖已過期');
       return null;
     }
     
-    Logger.log('✅ 取得打卡意圖: ' + intent.type);
+    Logger.log(' 取得打卡意圖: ' + intent.type);
     return intent.type;
     
   } catch (error) {
-    Logger.log('❌ getPunchIntent_ 錯誤: ' + error);
+    Logger.log(' getPunchIntent_ 錯誤: ' + error);
     return null;
   }
 }
@@ -1056,9 +1056,9 @@ function clearPunchIntent_(userId) {
     const props = PropertiesService.getScriptProperties();
     const key = 'PUNCH_INTENT_' + userId;
     props.deleteProperty(key);
-    Logger.log('🗑️ 已清除打卡意圖');
+    Logger.log(' 已清除打卡意圖');
   } catch (error) {
-    Logger.log('❌ clearPunchIntent_ 錯誤: ' + error);
+    Logger.log(' clearPunchIntent_ 錯誤: ' + error);
   }
 }
 
@@ -1081,7 +1081,7 @@ function isDuplicatePunch_(userId, punchType) {
       if (recordUserId === userId && 
           recordType === punchType && 
           (now - recordTime) < 60000) {  // 60000ms = 1分鐘
-        Logger.log('⚠️ 偵測到重複打卡，已忽略');
+        Logger.log(' 偵測到重複打卡，已忽略');
         return true;
       }
       
@@ -1092,7 +1092,7 @@ function isDuplicatePunch_(userId, punchType) {
     return false;
     
   } catch (error) {
-    Logger.log('❌ isDuplicatePunch_ 錯誤: ' + error);
+    Logger.log(' isDuplicatePunch_ 錯誤: ' + error);
     return false;
   }
 }
@@ -1107,17 +1107,17 @@ function isEventProcessed_(eventId) {
     
     // 檢查快取中是否存在
     if (cache.get(key)) {
-      Logger.log('⚠️ 事件已處理過: ' + eventId);
+      Logger.log(' 事件已處理過: ' + eventId);
       return true;
     }
     
     // 標記為已處理（快取 10 分鐘）
     cache.put(key, 'processed', 600);
-    Logger.log('✅ 標記事件為已處理: ' + eventId);
+    Logger.log(' 標記事件為已處理: ' + eventId);
     return false;
     
   } catch (error) {
-    Logger.log('❌ isEventProcessed_ 錯誤: ' + error);
+    Logger.log(' isEventProcessed_ 錯誤: ' + error);
     return false;  // 發生錯誤時允許處理，避免卡住
   }
 }
@@ -1131,26 +1131,26 @@ function handleLineLocation(event) {
     const lng = event.message.longitude;
     const replyToken = event.replyToken;
     
-    Logger.log('📍 收到位置訊息');
+    Logger.log(' 收到位置訊息');
     Logger.log('   userId: ' + userId);
     Logger.log('   座標: ' + lat + ', ' + lng);
     
     const employee = findEmployeeByLineUserId_(userId);
     
     if (!employee.ok) {
-      replyMessage(replyToken, '❌ 您尚未註冊為系統員工');
+      replyMessage(replyToken, ' 您尚未註冊為系統員工');
       return;
     }
     
-    // 🔧 修正：先嘗試從暫存取得打卡意圖
+    //  修正：先嘗試從暫存取得打卡意圖
     let punchType = getPunchIntent_(userId);
     
     // 如果沒有暫存（可能是直接傳送位置），才自動判斷
     if (!punchType) {
       punchType = determinePunchType(userId);
-      Logger.log('🔍 自動判斷打卡類型: ' + punchType);
+      Logger.log(' 自動判斷打卡類型: ' + punchType);
     } else {
-      Logger.log('📋 使用暫存的打卡類型: ' + punchType);
+      Logger.log(' 使用暫存的打卡類型: ' + punchType);
     }
     
     // 檢查位置
@@ -1159,23 +1159,23 @@ function handleLineLocation(event) {
     if (!locationCheck.valid) {
       const message = {
         type: 'flex',
-        altText: '❌ 打卡失敗',
+        altText: ' 打卡失敗',
         contents: createPunchFailedMessage(locationCheck.reason, locationCheck.nearestLocation)
       };
       
       sendLineReply_(replyToken, [message]);
       
-      // 🔧 修正：打卡失敗也要清除意圖
+      //  修正：打卡失敗也要清除意圖
       clearPunchIntent_(userId);
       return;
     }
     
-    Logger.log('✅ 位置檢查通過: ' + locationCheck.locationName);
+    Logger.log(' 位置檢查通過: ' + locationCheck.locationName);
     
-    // 🔧 新增：檢查是否為重複打卡
+    //  新增：檢查是否為重複打卡
     if (isDuplicatePunch_(userId, punchType)) {
-      Logger.log('⚠️ 重複打卡，已忽略');
-      replyMessage(replyToken, '⚠️ 您剛剛已經打過卡了，請勿重複操作');
+      Logger.log(' 重複打卡，已忽略');
+      replyMessage(replyToken, ' 您剛剛已經打過卡了，請勿重複操作');
       clearPunchIntent_(userId);
       return;
     }
@@ -1185,7 +1185,7 @@ function handleLineLocation(event) {
     if (punchResult.success) {
       const message = {
         type: 'flex',
-        altText: '✅ 打卡成功',
+        altText: ' 打卡成功',
         contents: createPunchSuccessMessage(
           employee.name,
           punchType,
@@ -1196,16 +1196,16 @@ function handleLineLocation(event) {
       
       sendLineReply_(replyToken, [message]);
       
-      // 🔧 修正：打卡成功後清除意圖
+      //  修正：打卡成功後清除意圖
       clearPunchIntent_(userId);
     } else {
-      replyMessage(replyToken, '❌ 打卡失敗\n\n' + punchResult.message);
+      replyMessage(replyToken, ' 打卡失敗\n\n' + punchResult.message);
       clearPunchIntent_(userId);
     }
     
   } catch (error) {
-    Logger.log('❌ handleLineLocation 錯誤: ' + error);
-    replyMessage(event.replyToken, '❌ 系統錯誤，請稍後再試');
+    Logger.log(' handleLineLocation 錯誤: ' + error);
+    replyMessage(event.replyToken, ' 系統錯誤，請稍後再試');
   }
 }
 
@@ -1244,7 +1244,7 @@ function determinePunchType(userId) {
     }
     
   } catch (error) {
-    Logger.log('❌ determinePunchType 錯誤: ' + error);
+    Logger.log(' determinePunchType 錯誤: ' + error);
     return '上班'; // 預設返回上班
   }
 }
@@ -1307,7 +1307,7 @@ function checkPunchLocation(lat, lng) {
     }
     
   } catch (error) {
-    Logger.log('❌ checkPunchLocation 錯誤: ' + error);
+    Logger.log(' checkPunchLocation 錯誤: ' + error);
     return {
       valid: false,
       reason: '位置檢查失敗',
@@ -1349,7 +1349,7 @@ function executePunch(userId, punchType, lat, lng, locationName) {
     
     sheet.appendRow(row);
     
-    Logger.log('✅ 打卡成功');
+    Logger.log(' 打卡成功');
     Logger.log('   員工: ' + employee.name);
     Logger.log('   類型: ' + punchType);
     Logger.log('   地點: ' + locationName);
@@ -1361,7 +1361,7 @@ function executePunch(userId, punchType, lat, lng, locationName) {
     };
     
   } catch (error) {
-    Logger.log('❌ executePunch 錯誤: ' + error);
+    Logger.log(' executePunch 錯誤: ' + error);
     return {
       success: false,
       message: error.message
@@ -1385,7 +1385,7 @@ function sendPunchLocationRequest(replyToken, employeeName, punchType) {
         contents: [
           {
             type: 'text',
-            text: '📍 請傳送位置',
+            text: ' 請傳送位置',
             weight: 'bold',
             size: 'xl',
             color: '#FFFFFF'
@@ -1407,7 +1407,7 @@ function sendPunchLocationRequest(replyToken, employeeName, punchType) {
           },
           {
             type: 'text',
-            // 🔧 修正：明確顯示打卡類型
+            //  修正：明確顯示打卡類型
             text: `準備進行【${punchType}】打卡`,
             size: 'md',
             color: punchType === '上班' ? '#4CAF50' : '#FF9800',
@@ -1426,7 +1426,7 @@ function sendPunchLocationRequest(replyToken, employeeName, punchType) {
             contents: [
               {
                 type: 'text',
-                text: '📱 如何傳送位置？',
+                text: ' 如何傳送位置？',
                 weight: 'bold',
                 size: 'md',
                 color: '#2196F3'
@@ -1460,7 +1460,7 @@ function sendPunchLocationRequest(replyToken, employeeName, punchType) {
           },
           {
             type: 'text',
-            text: '⚠️ 請確保您在公司打卡範圍內',
+            text: ' 請確保您在公司打卡範圍內',
             size: 'xs',
             color: '#FF9800',
             margin: 'lg',
@@ -1487,7 +1487,7 @@ function createPunchSuccessMessage(employeeName, punchType, time, location) {
       contents: [
         {
           type: 'text',
-          text: '✅ 打卡成功',
+          text: ' 打卡成功',
           weight: 'bold',
           size: 'xl',
           color: '#FFFFFF'
@@ -1593,7 +1593,7 @@ function createPunchSuccessMessage(employeeName, punchType, time, location) {
         },
         {
           type: 'text',
-          text: punchType === '上班' ? '💪 祝您今天工作順利！' : '🎉 辛苦了，下班愉快！',
+          text: punchType === '上班' ? ' 祝您今天工作順利！' : ' 辛苦了，下班愉快！',
           size: 'sm',
           color: '#4CAF50',
           margin: 'lg',
@@ -1618,7 +1618,7 @@ function createPunchFailedMessage(reason, nearestLocation) {
       contents: [
         {
           type: 'text',
-          text: '❌ 打卡失敗',
+          text: ' 打卡失敗',
           weight: 'bold',
           size: 'xl',
           color: '#FFFFFF'
@@ -1653,7 +1653,7 @@ function createPunchFailedMessage(reason, nearestLocation) {
       },
       {
         type: 'text',
-        text: '📍 最近的打卡地點',
+        text: ' 最近的打卡地點',
         size: 'sm',
         color: '#999999',
         margin: 'lg'
@@ -1745,7 +1745,7 @@ function sendTodayPunchRecords(replyToken, userId, employeeName) {
         },
         {
           type: 'text',
-          text: `📍 ${r.location}`,
+          text: ` ${r.location}`,
           size: 'xs',
           color: '#666666',
           margin: 'xs'
@@ -1765,7 +1765,7 @@ function sendTodayPunchRecords(replyToken, userId, employeeName) {
           contents: [
             {
               type: 'text',
-              text: '📋 今日打卡記錄',
+              text: ' 今日打卡記錄',
               weight: 'bold',
               size: 'xl',
               color: '#FFFFFF'
@@ -1805,8 +1805,8 @@ function sendTodayPunchRecords(replyToken, userId, employeeName) {
     sendLineReply_(replyToken, [message]);
     
   } catch (error) {
-    Logger.log('❌ sendTodayPunchRecords 錯誤: ' + error);
-    replyMessage(replyToken, '❌ 查詢失敗，請稍後再試');
+    Logger.log(' sendTodayPunchRecords 錯誤: ' + error);
+    replyMessage(replyToken, ' 查詢失敗，請稍後再試');
   }
 }
 
@@ -1826,7 +1826,7 @@ function sendAdjustPunchGuide(replyToken) {
         contents: [
           {
             type: 'text',
-            text: '📝 補打卡指引',
+            text: ' 補打卡指引',
             weight: 'bold',
             size: 'xl',
             color: '#FFFFFF'
@@ -1924,7 +1924,7 @@ function sendHelpMessage(replyToken) {
         contents: [
           {
             type: 'text',
-            text: '💡 使用指令',
+            text: ' 使用指令',
             weight: 'bold',
             size: 'xl',
             color: '#FFFFFF'
@@ -2344,11 +2344,11 @@ function sendQueryMenu(replyToken, userId, employeeName) {
       items: [
         {
           type: 'action',
-          action: { type: 'message', label: '📋 今日查詢', text: '今日查詢' }
+          action: { type: 'message', label: ' 今日查詢', text: '今日查詢' }
         },
         {
           type: 'action',
-          action: { type: 'message', label: '📅 月份查詢', text: '月份查詢' }
+          action: { type: 'message', label: ' 月份查詢', text: '月份查詢' }
         }
       ]
     }
@@ -2365,7 +2365,7 @@ function sendLineReply_(replyToken, messages) {
     const channelAccessToken = PropertiesService.getScriptProperties().getProperty('LINE_CHANNEL_ACCESS_TOKEN');
     
     if (!channelAccessToken) {
-      Logger.log('❌ 找不到 LINE_CHANNEL_ACCESS_TOKEN');
+      Logger.log(' 找不到 LINE_CHANNEL_ACCESS_TOKEN');
       return;
     }
     
@@ -2388,13 +2388,13 @@ function sendLineReply_(replyToken, messages) {
     const result = JSON.parse(response.getContentText());
     
     if (response.getResponseCode() === 200) {
-      Logger.log('✅ LINE 回覆已發送');
+      Logger.log(' LINE 回覆已發送');
     } else {
-      Logger.log('❌ LINE 回覆失敗: ' + result.message);
+      Logger.log(' LINE 回覆失敗: ' + result.message);
     }
     
   } catch (error) {
-    Logger.log('❌ sendLineReply_ 錯誤: ' + error);
+    Logger.log(' sendLineReply_ 錯誤: ' + error);
   }
 }
 
@@ -2413,7 +2413,7 @@ function replyMessage(replyToken, text) {
 // ==================== 圖文選單管理 ====================
 
 /**
- * 🎨 建立打卡圖文選單
+ *  建立打卡圖文選單
  * 
  * 執行步驟：
  * 1. 在 Apps Script 中執行此函數
@@ -2423,12 +2423,12 @@ function replyMessage(replyToken, text) {
  */
 function createPunchRichMenu() {
   try {
-    Logger.log('🎨 開始建立圖文選單');
+    Logger.log(' 開始建立圖文選單');
     
     const channelAccessToken = PropertiesService.getScriptProperties().getProperty('LINE_CHANNEL_ACCESS_TOKEN');
     
     if (!channelAccessToken) {
-      Logger.log('❌ 找不到 LINE_CHANNEL_ACCESS_TOKEN');
+      Logger.log(' 找不到 LINE_CHANNEL_ACCESS_TOKEN');
       return;
     }
     
@@ -2512,10 +2512,10 @@ function createPunchRichMenu() {
     const result = JSON.parse(response.getContentText());
     
     if (response.getResponseCode() === 200) {
-      Logger.log('✅ 圖文選單建立成功！');
-      Logger.log('📋 Rich Menu ID: ' + result.richMenuId);
+      Logger.log(' 圖文選單建立成功！');
+      Logger.log(' Rich Menu ID: ' + result.richMenuId);
       Logger.log('');
-      Logger.log('🔽 請複製上方的 richMenuId，然後執行以下步驟：');
+      Logger.log(' 請複製上方的 richMenuId，然後執行以下步驟：');
       Logger.log('');
       Logger.log('步驟 1: 上傳圖片');
       Logger.log('   執行: uploadRichMenuImage("' + result.richMenuId + '")');
@@ -2528,19 +2528,19 @@ function createPunchRichMenu() {
       
       return result.richMenuId;
     } else {
-      Logger.log('❌ 建立失敗');
+      Logger.log(' 建立失敗');
       Logger.log('錯誤訊息: ' + result.message);
       return null;
     }
     
   } catch (error) {
-    Logger.log('❌ createPunchRichMenu 錯誤: ' + error);
+    Logger.log(' createPunchRichMenu 錯誤: ' + error);
     return null;
   }
 }
 
 /**
- * 🖼️ 上傳圖文選單圖片
+ *  上傳圖文選單圖片
  * 
  * @param {string} richMenuId - 圖文選單 ID
  * 
@@ -2557,14 +2557,14 @@ function createPunchRichMenu() {
  */
 function uploadRichMenuImage(richMenuId) {
   try {
-    Logger.log('🖼️ 開始上傳圖文選單圖片');
+    Logger.log(' 開始上傳圖文選單圖片');
     
     if (!richMenuId) {
       // 嘗試從 Properties 取得
       richMenuId = PropertiesService.getScriptProperties().getProperty('RICH_MENU_ID');
       
       if (!richMenuId) {
-        Logger.log('❌ 請提供 richMenuId');
+        Logger.log(' 請提供 richMenuId');
         Logger.log('   使用方式: uploadRichMenuImage("your-rich-menu-id")');
         return;
       }
@@ -2573,25 +2573,25 @@ function uploadRichMenuImage(richMenuId) {
     const channelAccessToken = PropertiesService.getScriptProperties().getProperty('LINE_CHANNEL_ACCESS_TOKEN');
     
     if (!channelAccessToken) {
-      Logger.log('❌ 找不到 LINE_CHANNEL_ACCESS_TOKEN');
+      Logger.log(' 找不到 LINE_CHANNEL_ACCESS_TOKEN');
       return;
     }
     
-    // ⚠️ 請替換成您的圖片 File ID
+    //  請替換成您的圖片 File ID
     // 如何取得：在 Google Drive 中右鍵點擊圖片 → 取得連結 → 複製 ID
     const imageFileId = '1a2b3c4d5e6f7g8h9i0j';
     
     if (imageFileId === '1a2b3c4d5e6f7g8h9i0j') {
-      Logger.log('⚠️ 請先設定圖片 File ID');
+      Logger.log(' 請先設定圖片 File ID');
       Logger.log('');
-      Logger.log('📝 如何設定：');
+      Logger.log(' 如何設定：');
       Logger.log('1. 準備一張 2500x1686 的圖片（JPEG 或 PNG）');
       Logger.log('2. 上傳到 Google Drive');
       Logger.log('3. 右鍵點擊圖片 → 取得連結');
       Logger.log('4. 複製連結中的 File ID');
       Logger.log('5. 修改 uploadRichMenuImage 函數中的 imageFileId');
       Logger.log('');
-      Logger.log('💡 也可以使用 createDefaultRichMenuImage() 生成預設圖片');
+      Logger.log(' 也可以使用 createDefaultRichMenuImage() 生成預設圖片');
       return;
     }
     
@@ -2615,36 +2615,36 @@ function uploadRichMenuImage(richMenuId) {
     const response = UrlFetchApp.fetch(url, options);
     
     if (response.getResponseCode() === 200) {
-      Logger.log('✅ 圖片上傳成功！');
+      Logger.log(' 圖片上傳成功！');
       Logger.log('');
-      Logger.log('🔽 下一步：');
+      Logger.log(' 下一步：');
       Logger.log('   執行: setDefaultRichMenu("' + richMenuId + '")');
     } else {
-      Logger.log('❌ 上傳失敗');
+      Logger.log(' 上傳失敗');
       Logger.log('狀態碼: ' + response.getResponseCode());
       Logger.log('回應: ' + response.getContentText());
     }
     
   } catch (error) {
-    Logger.log('❌ uploadRichMenuImage 錯誤: ' + error);
+    Logger.log(' uploadRichMenuImage 錯誤: ' + error);
   }
 }
 
 /**
- * 🎯 設定預設圖文選單
+ *  設定預設圖文選單
  * 
  * @param {string} richMenuId - 圖文選單 ID
  */
 function setDefaultRichMenu(richMenuId) {
   try {
-    Logger.log('🎯 設定預設圖文選單');
+    Logger.log(' 設定預設圖文選單');
     
     if (!richMenuId) {
       // 嘗試從 Properties 取得
       richMenuId = PropertiesService.getScriptProperties().getProperty('RICH_MENU_ID');
       
       if (!richMenuId) {
-        Logger.log('❌ 請提供 richMenuId');
+        Logger.log(' 請提供 richMenuId');
         Logger.log('   使用方式: setDefaultRichMenu("your-rich-menu-id")');
         return;
       }
@@ -2653,7 +2653,7 @@ function setDefaultRichMenu(richMenuId) {
     const channelAccessToken = PropertiesService.getScriptProperties().getProperty('LINE_CHANNEL_ACCESS_TOKEN');
     
     if (!channelAccessToken) {
-      Logger.log('❌ 找不到 LINE_CHANNEL_ACCESS_TOKEN');
+      Logger.log(' 找不到 LINE_CHANNEL_ACCESS_TOKEN');
       return;
     }
     
@@ -2670,36 +2670,36 @@ function setDefaultRichMenu(richMenuId) {
     const response = UrlFetchApp.fetch(url, options);
     
     if (response.getResponseCode() === 200) {
-      Logger.log('✅ 預設圖文選單設定成功！');
+      Logger.log(' 預設圖文選單設定成功！');
       Logger.log('');
-      Logger.log('🎉 完成！所有用戶現在都可以看到圖文選單了');
+      Logger.log(' 完成！所有用戶現在都可以看到圖文選單了');
       Logger.log('');
-      Logger.log('📱 測試方式：');
+      Logger.log(' 測試方式：');
       Logger.log('1. 開啟 LINE 與您的 Bot 對話');
       Logger.log('2. 點擊輸入框左邊的選單按鈕');
       Logger.log('3. 應該會看到打卡選單');
     } else {
-      Logger.log('❌ 設定失敗');
+      Logger.log(' 設定失敗');
       Logger.log('狀態碼: ' + response.getResponseCode());
       Logger.log('回應: ' + response.getContentText());
     }
     
   } catch (error) {
-    Logger.log('❌ setDefaultRichMenu 錯誤: ' + error);
+    Logger.log(' setDefaultRichMenu 錯誤: ' + error);
   }
 }
 
 /**
- * 📋 列出所有圖文選單
+ *  列出所有圖文選單
  */
 function listAllRichMenus() {
   try {
-    Logger.log('📋 列出所有圖文選單');
+    Logger.log(' 列出所有圖文選單');
     
     const channelAccessToken = PropertiesService.getScriptProperties().getProperty('LINE_CHANNEL_ACCESS_TOKEN');
     
     if (!channelAccessToken) {
-      Logger.log('❌ 找不到 LINE_CHANNEL_ACCESS_TOKEN');
+      Logger.log(' 找不到 LINE_CHANNEL_ACCESS_TOKEN');
       return;
     }
     
@@ -2715,7 +2715,7 @@ function listAllRichMenus() {
     const result = JSON.parse(response.getContentText());
     
     if (response.getResponseCode() === 200) {
-      Logger.log('✅ 圖文選單列表：');
+      Logger.log(' 圖文選單列表：');
       Logger.log('');
       
       if (result.richmenus && result.richmenus.length > 0) {
@@ -2730,36 +2730,36 @@ function listAllRichMenus() {
         Logger.log('目前沒有圖文選單');
       }
     } else {
-      Logger.log('❌ 取得失敗');
+      Logger.log(' 取得失敗');
       Logger.log('回應: ' + response.getContentText());
     }
     
   } catch (error) {
-    Logger.log('❌ listAllRichMenus 錯誤: ' + error);
+    Logger.log(' listAllRichMenus 錯誤: ' + error);
   }
 }
 
 /**
- * 🗑️ 刪除圖文選單
+ *  刪除圖文選單
  * 
  * @param {string} richMenuId - 要刪除的圖文選單 ID
  */
 function deleteRichMenu(richMenuId) {
   try {
-    Logger.log('🗑️ 刪除圖文選單');
+    Logger.log(' 刪除圖文選單');
     
     if (!richMenuId) {
-      Logger.log('❌ 請提供 richMenuId');
+      Logger.log(' 請提供 richMenuId');
       Logger.log('   使用方式: deleteRichMenu("your-rich-menu-id")');
       Logger.log('');
-      Logger.log('💡 可以先執行 listAllRichMenus() 查看所有選單');
+      Logger.log(' 可以先執行 listAllRichMenus() 查看所有選單');
       return;
     }
     
     const channelAccessToken = PropertiesService.getScriptProperties().getProperty('LINE_CHANNEL_ACCESS_TOKEN');
     
     if (!channelAccessToken) {
-      Logger.log('❌ 找不到 LINE_CHANNEL_ACCESS_TOKEN');
+      Logger.log(' 找不到 LINE_CHANNEL_ACCESS_TOKEN');
       return;
     }
     
@@ -2776,30 +2776,30 @@ function deleteRichMenu(richMenuId) {
     const response = UrlFetchApp.fetch(url, options);
     
     if (response.getResponseCode() === 200) {
-      Logger.log('✅ 圖文選單已刪除');
+      Logger.log(' 圖文選單已刪除');
     } else {
-      Logger.log('❌ 刪除失敗');
+      Logger.log(' 刪除失敗');
       Logger.log('狀態碼: ' + response.getResponseCode());
       Logger.log('回應: ' + response.getContentText());
     }
     
   } catch (error) {
-    Logger.log('❌ deleteRichMenu 錯誤: ' + error);
+    Logger.log(' deleteRichMenu 錯誤: ' + error);
   }
 }
 
 /**
- * 🎨 生成預設圖文選單圖片（簡易版）
+ *  生成預設圖文選單圖片（簡易版）
  * 
  * 這個函數會在 Google Drive 中建立一個簡單的圖文選單圖片
  * 您也可以使用專業繪圖軟體（如 Canva、Photoshop）製作更美觀的圖片
  */
 function createDefaultRichMenuImage() {
-  Logger.log('🎨 生成預設圖文選單圖片');
+  Logger.log(' 生成預設圖文選單圖片');
   Logger.log('');
-  Logger.log('⚠️ Apps Script 無法直接生成圖片');
+  Logger.log(' Apps Script 無法直接生成圖片');
   Logger.log('');
-  Logger.log('📝 請使用以下方式製作圖片：');
+  Logger.log(' 請使用以下方式製作圖片：');
   Logger.log('');
   Logger.log('方式 1: 使用 Canva（推薦）');
   Logger.log('1. 前往 https://www.canva.com');
@@ -2820,13 +2820,13 @@ function createDefaultRichMenuImage() {
 }
 
 /**
- * 🚀 一鍵設定圖文選單（完整流程）
+ *  一鍵設定圖文選單（完整流程）
  * 
  * 注意：需要先準備好圖片並上傳到 Google Drive
  */
 function quickSetupRichMenu() {
   Logger.log('═══════════════════════════════════════');
-  Logger.log('🚀 圖文選單快速設定');
+  Logger.log(' 圖文選單快速設定');
   Logger.log('═══════════════════════════════════════');
   Logger.log('');
   
@@ -2835,14 +2835,14 @@ function quickSetupRichMenu() {
   const richMenuId = createPunchRichMenu();
   
   if (!richMenuId) {
-    Logger.log('❌ 設定失敗');
+    Logger.log(' 設定失敗');
     return;
   }
   
   Logger.log('');
-  Logger.log('⏸️ 請暫停！');
+  Logger.log('⏸ 請暫停！');
   Logger.log('');
-  Logger.log('📝 接下來請手動執行：');
+  Logger.log(' 接下來請手動執行：');
   Logger.log('');
   Logger.log('1. 準備圖片（2500x1686）');
   Logger.log('2. 上傳到 Google Drive');
@@ -2850,25 +2850,25 @@ function quickSetupRichMenu() {
   Logger.log('4. 執行: uploadRichMenuImage("' + richMenuId + '")');
   Logger.log('5. 執行: setDefaultRichMenu("' + richMenuId + '")');
   Logger.log('');
-  Logger.log('💡 如需刪除，請執行: deleteRichMenu("' + richMenuId + '")');
+  Logger.log(' 如需刪除，請執行: deleteRichMenu("' + richMenuId + '")');
 }
 
 
 /**
- * 🎨 自動生成並上傳圖文選單圖片
+ *  自動生成並上傳圖文選單圖片
  * 
  * 使用方式：
  * autoGenerateAndUploadRichMenu("richmenu-3097bf50f670a1f2630806c1668e326d")
  */
 function autoGenerateAndUploadRichMenu(richMenuId) {
   try {
-    Logger.log('🎨 開始自動生成圖文選單圖片');
+    Logger.log(' 開始自動生成圖文選單圖片');
     
     if (!richMenuId) {
       richMenuId = PropertiesService.getScriptProperties().getProperty('RICH_MENU_ID');
       
       if (!richMenuId) {
-        Logger.log('❌ 請提供 richMenuId');
+        Logger.log(' 請提供 richMenuId');
         return;
       }
     }
@@ -2876,12 +2876,12 @@ function autoGenerateAndUploadRichMenu(richMenuId) {
     const channelAccessToken = PropertiesService.getScriptProperties().getProperty('LINE_CHANNEL_ACCESS_TOKEN');
     
     if (!channelAccessToken) {
-      Logger.log('❌ 找不到 LINE_CHANNEL_ACCESS_TOKEN');
+      Logger.log(' 找不到 LINE_CHANNEL_ACCESS_TOKEN');
       return;
     }
     
     // 步驟 1：使用 Google Slides 生成圖片
-    Logger.log('📊 步驟 1/3: 使用 Google Slides 生成圖片...');
+    Logger.log(' 步驟 1/3: 使用 Google Slides 生成圖片...');
     
     // 建立一個新的 Presentation
     const presentation = SlidesApp.create('圖文選單_臨時');
@@ -2898,7 +2898,7 @@ function autoGenerateAndUploadRichMenu(richMenuId) {
     const shape1 = slide.insertShape(SlidesApp.ShapeType.RECTANGLE, 0, 0, 347.22, 234.17);
     shape1.getFill().setSolidFill('#4CAF50');
     const text1 = shape1.getText();
-    text1.setText('上班打卡\n🟢');
+    text1.setText('上班打卡\n');
     text1.getParagraphStyle().setParagraphAlignment(SlidesApp.ParagraphAlignment.CENTER);
     text1.getTextStyle().setFontSize(48).setBold(true).setForegroundColor('#FFFFFF');
     
@@ -2906,7 +2906,7 @@ function autoGenerateAndUploadRichMenu(richMenuId) {
     const shape2 = slide.insertShape(SlidesApp.ShapeType.RECTANGLE, 347.22, 0, 347.22, 234.17);
     shape2.getFill().setSolidFill('#FF9800');
     const text2 = shape2.getText();
-    text2.setText('下班打卡\n🟠');
+    text2.setText('下班打卡\n');
     text2.getParagraphStyle().setParagraphAlignment(SlidesApp.ParagraphAlignment.CENTER);
     text2.getTextStyle().setFontSize(48).setBold(true).setForegroundColor('#FFFFFF');
     
@@ -2914,7 +2914,7 @@ function autoGenerateAndUploadRichMenu(richMenuId) {
     const shape3 = slide.insertShape(SlidesApp.ShapeType.RECTANGLE, 0, 234.17, 347.22, 234.17);
     shape3.getFill().setSolidFill('#2196F3');
     const text3 = shape3.getText();
-    text3.setText('查詢打卡\n🔵');
+    text3.setText('查詢打卡\n');
     text3.getParagraphStyle().setParagraphAlignment(SlidesApp.ParagraphAlignment.CENTER);
     text3.getTextStyle().setFontSize(48).setBold(true).setForegroundColor('#FFFFFF');
     
@@ -2922,14 +2922,14 @@ function autoGenerateAndUploadRichMenu(richMenuId) {
     const shape4 = slide.insertShape(SlidesApp.ShapeType.RECTANGLE, 347.22, 234.17, 347.22, 234.17);
     shape4.getFill().setSolidFill('#673AB7');
     const text4 = shape4.getText();
-    text4.setText('使用說明\n💡');
+    text4.setText('使用說明\n');
     text4.getParagraphStyle().setParagraphAlignment(SlidesApp.ParagraphAlignment.CENTER);
     text4.getTextStyle().setFontSize(48).setBold(true).setForegroundColor('#FFFFFF');
     
-    Logger.log('✅ 圖片生成完成');
+    Logger.log(' 圖片生成完成');
     
     // 步驟 2：匯出為圖片
-    Logger.log('📤 步驟 2/3: 匯出圖片...');
+    Logger.log(' 步驟 2/3: 匯出圖片...');
     
     // 取得投影片的縮圖（作為圖片）
     const slideId = slide.getObjectId();
@@ -2948,7 +2948,7 @@ function autoGenerateAndUploadRichMenu(richMenuId) {
     const thumbnailData = JSON.parse(response.getContentText());
     
     if (!thumbnailData.contentUrl) {
-      Logger.log('❌ 無法取得圖片 URL');
+      Logger.log(' 無法取得圖片 URL');
       
       // 刪除臨時 Presentation
       DriveApp.getFileById(presentationId).setTrashed(true);
@@ -2958,10 +2958,10 @@ function autoGenerateAndUploadRichMenu(richMenuId) {
     // 下載圖片
     const imageBlob = UrlFetchApp.fetch(thumbnailData.contentUrl).getBlob();
     
-    Logger.log('✅ 圖片下載完成');
+    Logger.log(' 圖片下載完成');
     
     // 步驟 3：上傳到 LINE
-    Logger.log('📤 步驟 3/3: 上傳到 LINE...');
+    Logger.log(' 步驟 3/3: 上傳到 LINE...');
     
     const uploadUrl = `https://api-data.line.me/v2/bot/richmenu/${richMenuId}/content`;
     
@@ -2978,28 +2978,28 @@ function autoGenerateAndUploadRichMenu(richMenuId) {
     const uploadResponse = UrlFetchApp.fetch(uploadUrl, uploadOptions);
     
     if (uploadResponse.getResponseCode() === 200) {
-      Logger.log('✅ 圖片上傳成功！');
+      Logger.log(' 圖片上傳成功！');
       Logger.log('');
-      Logger.log('🔽 最後一步：');
+      Logger.log(' 最後一步：');
       Logger.log('   執行: setDefaultRichMenu("' + richMenuId + '")');
     } else {
-      Logger.log('❌ 上傳失敗');
+      Logger.log(' 上傳失敗');
       Logger.log('狀態碼: ' + uploadResponse.getResponseCode());
       Logger.log('回應: ' + uploadResponse.getContentText());
     }
     
     // 清理：刪除臨時 Presentation
     DriveApp.getFileById(presentationId).setTrashed(true);
-    Logger.log('🗑️ 已清理臨時檔案');
+    Logger.log(' 已清理臨時檔案');
     
   } catch (error) {
-    Logger.log('❌ autoGenerateAndUploadRichMenu 錯誤: ' + error);
+    Logger.log(' autoGenerateAndUploadRichMenu 錯誤: ' + error);
     Logger.log('錯誤堆疊: ' + error.stack);
   }
 }
 
 /**
- * 🚀 完整自動化流程
+ *  完整自動化流程
  * 
  * 一鍵完成所有步驟：
  * 1. 建立圖文選單
@@ -3010,27 +3010,27 @@ function autoGenerateAndUploadRichMenu(richMenuId) {
 function fullAutoSetupRichMenu() {
   try {
     Logger.log('═══════════════════════════════════════');
-    Logger.log('🚀 圖文選單完整自動化設定');
+    Logger.log(' 圖文選單完整自動化設定');
     Logger.log('═══════════════════════════════════════');
     Logger.log('');
     
     // 步驟 1：建立圖文選單
-    Logger.log('📋 步驟 1/4: 建立圖文選單結構...');
+    Logger.log(' 步驟 1/4: 建立圖文選單結構...');
     const richMenuId = createPunchRichMenu();
     
     if (!richMenuId) {
-      Logger.log('❌ 建立失敗');
+      Logger.log(' 建立失敗');
       return;
     }
     
-    Logger.log('✅ 圖文選單建立成功');
+    Logger.log(' 圖文選單建立成功');
     Logger.log('');
     
     // 等待 2 秒
     Utilities.sleep(2000);
     
     // 步驟 2-3：生成並上傳圖片
-    Logger.log('🎨 步驟 2-3/4: 生成並上傳圖片...');
+    Logger.log(' 步驟 2-3/4: 生成並上傳圖片...');
     autoGenerateAndUploadRichMenu(richMenuId);
     
     Logger.log('');
@@ -3039,21 +3039,21 @@ function fullAutoSetupRichMenu() {
     Utilities.sleep(3000);
     
     // 步驟 4：設為預設選單
-    Logger.log('🎯 步驟 4/4: 設為預設選單...');
+    Logger.log(' 步驟 4/4: 設為預設選單...');
     setDefaultRichMenu(richMenuId);
     
     Logger.log('');
     Logger.log('═══════════════════════════════════════');
-    Logger.log('🎉 完成！');
+    Logger.log(' 完成！');
     Logger.log('═══════════════════════════════════════');
     Logger.log('');
-    Logger.log('📱 請到 LINE 測試：');
+    Logger.log(' 請到 LINE 測試：');
     Logger.log('1. 開啟與 Bot 的對話');
     Logger.log('2. 點擊輸入框左邊的選單按鈕');
     Logger.log('3. 應該會看到打卡選單');
     
   } catch (error) {
-    Logger.log('❌ fullAutoSetupRichMenu 錯誤: ' + error);
+    Logger.log(' fullAutoSetupRichMenu 錯誤: ' + error);
     Logger.log('錯誤堆疊: ' + error.stack);
   }
 }
@@ -3064,13 +3064,13 @@ function fullAutoSetupRichMenu() {
  */
 function uploadRichMenuWithDefaultImage(richMenuId) {
   try {
-    Logger.log('🖼️ 開始上傳預設圖文選單圖片');
+    Logger.log(' 開始上傳預設圖文選單圖片');
     
     if (!richMenuId) {
       richMenuId = PropertiesService.getScriptProperties().getProperty('RICH_MENU_ID');
       
       if (!richMenuId) {
-        Logger.log('❌ 請提供 richMenuId');
+        Logger.log(' 請提供 richMenuId');
         return;
       }
     }
@@ -3078,25 +3078,25 @@ function uploadRichMenuWithDefaultImage(richMenuId) {
     const channelAccessToken = PropertiesService.getScriptProperties().getProperty('LINE_CHANNEL_ACCESS_TOKEN');
     
     if (!channelAccessToken) {
-      Logger.log('❌ 找不到 LINE_CHANNEL_ACCESS_TOKEN');
+      Logger.log(' 找不到 LINE_CHANNEL_ACCESS_TOKEN');
       return;
     }
     
     // 使用 Base64 編碼的簡單圖片（2500x1686，四格設計）
     // 這是一個臨時的純色圖片，您之後可以替換成更精美的版本
     
-    Logger.log('📥 步驟 1/2: 生成圖片...');
+    Logger.log(' 步驟 1/2: 生成圖片...');
     
     // 建立一個簡單的 PNG 圖片（使用 Canvas）
     const imageData = createSimpleRichMenuImage();
     
     if (!imageData) {
-      Logger.log('❌ 圖片生成失敗');
+      Logger.log(' 圖片生成失敗');
       return;
     }
     
-    Logger.log('✅ 圖片生成完成');
-    Logger.log('📤 步驟 2/2: 上傳到 LINE...');
+    Logger.log(' 圖片生成完成');
+    Logger.log(' 步驟 2/2: 上傳到 LINE...');
     
     const url = `https://api-data.line.me/v2/bot/richmenu/${richMenuId}/content`;
     
@@ -3113,20 +3113,20 @@ function uploadRichMenuWithDefaultImage(richMenuId) {
     const response = UrlFetchApp.fetch(url, options);
     
     if (response.getResponseCode() === 200) {
-      Logger.log('✅ 圖片上傳成功！');
+      Logger.log(' 圖片上傳成功！');
       Logger.log('');
-      Logger.log('🔽 最後一步：');
+      Logger.log(' 最後一步：');
       Logger.log('   執行: setDefaultRichMenu("' + richMenuId + '")');
       return true;
     } else {
-      Logger.log('❌ 上傳失敗');
+      Logger.log(' 上傳失敗');
       Logger.log('狀態碼: ' + response.getResponseCode());
       Logger.log('回應: ' + response.getContentText());
       return false;
     }
     
   } catch (error) {
-    Logger.log('❌ uploadRichMenuWithDefaultImage 錯誤: ' + error);
+    Logger.log(' uploadRichMenuWithDefaultImage 錯誤: ' + error);
     return false;
   }
 }
@@ -3154,16 +3154,16 @@ function createSimpleRichMenuImage() {
     return blob.getBytes();
     
   } catch (error) {
-    Logger.log('❌ createSimpleRichMenuImage 錯誤: ' + error);
+    Logger.log(' createSimpleRichMenuImage 錯誤: ' + error);
     return null;
   }
 }
 /**
- * 🔧 快速修正指南
+ *  快速修正指南
  */
 function showQuickFix() {
   Logger.log('═══════════════════════════════════════');
-  Logger.log('🔧 快速修正指南');
+  Logger.log(' 快速修正指南');
   Logger.log('═══════════════════════════════════════');
   Logger.log('');
   Logger.log('如果月份查詢沒有回應，請按照以下步驟：');
@@ -3216,9 +3216,9 @@ function findUserMonths() {
   Logger.log('');
   
   if (Object.keys(months).length === 0) {
-    Logger.log('❌ 沒有任何打卡記錄');
+    Logger.log(' 沒有任何打卡記錄');
     Logger.log('');
-    Logger.log('💡 請先在 LINE Bot 中打卡，或使用其他 userId 測試');
+    Logger.log(' 請先在 LINE Bot 中打卡，或使用其他 userId 測試');
   } else {
     Object.keys(months).sort().forEach(m => {
       Logger.log(`${m}: ${months[m]} 筆`);
@@ -3230,11 +3230,11 @@ function findUserMonths() {
 // DebugFebruary2026.gs - 專門診斷 2026-02 的問題
 
 /**
- * 🔍 詳細測試 2026-02 的查詢
+ *  詳細測試 2026-02 的查詢
  */
 function debugFebruary2026() {
   Logger.log('═══════════════════════════════════════');
-  Logger.log('🔍 診斷 2026-02 月份查詢');
+  Logger.log(' 診斷 2026-02 月份查詢');
   Logger.log('═══════════════════════════════════════');
   Logger.log('');
   
@@ -3242,7 +3242,7 @@ function debugFebruary2026() {
   const yearMonth = '2026-02';
   
   // 步驟 1: 檢查原始資料
-  Logger.log('📋 步驟 1: 檢查原始資料');
+  Logger.log(' 步驟 1: 檢查原始資料');
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_ATTENDANCE);
   const values = sheet.getDataRange().getValues();
   
@@ -3274,7 +3274,7 @@ function debugFebruary2026() {
   Logger.log('');
   
   if (count > 0) {
-    Logger.log('📝 記錄詳情:');
+    Logger.log(' 記錄詳情:');
     records.forEach((r, i) => {
       Logger.log(`   ${i + 1}. 第 ${r.row} 行: ${r.date} - ${r.type} @ ${r.location}`);
     });
@@ -3283,7 +3283,7 @@ function debugFebruary2026() {
   Logger.log('');
   
   // 步驟 2: 測試 getMonthlyPunchRecords
-  Logger.log('📋 步驟 2: 測試 getMonthlyPunchRecords');
+  Logger.log(' 步驟 2: 測試 getMonthlyPunchRecords');
   
   try {
     const result = getMonthlyPunchRecords(userId, yearMonth);
@@ -3291,21 +3291,21 @@ function debugFebruary2026() {
     
     if (result.length > 0) {
       Logger.log('');
-      Logger.log('📝 getMonthlyPunchRecords 回傳的記錄:');
+      Logger.log(' getMonthlyPunchRecords 回傳的記錄:');
       result.forEach((r, i) => {
         Logger.log(`   ${i + 1}. ${r.date} ${r.time} - ${r.type} @ ${r.location}`);
       });
     } else {
-      Logger.log('⚠️ getMonthlyPunchRecords 回傳 0 筆（但原始資料有記錄！）');
+      Logger.log(' getMonthlyPunchRecords 回傳 0 筆（但原始資料有記錄！）');
     }
   } catch (error) {
-    Logger.log('❌ getMonthlyPunchRecords 錯誤: ' + error.message);
+    Logger.log(' getMonthlyPunchRecords 錯誤: ' + error.message);
   }
   
   Logger.log('');
   
   // 步驟 3: 測試分組
-  Logger.log('📋 步驟 3: 測試 groupRecordsByDate');
+  Logger.log(' 步驟 3: 測試 groupRecordsByDate');
   
   try {
     const records2 = getMonthlyPunchRecords(userId, yearMonth);
@@ -3315,7 +3315,7 @@ function debugFebruary2026() {
     
     if (Object.keys(grouped).length > 0) {
       Logger.log('');
-      Logger.log('📝 分組結果:');
+      Logger.log(' 分組結果:');
       Object.keys(grouped).sort().forEach(date => {
         Logger.log(`   ${date}: ${grouped[date].length} 筆`);
         grouped[date].forEach(r => {
@@ -3324,13 +3324,13 @@ function debugFebruary2026() {
       });
     }
   } catch (error) {
-    Logger.log('❌ groupRecordsByDate 錯誤: ' + error.message);
+    Logger.log(' groupRecordsByDate 錯誤: ' + error.message);
   }
   
   Logger.log('');
   
   // 步驟 4: 測試統計
-  Logger.log('📋 步驟 4: 測試 calculateMonthlyStats');
+  Logger.log(' 步驟 4: 測試 calculateMonthlyStats');
   
   try {
     const records3 = getMonthlyPunchRecords(userId, yearMonth);
@@ -3342,13 +3342,13 @@ function debugFebruary2026() {
     Logger.log(`   - completeDays: ${stats.completeDays}`);
     Logger.log(`   - totalWorkHours: ${stats.totalWorkHours}`);
   } catch (error) {
-    Logger.log('❌ calculateMonthlyStats 錯誤: ' + error.message);
+    Logger.log(' calculateMonthlyStats 錯誤: ' + error.message);
   }
   
   Logger.log('');
   
   // 步驟 5: 測試完整的 sendMonthlyRecords
-  Logger.log('📋 步驟 5: 測試 sendMonthlyRecords');
+  Logger.log(' 步驟 5: 測試 sendMonthlyRecords');
   
   try {
     const testReplyToken = 'test-token-' + Date.now();
@@ -3357,28 +3357,28 @@ function debugFebruary2026() {
     sendMonthlyRecords(testReplyToken, userId, '洪培瑜Eric', yearMonth);
     
     Logger.log('');
-    Logger.log('💡 請檢查上方的 log:');
+    Logger.log(' 請檢查上方的 log:');
     Logger.log('   - 是否有「找到 X 筆打卡記錄」');
     Logger.log('   - 是否有嘗試發送 LINE 訊息');
     Logger.log('   - 是否有錯誤訊息');
     
   } catch (error) {
-    Logger.log('❌ sendMonthlyRecords 錯誤: ' + error.message);
+    Logger.log(' sendMonthlyRecords 錯誤: ' + error.message);
     Logger.log('   堆疊: ' + error.stack);
   }
   
   Logger.log('');
   Logger.log('═══════════════════════════════════════');
-  Logger.log('✅ 診斷完成');
+  Logger.log(' 診斷完成');
   Logger.log('═══════════════════════════════════════');
 }
 
 /**
- * 🔍 檢查日期格式問題
+ *  檢查日期格式問題
  */
 function checkDateFormatIssue() {
   Logger.log('═══════════════════════════════════════');
-  Logger.log('🔍 檢查日期格式問題');
+  Logger.log(' 檢查日期格式問題');
   Logger.log('═══════════════════════════════════════');
   Logger.log('');
   
@@ -3386,7 +3386,7 @@ function checkDateFormatIssue() {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_ATTENDANCE);
   const values = sheet.getDataRange().getValues();
   
-  Logger.log('📋 檢查所有該用戶的記錄日期格式:');
+  Logger.log(' 檢查所有該用戶的記錄日期格式:');
   Logger.log('');
   
   for (let i = 1; i < values.length; i++) {
@@ -3408,7 +3408,7 @@ function checkDateFormatIssue() {
         Logger.log('');
         
       } catch (error) {
-        Logger.log(`第 ${i + 1} 行: ❌ 日期解析失敗`);
+        Logger.log(`第 ${i + 1} 行:  日期解析失敗`);
         Logger.log(`   原始值: ${rawDate}`);
         Logger.log(`   錯誤: ${error.message}`);
         Logger.log('');
@@ -3423,11 +3423,11 @@ function checkDateFormatIssue() {
 // CheckFlexMessage.gs - 檢查 Flex Message 大小和格式
 
 /**
- * 🔍 檢查 2026-02 的 Flex Message 是否有問題
+ *  檢查 2026-02 的 Flex Message 是否有問題
  */
 function checkFlexMessageForFebruary() {
   Logger.log('═══════════════════════════════════════');
-  Logger.log('🔍 檢查 2026-02 的 Flex Message');
+  Logger.log(' 檢查 2026-02 的 Flex Message');
   Logger.log('═══════════════════════════════════════');
   Logger.log('');
   
@@ -3436,13 +3436,13 @@ function checkFlexMessageForFebruary() {
   const employeeName = '洪培瑜Eric';
   
   // 步驟 1: 取得資料
-  Logger.log('📊 步驟 1: 取得打卡記錄');
+  Logger.log(' 步驟 1: 取得打卡記錄');
   const records = getMonthlyPunchRecords(userId, yearMonth);
   Logger.log(`   記錄數: ${records.length}`);
   Logger.log('');
   
   // 步驟 2: 分組和統計
-  Logger.log('📊 步驟 2: 分組和統計');
+  Logger.log(' 步驟 2: 分組和統計');
   const groupedRecords = groupRecordsByDate(records);
   const stats = calculateMonthlyStats(groupedRecords);
   
@@ -3453,7 +3453,7 @@ function checkFlexMessageForFebruary() {
   Logger.log('');
   
   // 步驟 3: 生成 Flex Message（模擬 sendMonthlyRecordsSingle）
-  Logger.log('📊 步驟 3: 生成 Flex Message');
+  Logger.log(' 步驟 3: 生成 Flex Message');
   
   try {
     const monthLabel = yearMonth.replace('-', '年') + '月';
@@ -3516,7 +3516,7 @@ function checkFlexMessageForFebruary() {
         if (record.location) {
           dailyContents.push({
             type: 'text',
-            text: `📍 ${record.location}`,
+            text: ` ${record.location}`,
             size: 'xs',
             color: '#666666',
             margin: 'xs'
@@ -3548,7 +3548,7 @@ function checkFlexMessageForFebruary() {
           contents: [
             {
               type: 'text',
-              text: `📋 ${monthLabel}`,
+              text: ` ${monthLabel}`,
               weight: 'bold',
               size: 'xl',
               color: '#FFFFFF'
@@ -3575,7 +3575,7 @@ function checkFlexMessageForFebruary() {
               contents: [
                 {
                   type: 'text',
-                  text: '📊 本月統計',
+                  text: ' 本月統計',
                   weight: 'bold',
                   size: 'md',
                   color: '#333333'
@@ -3632,54 +3632,54 @@ function checkFlexMessageForFebruary() {
     const jsonString = JSON.stringify(message);
     const jsonSize = new Blob([jsonString]).getSize();
     
-    Logger.log('✅ Flex Message 生成成功');
+    Logger.log(' Flex Message 生成成功');
     Logger.log('');
-    Logger.log('📏 訊息大小檢查:');
+    Logger.log(' 訊息大小檢查:');
     Logger.log(`   JSON 長度: ${jsonString.length} 字元`);
     Logger.log(`   檔案大小: ${jsonSize} bytes`);
     Logger.log(`   檔案大小: ${(jsonSize / 1024).toFixed(2)} KB`);
     Logger.log('');
     
     if (jsonSize > 50000) {
-      Logger.log('⚠️ 警告: Flex Message 可能太大！');
+      Logger.log(' 警告: Flex Message 可能太大！');
       Logger.log('   LINE 的 Flex Message 限制約 50KB');
       Logger.log('');
-      Logger.log('💡 建議:');
+      Logger.log(' 建議:');
       Logger.log('   1. 使用 Carousel 分頁顯示');
       Logger.log('   2. 減少每頁顯示的記錄數');
     } else {
-      Logger.log('✅ 大小正常（小於 50KB）');
+      Logger.log(' 大小正常（小於 50KB）');
     }
     
     Logger.log('');
-    Logger.log('📄 Flex Message JSON 預覽（前 500 字元）:');
+    Logger.log(' Flex Message JSON 預覽（前 500 字元）:');
     Logger.log(jsonString.substring(0, 500) + '...');
     Logger.log('');
     
     // 檢查是否有特殊字元
-    Logger.log('🔍 檢查特殊字元:');
+    Logger.log(' 檢查特殊字元:');
     
     const hasEmoji = /[\u{1F300}-\u{1F9FF}]/u.test(jsonString);
     const hasSpecialChars = /[^\x00-\x7F]/g.test(jsonString);
     
     if (hasEmoji) {
-      Logger.log('   ⚠️ 包含 Emoji');
+      Logger.log('    包含 Emoji');
     }
     if (hasSpecialChars) {
-      Logger.log('   ⚠️ 包含非 ASCII 字元（中文等）');
+      Logger.log('    包含非 ASCII 字元（中文等）');
     }
     if (!hasEmoji && !hasSpecialChars) {
-      Logger.log('   ✅ 沒有特殊字元');
+      Logger.log('    沒有特殊字元');
     }
     
     Logger.log('');
     
     // 驗證 JSON 結構
-    Logger.log('🔍 驗證 JSON 結構:');
+    Logger.log(' 驗證 JSON 結構:');
     
     try {
       const parsed = JSON.parse(jsonString);
-      Logger.log('   ✅ JSON 格式正確');
+      Logger.log('    JSON 格式正確');
       
       // 檢查必要欄位
       const checks = [
@@ -3692,52 +3692,52 @@ function checkFlexMessageForFebruary() {
       
       checks.forEach(([field, valid]) => {
         if (valid) {
-          Logger.log(`   ✅ ${field} 正確`);
+          Logger.log(`    ${field} 正確`);
         } else {
-          Logger.log(`   ❌ ${field} 有問題`);
+          Logger.log(`    ${field} 有問題`);
         }
       });
       
     } catch (parseError) {
-      Logger.log('   ❌ JSON 解析失敗: ' + parseError.message);
+      Logger.log('    JSON 解析失敗: ' + parseError.message);
     }
     
     Logger.log('');
     
     // 嘗試實際發送（使用假 token）
-    Logger.log('📤 測試發送:');
+    Logger.log(' 測試發送:');
     
     const testReplyToken = 'test-token-' + Date.now();
     
     try {
       sendLineReply_(testReplyToken, [message]);
-      Logger.log('   ✅ sendLineReply_ 執行成功');
+      Logger.log('    sendLineReply_ 執行成功');
       Logger.log('   （會看到 Invalid reply token 是正常的）');
     } catch (sendError) {
-      Logger.log('   ❌ sendLineReply_ 執行失敗: ' + sendError.message);
+      Logger.log('    sendLineReply_ 執行失敗: ' + sendError.message);
       Logger.log('   這可能是問題所在！');
     }
     
   } catch (error) {
-    Logger.log('❌ 生成 Flex Message 失敗');
+    Logger.log(' 生成 Flex Message 失敗');
     Logger.log('   錯誤: ' + error.message);
     Logger.log('   堆疊: ' + error.stack);
   }
   
   Logger.log('');
   Logger.log('═══════════════════════════════════════');
-  Logger.log('✅ 檢查完成');
+  Logger.log(' 檢查完成');
   Logger.log('═══════════════════════════════════════');
 }
 
 // ==================== 加班申請功能 ====================
 
 /**
- * 📝 發送加班申請指引
+ *  發送加班申請指引
  */
 function sendOvertimeApplicationGuide(replyToken, userId, employeeName) {
   try {
-    Logger.log('📝 發送加班申請指引');
+    Logger.log(' 發送加班申請指引');
     Logger.log('   userId: ' + userId);
     
     const message = {
@@ -3752,7 +3752,7 @@ function sendOvertimeApplicationGuide(replyToken, userId, employeeName) {
           contents: [
             {
               type: 'text',
-              text: '⏰ 加班申請',
+              text: ' 加班申請',
               weight: 'bold',
               size: 'xl',
               color: '#FFFFFF'
@@ -3784,7 +3784,7 @@ function sendOvertimeApplicationGuide(replyToken, userId, employeeName) {
               contents: [
                 {
                   type: 'text',
-                  text: '📱 如何申請加班？',
+                  text: ' 如何申請加班？',
                   weight: 'bold',
                   size: 'md',
                   color: '#FF9800'
@@ -3811,7 +3811,7 @@ function sendOvertimeApplicationGuide(replyToken, userId, employeeName) {
               contents: [
                 {
                   type: 'text',
-                  text: '📋 申請步驟',
+                  text: ' 申請步驟',
                   weight: 'bold',
                   size: 'md',
                   color: '#2196F3'
@@ -3860,7 +3860,7 @@ function sendOvertimeApplicationGuide(replyToken, userId, employeeName) {
               contents: [
                 {
                   type: 'text',
-                  text: '⚠️ 注意事項',
+                  text: ' 注意事項',
                   weight: 'bold',
                   size: 'md',
                   color: '#FF6B6B'
@@ -3899,7 +3899,7 @@ function sendOvertimeApplicationGuide(replyToken, userId, employeeName) {
               contents: [
                 {
                   type: 'text',
-                  text: '💡 相關指令',
+                  text: ' 相關指令',
                   weight: 'bold',
                   size: 'sm',
                   color: '#999999'
@@ -3933,7 +3933,7 @@ function sendOvertimeApplicationGuide(replyToken, userId, employeeName) {
               height: 'sm',
               action: {
                 type: 'uri',
-                label: '📱 開啟網頁版',
+                label: ' 開啟網頁版',
                 uri: 'https://eric693.github.io/ice_check_manager/'
               },
               color: '#FF9800'
@@ -3944,7 +3944,7 @@ function sendOvertimeApplicationGuide(replyToken, userId, employeeName) {
               height: 'sm',
               action: {
                 type: 'message',
-                label: '📋 查看我的加班紀錄',
+                label: ' 查看我的加班紀錄',
                 text: '加班紀錄'
               }
             }
@@ -3955,27 +3955,27 @@ function sendOvertimeApplicationGuide(replyToken, userId, employeeName) {
     };
     
     sendLineReply_(replyToken, [message]);
-    Logger.log('✅ 加班申請指引已發送');
+    Logger.log(' 加班申請指引已發送');
     
   } catch (error) {
-    Logger.log('❌ sendOvertimeApplicationGuide 錯誤: ' + error);
-    replyMessage(replyToken, '❌ 系統錯誤，請稍後再試');
+    Logger.log(' sendOvertimeApplicationGuide 錯誤: ' + error);
+    replyMessage(replyToken, ' 系統錯誤，請稍後再試');
   }
 }
 
 /**
- * 📋 發送我的加班紀錄
+ *  發送我的加班紀錄
  */
 function sendMyOvertimeRecords(replyToken, userId, employeeName) {
   try {
-    Logger.log('📋 查詢加班紀錄');
+    Logger.log(' 查詢加班紀錄');
     Logger.log('   userId: ' + userId);
     
     // 取得加班記錄
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_OVERTIME);
     
     if (!sheet) {
-      replyMessage(replyToken, '❌ 找不到加班申請記錄');
+      replyMessage(replyToken, ' 找不到加班申請記錄');
       return;
     }
     
@@ -4042,10 +4042,10 @@ function sendMyOvertimeRecords(replyToken, userId, employeeName) {
         statusText = '⏳ 待審核';
         statusColor = '#FF9800';
       } else if (record.status === 'approved') {
-        statusText = '✅ 已核准';
+        statusText = ' 已核准';
         statusColor = '#4CAF50';
       } else if (record.status === 'rejected') {
-        statusText = '❌ 已拒絕';
+        statusText = ' 已拒絕';
         statusColor = '#F44336';
       } else {
         statusText = record.status;
@@ -4108,7 +4108,7 @@ function sendMyOvertimeRecords(replyToken, userId, employeeName) {
       if (record.compensatoryHours > 0) {
         recordContents.push({
           type: 'text',
-          text: `💤 補休時數：${record.compensatoryHours}h`,
+          text: ` 補休時數：${record.compensatoryHours}h`,
           size: 'xs',
           color: '#2196F3',
           margin: 'xs'
@@ -4129,7 +4129,7 @@ function sendMyOvertimeRecords(replyToken, userId, employeeName) {
         if (record.reviewComment) {
           recordContents.push({
             type: 'text',
-            text: `💬 ${record.reviewComment}`,
+            text: ` ${record.reviewComment}`,
             size: 'xs',
             color: '#999999',
             margin: 'xs',
@@ -4151,7 +4151,7 @@ function sendMyOvertimeRecords(replyToken, userId, employeeName) {
           contents: [
             {
               type: 'text',
-              text: '⏰ 加班紀錄',
+              text: ' 加班紀錄',
               weight: 'bold',
               size: 'xl',
               color: '#FFFFFF'
@@ -4178,7 +4178,7 @@ function sendMyOvertimeRecords(replyToken, userId, employeeName) {
               contents: [
                 {
                   type: 'text',
-                  text: '📊 統計',
+                  text: ' 統計',
                   weight: 'bold',
                   size: 'md',
                   color: '#333333'
@@ -4261,7 +4261,7 @@ function sendMyOvertimeRecords(replyToken, userId, employeeName) {
               height: 'sm',
               action: {
                 type: 'uri',
-                label: '📱 查看完整記錄',
+                label: ' 查看完整記錄',
                 uri: 'https://eric693.github.io/ice_check_manager/'
               }
             }
@@ -4271,12 +4271,12 @@ function sendMyOvertimeRecords(replyToken, userId, employeeName) {
     };
     
     sendLineReply_(replyToken, [message]);
-    Logger.log('✅ 加班紀錄已發送');
+    Logger.log(' 加班紀錄已發送');
     
   } catch (error) {
-    Logger.log('❌ sendMyOvertimeRecords 錯誤: ' + error);
+    Logger.log(' sendMyOvertimeRecords 錯誤: ' + error);
     Logger.log('   錯誤堆疊: ' + error.stack);
-    replyMessage(replyToken, '❌ 查詢失敗，請稍後再試');
+    replyMessage(replyToken, ' 查詢失敗，請稍後再試');
   }
 }
 
@@ -4314,7 +4314,7 @@ function formatOvertimeDate(dateValue) {
     return String(dateValue);
     
   } catch (e) {
-    Logger.log('⚠️ formatOvertimeDate 失敗: ' + dateValue);
+    Logger.log(' formatOvertimeDate 失敗: ' + dateValue);
     return String(dateValue);
   }
 }
@@ -4349,14 +4349,14 @@ function formatOvertimeTime(timeValue) {
     return String(timeValue);
     
   } catch (e) {
-    Logger.log('⚠️ formatOvertimeTime 失敗: ' + timeValue);
+    Logger.log(' formatOvertimeTime 失敗: ' + timeValue);
     return String(timeValue);
   }
 }
 
 
 /**
- * 📅 發送排班查詢選單
+ *  發送排班查詢選單
  */
 function sendShiftQueryMenu(replyToken, userId, employeeName) {
   const message = {
@@ -4366,15 +4366,15 @@ function sendShiftQueryMenu(replyToken, userId, employeeName) {
       items: [
         {
           type: 'action',
-          action: { type: 'message', label: '📋 今日排班', text: '今日排班' }
+          action: { type: 'message', label: ' 今日排班', text: '今日排班' }
         },
         {
           type: 'action',
-          action: { type: 'message', label: '📅 本週排班', text: '本週排班' }
+          action: { type: 'message', label: ' 本週排班', text: '本週排班' }
         },
         {
           type: 'action',
-          action: { type: 'message', label: '📆 本月排班', text: '本月排班' }
+          action: { type: 'message', label: ' 本月排班', text: '本月排班' }
         }
       ]
     }
@@ -4383,11 +4383,11 @@ function sendShiftQueryMenu(replyToken, userId, employeeName) {
 }
 
 /**
- * 📋 發送今日排班
+ *  發送今日排班
  */
 function sendTodayShift(replyToken, userId, employeeName) {
   try {
-    Logger.log('📋 查詢今日排班');
+    Logger.log(' 查詢今日排班');
     Logger.log('   userId: ' + userId);
     
     // 取得今日日期
@@ -4397,12 +4397,12 @@ function sendTodayShift(replyToken, userId, employeeName) {
     const shiftResult = getEmployeeShiftForDate(userId, today);
     
     if (!shiftResult.success) {
-      replyMessage(replyToken, '❌ 查詢失敗，請稍後再試');
+      replyMessage(replyToken, ' 查詢失敗，請稍後再試');
       return;
     }
     
     if (!shiftResult.hasShift) {
-      replyMessage(replyToken, `${employeeName}，您今天沒有排班\n\n🎉 今天是休假日！`);
+      replyMessage(replyToken, `${employeeName}，您今天沒有排班\n\n 今天是休假日！`);
       return;
     }
     
@@ -4421,7 +4421,7 @@ function sendTodayShift(replyToken, userId, employeeName) {
           contents: [
             {
               type: 'text',
-              text: '📋 今日排班',
+              text: ' 今日排班',
               weight: 'bold',
               size: 'xl',
               color: '#FFFFFF'
@@ -4557,7 +4557,7 @@ function sendTodayShift(replyToken, userId, employeeName) {
             },
             {
               type: 'text',
-              text: '💡 提醒：請準時打卡',
+              text: ' 提醒：請準時打卡',
               size: 'xs',
               color: '#999999',
               margin: 'lg',
@@ -4569,20 +4569,20 @@ function sendTodayShift(replyToken, userId, employeeName) {
     };
     
     sendLineReply_(replyToken, [message]);
-    Logger.log('✅ 今日排班已發送');
+    Logger.log(' 今日排班已發送');
     
   } catch (error) {
-    Logger.log('❌ sendTodayShift 錯誤: ' + error);
-    replyMessage(replyToken, '❌ 查詢失敗，請稍後再試');
+    Logger.log(' sendTodayShift 錯誤: ' + error);
+    replyMessage(replyToken, ' 查詢失敗，請稍後再試');
   }
 }
 
 /**
- * 📅 發送本週排班
+ *  發送本週排班
  */
 function sendWeeklyShifts(replyToken, userId, employeeName) {
   try {
-    Logger.log('📅 查詢本週排班');
+    Logger.log(' 查詢本週排班');
     Logger.log('   userId: ' + userId);
     
     // 計算本週日期範圍
@@ -4603,12 +4603,12 @@ function sendWeeklyShifts(replyToken, userId, employeeName) {
     });
     
     if (!shiftsResult.success) {
-      replyMessage(replyToken, '❌ 查詢失敗，請稍後再試');
+      replyMessage(replyToken, ' 查詢失敗，請稍後再試');
       return;
     }
     
     if (shiftsResult.data.length === 0) {
-      replyMessage(replyToken, `${employeeName}，您本週沒有排班\n\n🎉 本週都是休假日！`);
+      replyMessage(replyToken, `${employeeName}，您本週沒有排班\n\n 本週都是休假日！`);
       return;
     }
     
@@ -4640,7 +4640,7 @@ function sendWeeklyShifts(replyToken, userId, employeeName) {
         contents: [
           {
             type: 'text',
-            text: dateLabel + (isToday ? ' 📍' : ''),
+            text: dateLabel + (isToday ? ' ' : ''),
             weight: 'bold',
             size: 'md',
             color: isToday ? '#2196F3' : '#333333'
@@ -4670,7 +4670,7 @@ function sendWeeklyShifts(replyToken, userId, employeeName) {
           },
           {
             type: 'text',
-            text: `📍 ${shift.location}`,
+            text: ` ${shift.location}`,
             size: 'xs',
             color: '#999999',
             margin: 'xs'
@@ -4691,7 +4691,7 @@ function sendWeeklyShifts(replyToken, userId, employeeName) {
           contents: [
             {
               type: 'text',
-              text: '📅 本週排班',
+              text: ' 本週排班',
               weight: 'bold',
               size: 'xl',
               color: '#FFFFFF'
@@ -4741,20 +4741,20 @@ function sendWeeklyShifts(replyToken, userId, employeeName) {
     };
     
     sendLineReply_(replyToken, [message]);
-    Logger.log('✅ 本週排班已發送');
+    Logger.log(' 本週排班已發送');
     
   } catch (error) {
-    Logger.log('❌ sendWeeklyShifts 錯誤: ' + error);
-    replyMessage(replyToken, '❌ 查詢失敗，請稍後再試');
+    Logger.log(' sendWeeklyShifts 錯誤: ' + error);
+    replyMessage(replyToken, ' 查詢失敗，請稍後再試');
   }
 }
 
 /**
- * 📆 發送本月排班
+ *  發送本月排班
  */
 function sendMonthlyShifts(replyToken, userId, employeeName) {
   try {
-    Logger.log('📆 查詢本月排班');
+    Logger.log(' 查詢本月排班');
     Logger.log('   userId: ' + userId);
     
     // 計算本月日期範圍
@@ -4776,13 +4776,13 @@ function sendMonthlyShifts(replyToken, userId, employeeName) {
     });
     
     if (!shiftsResult.success) {
-      replyMessage(replyToken, '❌ 查詢失敗，請稍後再試');
+      replyMessage(replyToken, ' 查詢失敗，請稍後再試');
       return;
     }
     
     if (shiftsResult.data.length === 0) {
       const monthLabel = Utilities.formatDate(today, 'Asia/Taipei', 'yyyy年MM月');
-      replyMessage(replyToken, `${employeeName}，您本月沒有排班\n\n🎉 ${monthLabel}都是休假日！`);
+      replyMessage(replyToken, `${employeeName}，您本月沒有排班\n\n ${monthLabel}都是休假日！`);
       return;
     }
     
@@ -4880,7 +4880,7 @@ function sendMonthlyShifts(replyToken, userId, employeeName) {
           contents: [
             {
               type: 'text',
-              text: `📆 ${monthLabel}排班`,
+              text: ` ${monthLabel}排班`,
               weight: 'bold',
               size: 'xl',
               color: '#FFFFFF'
@@ -4912,7 +4912,7 @@ function sendMonthlyShifts(replyToken, userId, employeeName) {
               contents: [
                 {
                   type: 'text',
-                  text: '📊 班別統計',
+                  text: ' 班別統計',
                   weight: 'bold',
                   size: 'sm',
                   color: '#333333'
@@ -4946,8 +4946,8 @@ function sendMonthlyShifts(replyToken, userId, employeeName) {
             {
               type: 'text',
               text: recentShifts.length === shiftsResult.data.length 
-                ? '📋 排班明細' 
-                : `📋 近期排班（前 ${recentShifts.length} 天）`,
+                ? ' 排班明細' 
+                : ` 近期排班（前 ${recentShifts.length} 天）`,
               weight: 'bold',
               size: 'sm',
               color: '#333333',
@@ -4972,7 +4972,7 @@ function sendMonthlyShifts(replyToken, userId, employeeName) {
               height: 'sm',
               action: {
                 type: 'uri',
-                label: '📱 查看完整排班',
+                label: ' 查看完整排班',
                 uri: 'https://eric693.github.io/ice_check_manager/'
               }
             }
@@ -4982,11 +4982,11 @@ function sendMonthlyShifts(replyToken, userId, employeeName) {
     };
     
     sendLineReply_(replyToken, [message]);
-    Logger.log('✅ 本月排班已發送');
+    Logger.log(' 本月排班已發送');
     
   } catch (error) {
-    Logger.log('❌ sendMonthlyShifts 錯誤: ' + error);
-    replyMessage(replyToken, '❌ 查詢失敗，請稍後再試');
+    Logger.log(' sendMonthlyShifts 錯誤: ' + error);
+    replyMessage(replyToken, ' 查詢失敗，請稍後再試');
   }
 }
 
@@ -4994,13 +4994,13 @@ function sendMonthlyShifts(replyToken, userId, employeeName) {
 
 
 /**
- * 🧪 測試修正後的月份查詢
+ *  測試修正後的月份查詢
  * 
  * 執行這個函數來測試 2026-02 的查詢是否正常
  */
 function testFixedMonthQuery() {
   Logger.log('═══════════════════════════════════════');
-  Logger.log('🧪 測試修正後的月份查詢');
+  Logger.log(' 測試修正後的月份查詢');
   Logger.log('═══════════════════════════════════════');
   Logger.log('');
   
@@ -5024,7 +5024,7 @@ function testFixedMonthQuery() {
   ];
   
   testCases.forEach((testCase, index) => {
-    Logger.log(`\n📋 測試 ${index + 1}: ${testCase.name}`);
+    Logger.log(`\n 測試 ${index + 1}: ${testCase.name}`);
     Logger.log(`   userId: ${testCase.userId}`);
     Logger.log(`   查詢月份: ${testCase.yearMonth}`);
     Logger.log('───────────────────────────────────────');
@@ -5032,8 +5032,8 @@ function testFixedMonthQuery() {
     try {
       const records = getMonthlyPunchRecords(testCase.userId, testCase.yearMonth);
       
-      Logger.log(`   ✅ 查詢成功！`);
-      Logger.log(`   📊 找到 ${records.length} 筆記錄`);
+      Logger.log(`    查詢成功！`);
+      Logger.log(`    找到 ${records.length} 筆記錄`);
       
       if (records.length > 0) {
         Logger.log('');
@@ -5042,26 +5042,26 @@ function testFixedMonthQuery() {
           Logger.log(`   ${i + 1}. ${record.date} ${record.time} - ${record.type}`);
         });
       } else {
-        Logger.log('   ⚠️ 沒有找到記錄（但應該要有！）');
+        Logger.log('    沒有找到記錄（但應該要有！）');
       }
       
     } catch (error) {
-      Logger.log(`   ❌ 查詢失敗: ${error.message}`);
+      Logger.log(`    查詢失敗: ${error.message}`);
     }
   });
   
   Logger.log('');
   Logger.log('═══════════════════════════════════════');
-  Logger.log('✅ 測試完成');
+  Logger.log(' 測試完成');
   Logger.log('═══════════════════════════════════════');
 }
 
 /**
- * 🔍 檢查特定員工的所有記錄月份分布
+ *  檢查特定員工的所有記錄月份分布
  */
 function checkEmployeeMonthDistribution() {
   Logger.log('═══════════════════════════════════════');
-  Logger.log('🔍 檢查員工記錄月份分布');
+  Logger.log(' 檢查員工記錄月份分布');
   Logger.log('═══════════════════════════════════════');
   Logger.log('');
   
@@ -5093,7 +5093,7 @@ function checkEmployeeMonthDistribution() {
     }
   }
   
-  Logger.log('📊 連宜蓁 的記錄分布：');
+  Logger.log(' 連宜蓁 的記錄分布：');
   Logger.log('');
   
   Object.keys(monthCount).sort().forEach(month => {
@@ -5105,11 +5105,11 @@ function checkEmployeeMonthDistribution() {
 }
 
 /**
- * 🎯 直接測試 LINE Bot 的完整流程
+ *  直接測試 LINE Bot 的完整流程
  */
 function testLineMonthQuery() {
   Logger.log('═══════════════════════════════════════');
-  Logger.log('🎯 模擬 LINE Bot 查詢流程');
+  Logger.log(' 模擬 LINE Bot 查詢流程');
   Logger.log('═══════════════════════════════════════');
   Logger.log('');
   
@@ -5118,25 +5118,25 @@ function testLineMonthQuery() {
   const yearMonth = '2026-02';
   const testReplyToken = 'test-token-' + Date.now();
   
-  Logger.log('📱 模擬用戶操作：');
+  Logger.log(' 模擬用戶操作：');
   Logger.log(`   用戶: ${employeeName}`);
   Logger.log(`   查詢月份: ${yearMonth}`);
   Logger.log('');
   
   try {
-    Logger.log('🔄 執行 sendMonthlyRecords...');
+    Logger.log(' 執行 sendMonthlyRecords...');
     sendMonthlyRecords(testReplyToken, userId, employeeName, yearMonth);
     
     Logger.log('');
-    Logger.log('✅ 函數執行完成');
+    Logger.log(' 函數執行完成');
     Logger.log('');
-    Logger.log('💡 請檢查上方的 log 輸出：');
+    Logger.log(' 請檢查上方的 log 輸出：');
     Logger.log('   - 是否有「找到 X 筆打卡記錄」');
     Logger.log('   - 是否有建立 Flex Message');
     Logger.log('   - 是否有發送訊息（會看到 Invalid reply token 是正常的）');
     
   } catch (error) {
-    Logger.log('❌ 執行失敗: ' + error.message);
+    Logger.log(' 執行失敗: ' + error.message);
     Logger.log('   堆疊: ' + error.stack);
   }
   
@@ -5147,11 +5147,11 @@ function testLineMonthQuery() {
 
 
 /**
- * 🧪 完整測試 Eric 的月份查詢流程
+ *  完整測試 Eric 的月份查詢流程
  */
 function testEricMonthQuery() {
   Logger.log('═══════════════════════════════════════');
-  Logger.log('🧪 測試 Eric 的月份查詢流程');
+  Logger.log(' 測試 Eric 的月份查詢流程');
   Logger.log('═══════════════════════════════════════');
   Logger.log('');
   
@@ -5159,7 +5159,7 @@ function testEricMonthQuery() {
   checkEricRecords();
   
   Logger.log('');
-  Logger.log('🎯 模擬 LINE Bot 查詢:');
+  Logger.log(' 模擬 LINE Bot 查詢:');
   Logger.log('');
   
   // 從員工表找 Eric 的 userId
@@ -5179,7 +5179,7 @@ function testEricMonthQuery() {
   }
   
   if (!ericUserId) {
-    Logger.log('❌ 找不到 Eric 的資料');
+    Logger.log(' 找不到 Eric 的資料');
     return;
   }
   
@@ -5192,14 +5192,14 @@ function testEricMonthQuery() {
   Logger.log('');
   
   try {
-    Logger.log('🔄 執行 sendMonthlyRecords...');
+    Logger.log(' 執行 sendMonthlyRecords...');
     sendMonthlyRecords(testReplyToken, ericUserId, ericName, yearMonth);
     
     Logger.log('');
-    Logger.log('✅ 執行完成');
+    Logger.log(' 執行完成');
     
   } catch (error) {
-    Logger.log('❌ 執行失敗: ' + error.message);
+    Logger.log(' 執行失敗: ' + error.message);
     Logger.log('   堆疊: ' + error.stack);
   }
   
@@ -5209,32 +5209,32 @@ function testEricMonthQuery() {
 
 
 /**
- * 🚀 一鍵設定圖文選單（使用您的圖片）
+ *  一鍵設定圖文選單（使用您的圖片）
  * 
  * 使用方式：
- * 1. 確保圖片已設定為「知道連結的任何人都可以查看」✅（已完成）
+ * 1. 確保圖片已設定為「知道連結的任何人都可以查看」（已完成）
  * 2. 在 Apps Script 中執行這個函數
  * 3. 等待完成！
  */
 function quickSetupWithYourImage() {
   try {
     Logger.log('═══════════════════════════════════════');
-    Logger.log('🚀 開始設定圖文選單');
+    Logger.log(' 開始設定圖文選單');
     Logger.log('═══════════════════════════════════════');
     Logger.log('');
     
     // 您的圖片 File ID
     const imageFileId = '1MKeVa205TM1yoWR72UfUXFmsl57qSoUD';
     // 步驟 1: 建立圖文選單
-    Logger.log('📋 步驟 1/3: 建立圖文選單結構...');
+    Logger.log(' 步驟 1/3: 建立圖文選單結構...');
     const richMenuId = createPunchRichMenu();
     
     if (!richMenuId) {
-      Logger.log('❌ 建立失敗');
+      Logger.log(' 建立失敗');
       return;
     }
     
-    Logger.log('✅ 圖文選單建立成功');
+    Logger.log(' 圖文選單建立成功');
     Logger.log('   Rich Menu ID: ' + richMenuId);
     Logger.log('');
     
@@ -5242,13 +5242,13 @@ function quickSetupWithYourImage() {
     Utilities.sleep(2000);
     
     // 步驟 2: 上傳圖片
-    Logger.log('🖼️ 步驟 2/3: 上傳圖片...');
+    Logger.log(' 步驟 2/3: 上傳圖片...');
     
     const channelAccessToken = PropertiesService.getScriptProperties()
       .getProperty('LINE_CHANNEL_ACCESS_TOKEN');
     
     if (!channelAccessToken) {
-      Logger.log('❌ 找不到 LINE_CHANNEL_ACCESS_TOKEN');
+      Logger.log(' 找不到 LINE_CHANNEL_ACCESS_TOKEN');
       Logger.log('');
       Logger.log('請到專案設定 → Script Properties 設定：');
       Logger.log('   名稱: LINE_CHANNEL_ACCESS_TOKEN');
@@ -5261,17 +5261,17 @@ function quickSetupWithYourImage() {
       const file = DriveApp.getFileById(imageFileId);
       const blob = file.getBlob();
       
-      Logger.log('✅ 圖片讀取成功');
+      Logger.log(' 圖片讀取成功');
       Logger.log('   檔案名稱: ' + file.getName());
       Logger.log('   檔案大小: ' + (blob.getBytes().length / 1024).toFixed(2) + ' KB');
       
       // 檢查圖片大小
       if (blob.getBytes().length > 1048576) {
-        Logger.log('⚠️ 警告: 圖片超過 1MB，可能無法上傳');
+        Logger.log(' 警告: 圖片超過 1MB，可能無法上傳');
       }
       
       Logger.log('');
-      Logger.log('📤 正在上傳到 LINE...');
+      Logger.log(' 正在上傳到 LINE...');
       
       const url = `https://api-data.line.me/v2/bot/richmenu/${richMenuId}/content`;
       
@@ -5288,14 +5288,14 @@ function quickSetupWithYourImage() {
       const response = UrlFetchApp.fetch(url, options);
       
       if (response.getResponseCode() === 200) {
-        Logger.log('✅ 圖片上傳成功！');
+        Logger.log(' 圖片上傳成功！');
         Logger.log('');
       } else {
-        Logger.log('❌ 圖片上傳失敗');
+        Logger.log(' 圖片上傳失敗');
         Logger.log('   狀態碼: ' + response.getResponseCode());
         Logger.log('   回應: ' + response.getContentText());
         Logger.log('');
-        Logger.log('💡 可能的原因：');
+        Logger.log(' 可能的原因：');
         Logger.log('   1. 圖片尺寸不是 2500x1686');
         Logger.log('   2. 圖片大小超過 1MB');
         Logger.log('   3. 圖片格式不正確');
@@ -5303,10 +5303,10 @@ function quickSetupWithYourImage() {
       }
       
     } catch (driveError) {
-      Logger.log('❌ 無法讀取 Google Drive 圖片');
+      Logger.log(' 無法讀取 Google Drive 圖片');
       Logger.log('   錯誤: ' + driveError.message);
       Logger.log('');
-      Logger.log('💡 請確認：');
+      Logger.log(' 請確認：');
       Logger.log('   1. 圖片已設定為「知道連結的任何人都可以查看」');
       Logger.log('   2. File ID 正確: ' + imageFileId);
       Logger.log('   3. 執行此腳本的帳號有權限存取該檔案');
@@ -5317,7 +5317,7 @@ function quickSetupWithYourImage() {
     Utilities.sleep(2000);
     
     // 步驟 3: 設為預設選單
-    Logger.log('🎯 步驟 3/3: 設為預設選單...');
+    Logger.log(' 步驟 3/3: 設為預設選單...');
     
     const defaultUrl = `https://api.line.me/v2/bot/user/all/richmenu/${richMenuId}`;
     
@@ -5332,40 +5332,40 @@ function quickSetupWithYourImage() {
     const defaultResponse = UrlFetchApp.fetch(defaultUrl, defaultOptions);
     
     if (defaultResponse.getResponseCode() === 200) {
-      Logger.log('✅ 預設圖文選單設定成功！');
+      Logger.log(' 預設圖文選單設定成功！');
       Logger.log('');
       Logger.log('═══════════════════════════════════════');
-      Logger.log('🎉 完成！圖文選單已成功設定');
+      Logger.log(' 完成！圖文選單已成功設定');
       Logger.log('═══════════════════════════════════════');
       Logger.log('');
-      Logger.log('📱 測試方式：');
+      Logger.log(' 測試方式：');
       Logger.log('1. 開啟 LINE 應用程式');
       Logger.log('2. 找到您的 Bot');
       Logger.log('3. 點擊輸入框左邊的選單按鈕（≡）');
       Logger.log('4. 應該會看到圖文選單');
       Logger.log('');
-      Logger.log('🔗 Rich Menu ID: ' + richMenuId);
+      Logger.log(' Rich Menu ID: ' + richMenuId);
       Logger.log('（請保存此 ID，之後如需修改可用）');
       
     } else {
-      Logger.log('❌ 設定預設選單失敗');
+      Logger.log(' 設定預設選單失敗');
       Logger.log('   狀態碼: ' + defaultResponse.getResponseCode());
       Logger.log('   回應: ' + defaultResponse.getContentText());
     }
     
   } catch (error) {
-    Logger.log('❌ 發生錯誤: ' + error.message);
+    Logger.log(' 發生錯誤: ' + error.message);
     Logger.log('   堆疊: ' + error.stack);
   }
 }
 
 /**
- * 🔍 檢查當前的圖文選單狀態
+ *  檢查當前的圖文選單狀態
  */
 function checkRichMenuStatus() {
   try {
     Logger.log('═══════════════════════════════════════');
-    Logger.log('🔍 檢查圖文選單狀態');
+    Logger.log(' 檢查圖文選單狀態');
     Logger.log('═══════════════════════════════════════');
     Logger.log('');
     
@@ -5373,7 +5373,7 @@ function checkRichMenuStatus() {
       .getProperty('LINE_CHANNEL_ACCESS_TOKEN');
     
     if (!channelAccessToken) {
-      Logger.log('❌ 找不到 LINE_CHANNEL_ACCESS_TOKEN');
+      Logger.log(' 找不到 LINE_CHANNEL_ACCESS_TOKEN');
       return;
     }
     
@@ -5392,7 +5392,7 @@ function checkRichMenuStatus() {
     const result = JSON.parse(response.getContentText());
     
     if (response.getResponseCode() === 200) {
-      Logger.log('✅ 圖文選單列表：');
+      Logger.log(' 圖文選單列表：');
       Logger.log('');
       
       if (result.richmenus && result.richmenus.length > 0) {
@@ -5408,24 +5408,24 @@ function checkRichMenuStatus() {
         Logger.log('目前沒有圖文選單');
       }
     } else {
-      Logger.log('❌ 取得失敗');
+      Logger.log(' 取得失敗');
       Logger.log('   回應: ' + response.getContentText());
     }
     
     Logger.log('═══════════════════════════════════════');
     
   } catch (error) {
-    Logger.log('❌ 檢查失敗: ' + error.message);
+    Logger.log(' 檢查失敗: ' + error.message);
   }
 }
 
 /**
- * 🗑️ 清除所有圖文選單（重新開始用）
+ *  清除所有圖文選單（重新開始用）
  */
 function deleteAllRichMenus() {
   try {
     Logger.log('═══════════════════════════════════════');
-    Logger.log('🗑️ 清除所有圖文選單');
+    Logger.log(' 清除所有圖文選單');
     Logger.log('═══════════════════════════════════════');
     Logger.log('');
     
@@ -5433,7 +5433,7 @@ function deleteAllRichMenus() {
       .getProperty('LINE_CHANNEL_ACCESS_TOKEN');
     
     if (!channelAccessToken) {
-      Logger.log('❌ 找不到 LINE_CHANNEL_ACCESS_TOKEN');
+      Logger.log(' 找不到 LINE_CHANNEL_ACCESS_TOKEN');
       return;
     }
     
@@ -5471,14 +5471,14 @@ function deleteAllRichMenus() {
         const deleteResponse = UrlFetchApp.fetch(deleteUrl, deleteOptions);
         
         if (deleteResponse.getResponseCode() === 200) {
-          Logger.log(`   ✅ 已刪除`);
+          Logger.log(`    已刪除`);
         } else {
-          Logger.log(`   ❌ 刪除失敗`);
+          Logger.log(`    刪除失敗`);
         }
       });
       
       Logger.log('');
-      Logger.log('✅ 清除完成！');
+      Logger.log(' 清除完成！');
       
     } else {
       Logger.log('目前沒有圖文選單');
@@ -5488,7 +5488,7 @@ function deleteAllRichMenus() {
     Logger.log('═══════════════════════════════════════');
     
   } catch (error) {
-    Logger.log('❌ 清除失敗: ' + error.message);
+    Logger.log(' 清除失敗: ' + error.message);
   }
 }
 
@@ -5501,11 +5501,11 @@ function deleteAllRichMenus() {
 // ==================== 請假申請選單 ====================
 
 /**
- * 📝 發送請假申請選單
+ *  發送請假申請選單
  */
 function sendLeaveApplicationMenu(replyToken, userId, employeeName) {
   try {
-    Logger.log('📝 發送請假申請選單');
+    Logger.log(' 發送請假申請選單');
     Logger.log('   userId: ' + userId);
     
     const message = {
@@ -5520,7 +5520,7 @@ function sendLeaveApplicationMenu(replyToken, userId, employeeName) {
           contents: [
             {
               type: 'text',
-              text: '📝 請假申請',
+              text: ' 請假申請',
               weight: 'bold',
               size: 'xl',
               color: '#FFFFFF'
@@ -5552,7 +5552,7 @@ function sendLeaveApplicationMenu(replyToken, userId, employeeName) {
               contents: [
                 {
                   type: 'text',
-                  text: '📱 如何申請請假？',
+                  text: ' 如何申請請假？',
                   weight: 'bold',
                   size: 'md',
                   color: '#FF9800'
@@ -5579,7 +5579,7 @@ function sendLeaveApplicationMenu(replyToken, userId, employeeName) {
               contents: [
                 {
                   type: 'text',
-                  text: '📋 申請步驟',
+                  text: ' 申請步驟',
                   weight: 'bold',
                   size: 'md',
                   color: '#2196F3'
@@ -5628,7 +5628,7 @@ function sendLeaveApplicationMenu(replyToken, userId, employeeName) {
               contents: [
                 {
                   type: 'text',
-                  text: '⚠️ 注意事項',
+                  text: ' 注意事項',
                   weight: 'bold',
                   size: 'md',
                   color: '#FF6B6B'
@@ -5674,7 +5674,7 @@ function sendLeaveApplicationMenu(replyToken, userId, employeeName) {
               contents: [
                 {
                   type: 'text',
-                  text: '💡 相關指令',
+                  text: ' 相關指令',
                   weight: 'bold',
                   size: 'sm',
                   color: '#999999'
@@ -5708,7 +5708,7 @@ function sendLeaveApplicationMenu(replyToken, userId, employeeName) {
               height: 'sm',
               action: {
                 type: 'uri',
-                label: '📱 開啟網頁版申請',
+                label: ' 開啟網頁版申請',
                 uri: 'https://eric693.github.io/ice_check_manager/'
               },
               color: '#FF9800'
@@ -5719,7 +5719,7 @@ function sendLeaveApplicationMenu(replyToken, userId, employeeName) {
               height: 'sm',
               action: {
                 type: 'message',
-                label: '📋 查看我的請假記錄',
+                label: ' 查看我的請假記錄',
                 text: '請假記錄'
               }
             },
@@ -5740,22 +5740,22 @@ function sendLeaveApplicationMenu(replyToken, userId, employeeName) {
     };
     
     sendLineReply_(replyToken, [message]);
-    Logger.log('✅ 請假申請選單已發送');
+    Logger.log(' 請假申請選單已發送');
     
   } catch (error) {
-    Logger.log('❌ sendLeaveApplicationMenu 錯誤: ' + error);
-    replyMessage(replyToken, '❌ 系統錯誤，請稍後再試');
+    Logger.log(' sendLeaveApplicationMenu 錯誤: ' + error);
+    replyMessage(replyToken, ' 系統錯誤，請稍後再試');
   }
 }
 
 // ==================== 請假記錄查詢 ====================
 
 /**
- * 📋 發送我的請假記錄
+ *  發送我的請假記錄
  */
 function sendMyLeaveRecords(replyToken, userId, employeeName) {
   try {
-    Logger.log('📋 查詢請假記錄');
+    Logger.log(' 查詢請假記錄');
     Logger.log('   userId: ' + userId);
     
     // 取得請假記錄
@@ -5829,10 +5829,10 @@ function sendMyLeaveRecords(replyToken, userId, employeeName) {
         statusText = '⏳ 待審核';
         statusColor = '#FF9800';
       } else if (record.status === 'APPROVED') {
-        statusText = '✅ 已核准';
+        statusText = ' 已核准';
         statusColor = '#4CAF50';
       } else if (record.status === 'REJECTED') {
-        statusText = '❌ 已拒絕';
+        statusText = ' 已拒絕';
         statusColor = '#F44336';
       } else {
         statusText = record.status;
@@ -5916,7 +5916,7 @@ function sendMyLeaveRecords(replyToken, userId, employeeName) {
         if (record.reviewComment) {
           recordContents.push({
             type: 'text',
-            text: `💬 ${record.reviewComment}`,
+            text: ` ${record.reviewComment}`,
             size: 'xs',
             color: '#999999',
             margin: 'xs',
@@ -5938,7 +5938,7 @@ function sendMyLeaveRecords(replyToken, userId, employeeName) {
           contents: [
             {
               type: 'text',
-              text: '📋 請假記錄',
+              text: ' 請假記錄',
               weight: 'bold',
               size: 'xl',
               color: '#FFFFFF'
@@ -6068,23 +6068,23 @@ function sendMyLeaveRecords(replyToken, userId, employeeName) {
     };
     
     sendLineReply_(replyToken, [message]);
-    Logger.log('✅ 請假記錄已發送');
+    Logger.log(' 請假記錄已發送');
     
   } catch (error) {
-    Logger.log('❌ sendMyLeaveRecords 錯誤: ' + error);
+    Logger.log(' sendMyLeaveRecords 錯誤: ' + error);
     Logger.log('   錯誤堆疊: ' + error.stack);
-    replyMessage(replyToken, '❌ 查詢失敗，請稍後再試');
+    replyMessage(replyToken, ' 查詢失敗，請稍後再試');
   }
 }
 
 // ==================== 假期餘額查詢 ====================
 
 /**
- * 💰 發送假期餘額
+ *  發送假期餘額
  */
 function sendLeaveBalance(replyToken, userId, employeeName) {
   try {
-    Logger.log('💰 查詢假期餘額');
+    Logger.log(' 查詢假期餘額');
     Logger.log('   userId: ' + userId);
     
     // 取得假期餘額
@@ -6241,7 +6241,7 @@ function sendLeaveBalance(replyToken, userId, employeeName) {
               contents: [
                 {
                   type: 'text',
-                  text: '💡 其他假別',
+                  text: ' 其他假別',
                   weight: 'bold',
                   size: 'sm',
                   color: '#999999'
@@ -6342,7 +6342,7 @@ function sendLeaveBalance(replyToken, userId, employeeName) {
             },
             {
               type: 'text',
-              text: '💡 提醒：假期以小時為單位，8小時=1天',
+              text: ' 提醒：假期以小時為單位，8小時=1天',
               size: 'xs',
               color: '#999999',
               margin: 'lg',
@@ -6361,7 +6361,7 @@ function sendLeaveBalance(replyToken, userId, employeeName) {
               height: 'sm',
               action: {
                 type: 'uri',
-                label: '📱 查看完整假期資訊',
+                label: ' 查看完整假期資訊',
                 uri: 'https://eric693.github.io/ice_check_manager/'
               }
             },
@@ -6371,7 +6371,7 @@ function sendLeaveBalance(replyToken, userId, employeeName) {
               height: 'sm',
               action: {
                 type: 'message',
-                label: '📝 我要請假',
+                label: ' 我要請假',
                 text: '請假申請'
               },
               color: '#4CAF50'
@@ -6382,30 +6382,30 @@ function sendLeaveBalance(replyToken, userId, employeeName) {
     };
     
     sendLineReply_(replyToken, [message]);
-    Logger.log('✅ 假期餘額已發送');
+    Logger.log(' 假期餘額已發送');
     
   } catch (error) {
-    Logger.log('❌ sendLeaveBalance 錯誤: ' + error);
+    Logger.log(' sendLeaveBalance 錯誤: ' + error);
     Logger.log('   錯誤堆疊: ' + error.stack);
-    replyMessage(replyToken, '❌ 查詢失敗，請稍後再試');
+    replyMessage(replyToken, ' 查詢失敗，請稍後再試');
   }
 }
 
 // ==================== 主管審核功能 ====================
 
 /**
- * 👔 發送待審核請假申請（僅管理員）
+ *  發送待審核請假申請（僅管理員）
  */
 function sendPendingLeaveRequests(replyToken, userId, employeeName) {
   try {
-    Logger.log('👔 查詢待審核請假');
+    Logger.log(' 查詢待審核請假');
     Logger.log('   userId: ' + userId);
     
     // 取得員工資料
     const employee = findEmployeeByLineUserId_(userId);
     
     if (!employee.ok || employee.dept !== '管理員') {
-      replyMessage(replyToken, '❌ 此功能僅限管理員使用');
+      replyMessage(replyToken, ' 此功能僅限管理員使用');
       return;
     }
     
@@ -6413,7 +6413,7 @@ function sendPendingLeaveRequests(replyToken, userId, employeeName) {
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('請假紀錄');
     
     if (!sheet) {
-      replyMessage(replyToken, '❌ 請假記錄表不存在');
+      replyMessage(replyToken, ' 請假記錄表不存在');
       return;
     }
     
@@ -6440,7 +6440,7 @@ function sendPendingLeaveRequests(replyToken, userId, employeeName) {
     Logger.log(`   找到 ${pendingRequests.length} 筆待審核`);
     
     if (pendingRequests.length === 0) {
-      replyMessage(replyToken, '✅ 目前沒有待審核的請假申請');
+      replyMessage(replyToken, ' 目前沒有待審核的請假申請');
       return;
     }
     
@@ -6522,7 +6522,7 @@ function sendPendingLeaveRequests(replyToken, userId, employeeName) {
                 height: 'sm',
                 action: {
                   type: 'message',
-                  label: '✅ 核准',
+                  label: ' 核准',
                   text: `核准請假:${req.rowNumber}`
                 },
                 color: '#4CAF50',
@@ -6534,7 +6534,7 @@ function sendPendingLeaveRequests(replyToken, userId, employeeName) {
                 height: 'sm',
                 action: {
                   type: 'message',
-                  label: '❌ 拒絕',
+                  label: ' 拒絕',
                   text: `拒絕請假:${req.rowNumber}`
                 },
                 flex: 1
@@ -6557,7 +6557,7 @@ function sendPendingLeaveRequests(replyToken, userId, employeeName) {
           contents: [
             {
               type: 'text',
-              text: '👔 待審核請假',
+              text: ' 待審核請假',
               weight: 'bold',
               size: 'xl',
               color: '#FFFFFF'
@@ -6598,7 +6598,7 @@ function sendPendingLeaveRequests(replyToken, userId, employeeName) {
           contents: [
             {
               type: 'text',
-              text: '💡 點擊按鈕即可快速審核',
+              text: ' 點擊按鈕即可快速審核',
               size: 'xs',
               color: '#999999',
               align: 'center'
@@ -6609,28 +6609,28 @@ function sendPendingLeaveRequests(replyToken, userId, employeeName) {
     };
     
     sendLineReply_(replyToken, [message]);
-    Logger.log('✅ 待審核請假已發送');
+    Logger.log(' 待審核請假已發送');
     
   } catch (error) {
-    Logger.log('❌ sendPendingLeaveRequests 錯誤: ' + error);
+    Logger.log(' sendPendingLeaveRequests 錯誤: ' + error);
     Logger.log('   錯誤堆疊: ' + error.stack);
-    replyMessage(replyToken, '❌ 查詢失敗，請稍後再試');
+    replyMessage(replyToken, ' 查詢失敗，請稍後再試');
   }
 }
 
 /**
- * ⚖️ 處理請假審核
+ *  處理請假審核
  */
 function handleLeaveReview(replyToken, userId, employeeName, text) {
   try {
-    Logger.log('⚖️ 處理請假審核');
+    Logger.log(' 處理請假審核');
     Logger.log('   text: ' + text);
     
     // 檢查權限
     const employee = findEmployeeByLineUserId_(userId);
     
     if (!employee.ok || employee.dept !== '管理員') {
-      replyMessage(replyToken, '❌ 此功能僅限管理員使用');
+      replyMessage(replyToken, ' 此功能僅限管理員使用');
       return;
     }
     
@@ -6644,12 +6644,12 @@ function handleLeaveReview(replyToken, userId, employeeName, text) {
       action = 'reject';
       rowNumber = parseInt(text.replace('拒絕請假:', ''));
     } else {
-      replyMessage(replyToken, '❌ 無效的審核指令');
+      replyMessage(replyToken, ' 無效的審核指令');
       return;
     }
     
     if (isNaN(rowNumber) || rowNumber < 2) {
-      replyMessage(replyToken, '❌ 無效的行號');
+      replyMessage(replyToken, ' 無效的行號');
       return;
     }
     
@@ -6660,7 +6660,7 @@ function handleLeaveReview(replyToken, userId, employeeName, text) {
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('請假紀錄');
     
     if (!sheet) {
-      replyMessage(replyToken, '❌ 請假記錄表不存在');
+      replyMessage(replyToken, ' 請假記錄表不存在');
       return;
     }
     
@@ -6668,7 +6668,7 @@ function handleLeaveReview(replyToken, userId, employeeName, text) {
     
     // 檢查狀態
     if (String(record[10]).trim() !== 'PENDING') {
-      replyMessage(replyToken, '❌ 此申請已被審核過');
+      replyMessage(replyToken, ' 此申請已被審核過');
       return;
     }
     
@@ -6684,30 +6684,30 @@ function handleLeaveReview(replyToken, userId, employeeName, text) {
     sheet.getRange(rowNumber, 12).setValue(employeeName);
     sheet.getRange(rowNumber, 13).setValue(new Date());
     
-    Logger.log(`✅ 審核狀態已更新: ${status}`);
+    Logger.log(` 審核狀態已更新: ${status}`);
     
     // 如果核准，扣除假期餘額
     if (action === 'approve') {
-      Logger.log('💰 開始扣除假期餘額...');
+      Logger.log(' 開始扣除假期餘額...');
       
       const deductResult = deductLeaveBalanceByUserId(requestUserId, leaveType, workHours);
       
       if (!deductResult.ok) {
-        Logger.log('❌ 扣除餘額失敗: ' + deductResult.msg);
+        Logger.log(' 扣除餘額失敗: ' + deductResult.msg);
         
         // 還原狀態
         sheet.getRange(rowNumber, 11).setValue('PENDING');
         
-        replyMessage(replyToken, `❌ 審核失敗\n\n${deductResult.msg}`);
+        replyMessage(replyToken, ` 審核失敗\n\n${deductResult.msg}`);
         return;
       }
       
-      Logger.log('✅ 假期餘額扣除成功');
+      Logger.log(' 假期餘額扣除成功');
     }
     
     // 發送審核結果
     const leaveTypeName = getLeaveTypeName(leaveType);
-    const resultText = action === 'approve' ? '✅ 已核准' : '❌ 已拒絕';
+    const resultText = action === 'approve' ? ' 已核准' : ' 已拒絕';
     
     replyMessage(
       replyToken,
@@ -6718,21 +6718,21 @@ function handleLeaveReview(replyToken, userId, employeeName, text) {
       (action === 'approve' ? '已扣除假期餘額' : '未扣除假期餘額')
     );
     
-    Logger.log('✅ 審核完成');
+    Logger.log(' 審核完成');
     
   } catch (error) {
-    Logger.log('❌ handleLeaveReview 錯誤: ' + error);
+    Logger.log(' handleLeaveReview 錯誤: ' + error);
     Logger.log('   錯誤堆疊: ' + error.stack);
-    replyMessage(replyToken, '❌ 審核失敗，請稍後再試');
+    replyMessage(replyToken, ' 審核失敗，請稍後再試');
   }
 }
 
 /**
- * 💰 扣除假期餘額（使用 userId）
+ *  扣除假期餘額（使用 userId）
  */
 function deductLeaveBalanceByUserId(userId, leaveType, hours) {
   try {
-    Logger.log('📊 扣除假期餘額');
+    Logger.log(' 扣除假期餘額');
     Logger.log(`   員工ID: ${userId}`);
     Logger.log(`   假別: ${leaveType}`);
     Logger.log(`   小時數: ${hours}`);
@@ -6784,7 +6784,7 @@ function deductLeaveBalanceByUserId(userId, leaveType, hours) {
         sheet.getRange(i + 1, columnIndex).setValue(newBalance);
         sheet.getRange(i + 1, 18).setValue(new Date());
         
-        Logger.log('✅ 餘額已更新');
+        Logger.log(' 餘額已更新');
         
         return { ok: true, remaining: newBalance };
       }
@@ -6793,7 +6793,7 @@ function deductLeaveBalanceByUserId(userId, leaveType, hours) {
     return { ok: false, msg: '找不到員工記錄' };
     
   } catch (error) {
-    Logger.log('❌ deductLeaveBalanceByUserId 錯誤: ' + error);
+    Logger.log(' deductLeaveBalanceByUserId 錯誤: ' + error);
     return { ok: false, msg: error.message };
   }
 }
@@ -6801,7 +6801,7 @@ function deductLeaveBalanceByUserId(userId, leaveType, hours) {
 // ==================== 輔助函數 ====================
 
 /**
- * 🏷️ 取得假別中文名稱
+ *  取得假別中文名稱
  */
 function getLeaveTypeName(leaveType) {
   const names = {
@@ -6825,7 +6825,7 @@ function getLeaveTypeName(leaveType) {
 }
 
 /**
- * 📅 格式化請假日期時間
+ *  格式化請假日期時間
  */
 function formatLeaveDateTime(dateTime) {
   if (!dateTime) return '';
@@ -6840,7 +6840,7 @@ function formatLeaveDateTime(dateTime) {
 }
 
 /**
- * 📅 格式化請假日期（簡短版）
+ *  格式化請假日期（簡短版）
  */
 function formatLeaveDate(dateTime) {
   if (!dateTime) return '';
@@ -6859,11 +6859,11 @@ function formatLeaveDate(dateTime) {
 }
 
 /**
- * 🔬 使用截圖中的實際 userId 診斷
+ *  使用截圖中的實際 userId 診斷
  */
 function diagnoseWithCorrectUserId() {
   Logger.log('═══════════════════════════════════════');
-  Logger.log('🔬 使用正確的 userId 診斷');
+  Logger.log(' 使用正確的 userId 診斷');
   Logger.log('═══════════════════════════════════════');
   
   // ⭐ 從截圖複製的正確 userId
@@ -6875,17 +6875,17 @@ function diagnoseWithCorrectUserId() {
   const today = Utilities.formatDate(new Date(), 'Asia/Taipei', 'yyyy-MM-dd');
   const thisMonth = Utilities.formatDate(new Date(), 'Asia/Taipei', 'yyyy-MM');
   
-  Logger.log('📅 今天: ' + today);
-  Logger.log('📅 本月: ' + thisMonth);
-  Logger.log('🆔 目標 userId: ' + userId);
-  Logger.log('📊 總行數: ' + values.length);
+  Logger.log(' 今天: ' + today);
+  Logger.log(' 本月: ' + thisMonth);
+  Logger.log(' 目標 userId: ' + userId);
+  Logger.log(' 總行數: ' + values.length);
   Logger.log('');
   
   let todayCount = 0;
   let monthCount = 0;
   let allUserRecords = [];
   
-  Logger.log('🔍 檢查所有記錄:');
+  Logger.log(' 檢查所有記錄:');
   Logger.log('');
   
   for (let i = 1; i < values.length; i++) {
@@ -6894,7 +6894,7 @@ function diagnoseWithCorrectUserId() {
     // 先檢查前幾行
     if (i <= 5) {
       Logger.log(`第 ${i + 1} 行 userId: "${recordUserId}"`);
-      Logger.log(`   比對結果: ${recordUserId === userId ? '✅ 符合' : '❌ 不符'}`);
+      Logger.log(`   比對結果: ${recordUserId === userId ? ' 符合' : ' 不符'}`);
       Logger.log('');
     }
     
@@ -6918,21 +6918,21 @@ function diagnoseWithCorrectUserId() {
   }
   
   Logger.log('═══════════════════════════════════════');
-  Logger.log('📊 統計結果:');
+  Logger.log(' 統計結果:');
   Logger.log(`   該 userId 總記錄數: ${allUserRecords.length}`);
   Logger.log(`   今日記錄數: ${todayCount}`);
   Logger.log(`   本月記錄數: ${monthCount}`);
   Logger.log('');
   
   if (allUserRecords.length > 0) {
-    Logger.log('📋 所有記錄:');
+    Logger.log(' 所有記錄:');
     allUserRecords.forEach(r => {
       Logger.log(`   第 ${r.row} 行: ${r.date} - ${r.type}`);
     });
   } else {
-    Logger.log('❌ 沒有找到任何記錄！');
+    Logger.log(' 沒有找到任何記錄！');
     Logger.log('');
-    Logger.log('🔍 讓我們檢查 userId 是否完全一致:');
+    Logger.log(' 讓我們檢查 userId 是否完全一致:');
     Logger.log(`   目標 userId 長度: ${userId.length}`);
     
     // 檢查前 3 行的 userId
@@ -6947,12 +6947,12 @@ function diagnoseWithCorrectUserId() {
         let diffFound = false;
         for (let j = 0; j < Math.max(String(cellUserId).length, userId.length); j++) {
           if (String(cellUserId)[j] !== userId[j]) {
-            Logger.log(`   ⚠️ 第 ${j} 個字元不同: "${String(cellUserId)[j]}" vs "${userId[j]}"`);
+            Logger.log(`    第 ${j} 個字元不同: "${String(cellUserId)[j]}" vs "${userId[j]}"`);
             diffFound = true;
           }
         }
         if (!diffFound && cellUserId !== userId) {
-          Logger.log('   ⚠️ 字元都相同但不相等，可能有隱藏字元');
+          Logger.log('    字元都相同但不相等，可能有隱藏字元');
         }
       }
     }
@@ -6963,37 +6963,37 @@ function diagnoseWithCorrectUserId() {
 
 
 /**
- * 🧪 測試實際的月份查詢函數
+ *  測試實際的月份查詢函數
  */
 function testActualMonthQuery() {
   Logger.log('═══════════════════════════════════════');
-  Logger.log('🧪 測試實際的月份查詢函數');
+  Logger.log(' 測試實際的月份查詢函數');
   Logger.log('═══════════════════════════════════════');
   Logger.log('');
   
   const userId = 'Ue76b65367821240ac26387d2972a5adf';
   const yearMonth = '2026-02';
   
-  Logger.log(`🔍 測試參數:`);
+  Logger.log(` 測試參數:`);
   Logger.log(`   userId: ${userId}`);
   Logger.log(`   yearMonth: ${yearMonth}`);
   Logger.log('');
   
   // 呼叫實際的查詢函數
-  Logger.log('📞 呼叫 getMonthlyPunchRecords...');
+  Logger.log(' 呼叫 getMonthlyPunchRecords...');
   const records = getMonthlyPunchRecords(userId, yearMonth);
   
   Logger.log('');
-  Logger.log(`✅ 回傳結果: ${records.length} 筆`);
+  Logger.log(` 回傳結果: ${records.length} 筆`);
   Logger.log('');
   
   if (records.length > 0) {
-    Logger.log('📋 記錄內容:');
+    Logger.log(' 記錄內容:');
     records.forEach((record, index) => {
       Logger.log(`${index + 1}. ${record.date} ${record.time} - ${record.type} @ ${record.location}`);
     });
   } else {
-    Logger.log('❌ 沒有回傳任何記錄！');
+    Logger.log(' 沒有回傳任何記錄！');
     Logger.log('');
     Logger.log('這表示 getMonthlyPunchRecords 函數有問題');
   }
@@ -7003,11 +7003,11 @@ function testActualMonthQuery() {
 }
 
 /**
- * 🧪 測試完整的 sendMonthlyRecords 流程
+ *  測試完整的 sendMonthlyRecords 流程
  */
 function testFullMonthlyRecordsFlow() {
   Logger.log('═══════════════════════════════════════');
-  Logger.log('🧪 測試完整的月份查詢流程');
+  Logger.log(' 測試完整的月份查詢流程');
   Logger.log('═══════════════════════════════════════');
   Logger.log('');
   
@@ -7016,27 +7016,27 @@ function testFullMonthlyRecordsFlow() {
   const yearMonth = '2026-02';
   const testReplyToken = 'test-token-' + Date.now();
   
-  Logger.log(`🎯 測試 sendMonthlyRecords:`);
+  Logger.log(` 測試 sendMonthlyRecords:`);
   Logger.log(`   userId: ${userId}`);
   Logger.log(`   employeeName: ${employeeName}`);
   Logger.log(`   yearMonth: ${yearMonth}`);
   Logger.log('');
   
   try {
-    Logger.log('📞 呼叫 sendMonthlyRecords...');
+    Logger.log(' 呼叫 sendMonthlyRecords...');
     sendMonthlyRecords(testReplyToken, userId, employeeName, yearMonth);
     
     Logger.log('');
-    Logger.log('✅ 函數執行完成（請檢查上方的 log）');
+    Logger.log(' 函數執行完成（請檢查上方的 log）');
     Logger.log('');
-    Logger.log('💡 預期應該看到:');
+    Logger.log(' 預期應該看到:');
     Logger.log('   - "找到 6 筆打卡記錄"');
     Logger.log('   - Flex Message 建立成功');
     Logger.log('   - LINE 回覆發送（會顯示 Invalid reply token 是正常的）');
     
   } catch (error) {
     Logger.log('');
-    Logger.log('❌ 函數執行失敗:');
+    Logger.log(' 函數執行失敗:');
     Logger.log(`   錯誤: ${error.message}`);
     Logger.log(`   堆疊: ${error.stack}`);
   }
@@ -7047,11 +7047,11 @@ function testFullMonthlyRecordsFlow() {
 
 
 /**
- * 🎯 完整測試 LINE Bot 月份查詢流程
+ *  完整測試 LINE Bot 月份查詢流程
  */
 function fullTestLineMonthQuery() {
   Logger.log('═══════════════════════════════════════');
-  Logger.log('🎯 完整測試 LINE Bot 月份查詢');
+  Logger.log(' 完整測試 LINE Bot 月份查詢');
   Logger.log('═══════════════════════════════════════');
   Logger.log('');
   
@@ -7062,12 +7062,12 @@ function fullTestLineMonthQuery() {
   const employee = findEmployeeByLineUserId_(testUserId);
   
   if (!employee.ok) {
-    Logger.log('❌ 找不到員工資料！');
+    Logger.log(' 找不到員工資料！');
     Logger.log('   這就是問題所在！');
     return;
   }
   
-  Logger.log('✅ 員工資料:');
+  Logger.log(' 員工資料:');
   Logger.log(`   name: ${employee.name}`);
   Logger.log(`   dept: ${employee.dept}`);
   Logger.log('');
@@ -7082,7 +7082,7 @@ function fullTestLineMonthQuery() {
     message: { type: 'text', text: '查詢:2026-02' }
   };
   
-  Logger.log('📱 事件內容:');
+  Logger.log(' 事件內容:');
   Logger.log(`   userId: ${mockEvent.source.userId}`);
   Logger.log(`   text: ${mockEvent.message.text}`);
   Logger.log('');
@@ -7090,10 +7090,10 @@ function fullTestLineMonthQuery() {
   try {
     handleLineMessage(mockEvent);
     Logger.log('');
-    Logger.log('✅ handleLineMessage 執行完成');
+    Logger.log(' handleLineMessage 執行完成');
   } catch (error) {
     Logger.log('');
-    Logger.log('❌ handleLineMessage 執行失敗:');
+    Logger.log(' handleLineMessage 執行失敗:');
     Logger.log(`   ${error.message}`);
     Logger.log(`   ${error.stack}`);
   }
@@ -7106,13 +7106,13 @@ function fullTestLineMonthQuery() {
 
 function sendMonthlyRecords(replyToken, userId, employeeName, yearMonth) {
   try {
-    Logger.log('📋 發送月份打卡記錄');
+    Logger.log(' 發送月份打卡記錄');
     Logger.log('   userId: ' + userId);
     Logger.log('   yearMonth: ' + yearMonth);
     
     // 驗證月份格式
     if (!yearMonth.match(/^\d{4}-\d{2}$/)) {
-      replyMessage(replyToken, '❌ 月份格式錯誤\n\n請重新選擇月份');
+      replyMessage(replyToken, ' 月份格式錯誤\n\n請重新選擇月份');
       return;
     }
     
@@ -7123,7 +7123,7 @@ function sendMonthlyRecords(replyToken, userId, employeeName, yearMonth) {
     
     if (records.length === 0) {
       const monthLabel = yearMonth.replace('-', '年') + '月';
-      replyMessage(replyToken, `📋 ${monthLabel}\n\n${employeeName}，您這個月還沒有打卡記錄`);
+      replyMessage(replyToken, ` ${monthLabel}\n\n${employeeName}，您這個月還沒有打卡記錄`);
       return;
     }
     
@@ -7146,26 +7146,26 @@ function sendMonthlyRecords(replyToken, userId, employeeName, yearMonth) {
         sendMonthlyRecordsSingle(replyToken, employeeName, yearMonth, groupedRecords, stats);
       }
     } catch (flexError) {
-      Logger.log('❌ Flex Message 建立/發送失敗: ' + flexError.message);  // ⭐ 加上 log
+      Logger.log(' Flex Message 建立/發送失敗: ' + flexError.message);  // ⭐ 加上 log
       Logger.log('   嘗試發送簡化訊息...');
       
       // ⭐ 降級方案：發送簡單文字訊息
       const monthLabel = yearMonth.replace('-', '年') + '月';
-      const simpleText = `📋 ${monthLabel}打卡記錄\n\n` +
+      const simpleText = ` ${monthLabel}打卡記錄\n\n` +
         `${employeeName}\n\n` +
-        `📊 統計：\n` +
+        ` 統計：\n` +
         `打卡天數：${stats.totalDays} 天\n` +
         `完整天數：${stats.completeDays} 天\n` +
         `總工時：${stats.totalWorkHours} 小時\n\n` +
-        `💡 詳細記錄請到網頁版查看`;
+        ` 詳細記錄請到網頁版查看`;
       
       replyMessage(replyToken, simpleText);
     }
     
-    Logger.log('✅ 月份打卡記錄已發送');
+    Logger.log(' 月份打卡記錄已發送');
     
   } catch (error) {
-    Logger.log('❌ sendMonthlyRecords 錯誤: ' + error);
-    replyMessage(replyToken, '❌ 查詢失敗，請稍後再試');
+    Logger.log(' sendMonthlyRecords 錯誤: ' + error);
+    replyMessage(replyToken, ' 查詢失敗，請稍後再試');
   }
 }

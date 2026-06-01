@@ -1,10 +1,72 @@
-// Handlers.gs - 完整版本（包含原有功能 + 薪資系統完全修正版）
+// Handlers.gs - 完整版本（包含原有功能 + 薪資系統完全修正版 + 三節獎金）
+
+// ==================== 三節獎金相關 Handler ====================
+
+function handleSetBonusRecord(params) {
+  try {
+    if (!validateSession(params.token)) {
+      return { ok: false, msg: '未授權或 session 已過期' };
+    }
+    const session = handleCheckSession(params.token);
+    if (!session.ok || session.user.dept !== '管理員') {
+      return { ok: false, msg: '此功能僅限管理員使用' };
+    }
+    const bonusData = {
+      employeeId:   params.employeeId,
+      employeeName: params.employeeName || '',
+      dept:         params.dept || '',
+      bonusType:    params.bonusType,
+      year:         params.year,
+      amount:       parseFloat(params.amount) || 0,
+      payDate:      params.payDate || '',
+      status:       params.status || '已發放',
+      note:         params.note || ''
+    };
+    const result = setBonusRecord(bonusData);
+    return { ok: result.success, data: result, msg: result.message };
+  } catch (error) {
+    Logger.log('handleSetBonusRecord 錯誤: ' + error);
+    return { ok: false, msg: error.toString() };
+  }
+}
+
+function handleGetMyBonusRecords(params) {
+  try {
+    if (!validateSession(params.token)) {
+      return { ok: false, msg: '未授權或 session 已過期' };
+    }
+    const session = handleCheckSession(params.token);
+    if (!session.ok) return { ok: false, msg: 'Session 無效' };
+    const result = getMyBonusRecords(session.user.userId, params.year || '');
+    return { ok: result.success, data: result.data, msg: result.message };
+  } catch (error) {
+    Logger.log('handleGetMyBonusRecords 錯誤: ' + error);
+    return { ok: false, msg: error.toString() };
+  }
+}
+
+function handleGetAllBonusRecords(params) {
+  try {
+    if (!validateSession(params.token)) {
+      return { ok: false, msg: '未授權或 session 已過期' };
+    }
+    const session = handleCheckSession(params.token);
+    if (!session.ok || session.user.dept !== '管理員') {
+      return { ok: false, msg: '此功能僅限管理員使用' };
+    }
+    const result = getAllBonusRecords(params.year || '');
+    return { ok: result.success, data: result.data, msg: result.message };
+  } catch (error) {
+    Logger.log('handleGetAllBonusRecords 錯誤: ' + error);
+    return { ok: false, msg: error.toString() };
+  }
+}
 
 // ==================== 登入與認證相關 ====================
 // Handlers.gs - 完全優化版 handleGetProfile
 
 /**
- * ✅ 優化版：一次完成所有登入流程
+ *  優化版：一次完成所有登入流程
  */
 // Handlers.gs - 修改 handleGetProfile
 
@@ -39,7 +101,7 @@ function handleGetProfile(code) {
 }
 // function handleGetProfile(code) {
 //   try {
-//     Logger.log('📋 開始登入流程');
+//     Logger.log(' 開始登入流程');
     
 //     // 步驟 1：兌換 LINE Token
 //     const tokenResp = exchangeCodeForToken_(code);
@@ -63,7 +125,7 @@ function handleGetProfile(code) {
 //     const records = getAttendanceRecords(month, profile.userId);
 //     const abnormalResults = checkAttendanceAbnormal(records);
     
-//     Logger.log('✅ 登入完成，返回完整資料');
+//     Logger.log(' 登入完成，返回完整資料');
     
 //     return {
 //       ok: true,
@@ -85,7 +147,7 @@ function handleGetProfile(code) {
 //     };
     
 //   } catch (error) {
-//     Logger.log('❌ 登入失敗: ' + error);
+//     Logger.log(' 登入失敗: ' + error);
 //     return {
 //       ok: false,
 //       code: "ERR_LOGIN_FAILED",
@@ -141,16 +203,16 @@ function handlePunch(params) {
 // }
 
 /**
- * ✅ 處理補打卡（完全修正版 - 強化參數驗證和日誌）
+ *  處理補打卡（完全修正版 - 強化參數驗證和日誌）
  */
 function handleAdjustPunch(params) {
   try {
     Logger.log('═══════════════════════════════════════');
-    Logger.log('📋 handleAdjustPunch 開始');
+    Logger.log(' handleAdjustPunch 開始');
     Logger.log('═══════════════════════════════════════');
     
     // ⭐ 步驟 1：記錄收到的原始參數
-    Logger.log('📥 收到的原始 params 物件:');
+    Logger.log(' 收到的原始 params 物件:');
     Logger.log('   - token: ' + (params.token ? params.token.substring(0, 20) + '...' : '缺少'));
     Logger.log('   - type: ' + (params.type || '缺少'));
     Logger.log('   - datetime: ' + (params.datetime || '缺少'));
@@ -164,49 +226,49 @@ function handleAdjustPunch(params) {
     
     // ⭐ 步驟 3：驗證必要參數
     if (!token) {
-      Logger.log('❌ 缺少 token');
+      Logger.log(' 缺少 token');
       return { ok: false, code: "ERR_MISSING_TOKEN", msg: "缺少認證 token" };
     }
     
     if (!type) {
-      Logger.log('❌ 缺少 type');
+      Logger.log(' 缺少 type');
       return { ok: false, code: "ERR_MISSING_TYPE", msg: "缺少打卡類型" };
     }
     
     if (!datetime) {
-      Logger.log('❌ 缺少 datetime');
+      Logger.log(' 缺少 datetime');
       return { ok: false, code: "ERR_MISSING_DATETIME", msg: "缺少日期時間" };
     }
     
     if (!lat || !lng) {
-      Logger.log('❌ 缺少座標');
+      Logger.log(' 缺少座標');
       return { ok: false, code: "ERR_MISSING_LOCATION", msg: "缺少位置資訊" };
     }
     
     // ⭐⭐⭐ 關鍵驗證：理由長度
     if (!note || note.trim().length < 2) {
-      Logger.log('❌ 理由不足 2 個字');
+      Logger.log(' 理由不足 2 個字');
       Logger.log('   note 內容: "' + note + '"');
       Logger.log('   note 長度: ' + (note ? note.length : 0));
       return { ok: false, code: "ERR_REASON_TOO_SHORT", msg: "補打卡理由至少需要 2 個字" };
     }
     
-    Logger.log('✅ 所有參數驗證通過');
+    Logger.log(' 所有參數驗證通過');
     Logger.log('');
     
     // ⭐ 步驟 4：轉換日期
     const punchDate = datetime ? new Date(datetime) : new Date();
     
     if (isNaN(punchDate.getTime())) {
-      Logger.log('❌ 日期格式錯誤');
+      Logger.log(' 日期格式錯誤');
       return { ok: false, code: "ERR_INVALID_DATE", msg: "日期格式錯誤" };
     }
     
-    Logger.log('📅 轉換後的日期: ' + punchDate.toISOString());
+    Logger.log(' 轉換後的日期: ' + punchDate.toISOString());
     Logger.log('');
     
     // ⭐ 步驟 5：記錄即將傳遞給核心函數的參數
-    Logger.log('📡 準備呼叫 punchAdjusted()');
+    Logger.log(' 準備呼叫 punchAdjusted()');
     Logger.log('   參數 1 (token): ' + token.substring(0, 20) + '...');
     Logger.log('   參數 2 (type): ' + type);
     Logger.log('   參數 3 (punchDate): ' + punchDate.toISOString());
@@ -225,7 +287,7 @@ function handleAdjustPunch(params) {
       note  // ⭐ 確保理由有傳遞
     );
     
-    Logger.log('📤 punchAdjusted() 回傳結果:');
+    Logger.log(' punchAdjusted() 回傳結果:');
     Logger.log('   - ok: ' + result.ok);
     Logger.log('   - code: ' + (result.code || '無'));
     Logger.log('   - msg: ' + (result.msg || '無'));
@@ -236,7 +298,7 @@ function handleAdjustPunch(params) {
     
   } catch (error) {
     Logger.log('');
-    Logger.log('❌❌❌ handleAdjustPunch 發生錯誤');
+    Logger.log(' handleAdjustPunch 發生錯誤');
     Logger.log('錯誤訊息: ' + error.message);
     Logger.log('錯誤堆疊: ' + error.stack);
     Logger.log('═══════════════════════════════════════');
@@ -250,15 +312,15 @@ function handleAdjustPunch(params) {
 }
 
 /**
- * 🧪 測試 handleAdjustPunch（完整流程）
+ *  測試 handleAdjustPunch（完整流程）
  */
 function testHandleAdjustPunchComplete() {
-  Logger.log('🧪 測試 handleAdjustPunch 完整流程');
+  Logger.log(' 測試 handleAdjustPunch 完整流程');
   Logger.log('═══════════════════════════════════════');
   Logger.log('');
   
   const testParams = {
-    token: 'a8f8ca99-97d6-4643-ad8e-67a73f2bb649',  // ⚠️ 替換成你的有效 token
+    token: 'a8f8ca99-97d6-4643-ad8e-67a73f2bb649',  //  替換成你的有效 token
     type: '上班',
     datetime: '2025-12-16T10:30:00',
     lat: '25.0330',
@@ -266,27 +328,27 @@ function testHandleAdjustPunchComplete() {
     note: '測試補打卡理由：系統測試用'
   };
   
-  Logger.log('📥 測試參數:');
+  Logger.log(' 測試參數:');
   Logger.log(JSON.stringify(testParams, null, 2));
   Logger.log('');
   
   const result = handleAdjustPunch(testParams);
   
   Logger.log('');
-  Logger.log('📤 最終測試結果:');
+  Logger.log(' 最終測試結果:');
   Logger.log(JSON.stringify(result, null, 2));
   Logger.log('');
   
   if (result.ok) {
-    Logger.log('✅✅✅ 測試成功！');
+    Logger.log(' 測試成功！');
     Logger.log('');
-    Logger.log('📋 請檢查 Google Sheet:');
+    Logger.log(' 請檢查 Google Sheet:');
     Logger.log('   1. 打開「補打卡申請」工作表');
     Logger.log('   2. 應該看到新增一筆「待審核」的記錄');
     Logger.log('   3. 「原因」欄應該有:「測試補打卡理由：系統測試用」');
     Logger.log('');
   } else {
-    Logger.log('❌ 測試失敗');
+    Logger.log(' 測試失敗');
     Logger.log('   code: ' + result.code);
     Logger.log('   msg: ' + result.msg);
   }
@@ -306,19 +368,19 @@ function handleGetAbnormalRecords(params) {
 
 
 /**
- * ✅ 處理取得出勤詳細資料（完整修正版 - 含打卡+請假+加班）
+ *  處理取得出勤詳細資料（完整修正版 - 含打卡+請假+加班）
  */
 function handleGetAttendanceDetails(params) {
   const { month, userId } = params;
   
   Logger.log('═══════════════════════════════════════');
-  Logger.log('📋 handleGetAttendanceDetails 開始');
+  Logger.log(' handleGetAttendanceDetails 開始');
   Logger.log('   month: ' + month);
   Logger.log('   userId: ' + userId);
   Logger.log('═══════════════════════════════════════');
   
   if (!month) {
-    Logger.log('❌ 缺少 month 參數');
+    Logger.log(' 缺少 month 參數');
     return { ok: false, code: "ERR_MISSING_MONTH" };
   }
   
@@ -327,7 +389,7 @@ function handleGetAttendanceDetails(params) {
     // 這個函數會自動合併 打卡 + 請假 + 加班 資料
     const result = getAttendanceDetails(month, userId);
     
-    Logger.log('✅ 資料合併完成');
+    Logger.log(' 資料合併完成');
     Logger.log('   ok: ' + result.ok);
     Logger.log('   records 數量: ' + (result.records ? result.records.length : 0));
     
@@ -345,7 +407,7 @@ function handleGetAttendanceDetails(params) {
     return result;
     
   } catch (error) {
-    Logger.log('❌ handleGetAttendanceDetails 錯誤: ' + error);
+    Logger.log(' handleGetAttendanceDetails 錯誤: ' + error);
     Logger.log('   錯誤堆疊: ' + error.stack);
     Logger.log('═══════════════════════════════════════');
     
@@ -378,7 +440,7 @@ function handleGetLocations() {
  */
 function handleGetAllUsers(params) {
   try {
-    Logger.log('📋 處理取得所有用戶請求');
+    Logger.log(' 處理取得所有用戶請求');
     
     // ⭐ 修正：排班人員也可以查詢員工列表
     if (!params.token || !validateSession(params.token)) {
@@ -402,7 +464,7 @@ function handleGetAllUsers(params) {
     return result;
     
   } catch (error) {
-    Logger.log('❌ handleGetAllUsers 錯誤: ' + error);
+    Logger.log(' handleGetAllUsers 錯誤: ' + error);
     return { ok: false, msg: error.message };
   }
 }
@@ -412,7 +474,7 @@ function handleGetAllUsers(params) {
  */
 function handleUpdateUserRole(params) {
   try {
-    Logger.log('📝 處理更新用戶角色請求');
+    Logger.log(' 處理更新用戶角色請求');
     
     // 驗證 Session
     if (!params.token || !validateSession(params.token)) {
@@ -441,7 +503,7 @@ function handleUpdateUserRole(params) {
     return result;
     
   } catch (error) {
-    Logger.log('❌ handleUpdateUserRole 錯誤: ' + error);
+    Logger.log(' handleUpdateUserRole 錯誤: ' + error);
     return { ok: false, msg: error.message };
   }
 }
@@ -451,7 +513,7 @@ function handleUpdateUserRole(params) {
  */
 function handleDeleteUser(params) {
   try {
-    Logger.log('🗑️ 處理刪除用戶請求');
+    Logger.log(' 處理刪除用戶請求');
     
     // 驗證 Session
     if (!params.token || !validateSession(params.token)) {
@@ -479,7 +541,7 @@ function handleDeleteUser(params) {
     return result;
     
   } catch (error) {
-    Logger.log('❌ handleDeleteUser 錯誤: ' + error);
+    Logger.log(' handleDeleteUser 錯誤: ' + error);
     return { ok: false, msg: error.message };
   }
 }
@@ -586,7 +648,7 @@ function handleAddShift(params) {
       return permCheck;  // 直接返回錯誤訊息
     }
     
-    Logger.log('📝 收到新增排班請求');
+    Logger.log(' 收到新增排班請求');
     
     const shiftData = {
       employeeId: params.employeeId,
@@ -612,7 +674,7 @@ function handleAddShift(params) {
     };
     
   } catch (error) {
-    Logger.log('❌ handleAddShift 錯誤: ' + error);
+    Logger.log(' handleAddShift 錯誤: ' + error);
     return { ok: false, msg: error.message };
   }
 }
@@ -625,7 +687,7 @@ function handleBatchAddShifts(params) {
       return permCheck;
     }
     
-    Logger.log('📦 收到批量新增排班請求');
+    Logger.log(' 收到批量新增排班請求');
     
     let shiftsArray;
     
@@ -634,16 +696,16 @@ function handleBatchAddShifts(params) {
         if (typeof params.shiftsArray === 'string') {
           const decoded = decodeURIComponent(params.shiftsArray);
           shiftsArray = JSON.parse(decoded);
-          Logger.log('✅ 成功解析 shiftsArray: ' + shiftsArray.length + ' 筆');
+          Logger.log(' 成功解析 shiftsArray: ' + shiftsArray.length + ' 筆');
         } else {
           shiftsArray = params.shiftsArray;
         }
       } catch (parseError) {
-        Logger.log('❌ 解析 shiftsArray 失敗: ' + parseError);
+        Logger.log(' 解析 shiftsArray 失敗: ' + parseError);
         return { ok: false, msg: "資料格式錯誤: 無法解析 JSON" };
       }
     } else {
-      Logger.log('❌ 缺少 shiftsArray 參數');
+      Logger.log(' 缺少 shiftsArray 參數');
       return { ok: false, msg: "缺少 shiftsArray 參數" };
     }
     
@@ -655,11 +717,11 @@ function handleBatchAddShifts(params) {
       return { ok: false, msg: "批量資料不能為空" };
     }
     
-    Logger.log('📊 準備批量新增: ' + shiftsArray.length + ' 筆排班');
+    Logger.log(' 準備批量新增: ' + shiftsArray.length + ' 筆排班');
     
     const result = batchAddShifts(shiftsArray);
     
-    Logger.log('✅ 批量新增結果: ' + JSON.stringify(result));
+    Logger.log(' 批量新增結果: ' + JSON.stringify(result));
     
     return { 
       ok: result.success, 
@@ -668,7 +730,7 @@ function handleBatchAddShifts(params) {
     };
     
   } catch (error) {
-    Logger.log('❌ handleBatchAddShifts 錯誤: ' + error);
+    Logger.log(' handleBatchAddShifts 錯誤: ' + error);
     return { ok: false, msg: "批量新增失敗: " + error.message };
   }
 }
@@ -681,7 +743,7 @@ function handleUpdateShift(params) {
       return permCheck;
     }
     
-    Logger.log('✏️ 更新排班: ' + params.shiftId);
+    Logger.log(' 更新排班: ' + params.shiftId);
     
     const updateData = {
       date: params.date,
@@ -700,7 +762,7 @@ function handleUpdateShift(params) {
     };
     
   } catch (error) {
-    Logger.log('❌ handleUpdateShift 錯誤: ' + error);
+    Logger.log(' handleUpdateShift 錯誤: ' + error);
     return { ok: false, msg: error.message };
   }
 }
@@ -713,7 +775,7 @@ function handleDeleteShift(params) {
       return permCheck;
     }
     
-    Logger.log('🗑️ 刪除排班: ' + params.shiftId);
+    Logger.log(' 刪除排班: ' + params.shiftId);
     
     const result = deleteShift(params.shiftId);
     
@@ -723,7 +785,7 @@ function handleDeleteShift(params) {
     };
     
   } catch (error) {
-    Logger.log('❌ handleDeleteShift 錯誤: ' + error);
+    Logger.log(' handleDeleteShift 錯誤: ' + error);
     return { ok: false, msg: error.message };
   }
 }
@@ -733,7 +795,7 @@ function handleGetShifts(params) {
     if (!params.token || !validateSession(params.token)) {
       return { ok: false, msg: "未授權或 session 已過期" };
     }
-    Logger.log('🔍 收到查詢排班請求');
+    Logger.log(' 收到查詢排班請求');
     
     const filters = {
       employeeId: params.employeeId,
@@ -753,7 +815,7 @@ function handleGetShifts(params) {
     };
     
   } catch (error) {
-    Logger.log('❌ handleGetShifts 錯誤: ' + error);
+    Logger.log(' handleGetShifts 錯誤: ' + error);
     return { ok: false, msg: error.message };
   }
 }
@@ -769,7 +831,7 @@ function handleGetShiftById(params) {
       return { ok: false, msg: "缺少 shiftId 參數" };
     }
     
-    Logger.log('🔍 查詢排班詳情: ' + params.shiftId);
+    Logger.log(' 查詢排班詳情: ' + params.shiftId);
     
     const result = getShiftById(params.shiftId);
     
@@ -780,7 +842,7 @@ function handleGetShiftById(params) {
     };
     
   } catch (error) {
-    Logger.log('❌ handleGetShiftById 錯誤: ' + error);
+    Logger.log(' handleGetShiftById 錯誤: ' + error);
     return { ok: false, msg: error.message };
   }
 }
@@ -795,7 +857,7 @@ function handleGetEmployeeShiftForDate(params) {
       return { ok: false, msg: "缺少必要參數" };
     }
     
-    Logger.log('📅 查詢員工排班: ' + params.employeeId + ', 日期: ' + params.date);
+    Logger.log(' 查詢員工排班: ' + params.employeeId + ', 日期: ' + params.date);
     
     const result = getEmployeeShiftForDate(params.employeeId, params.date);
     
@@ -807,7 +869,7 @@ function handleGetEmployeeShiftForDate(params) {
     };
     
   } catch (error) {
-    Logger.log('❌ handleGetEmployeeShiftForDate 錯誤: ' + error);
+    Logger.log(' handleGetEmployeeShiftForDate 錯誤: ' + error);
     return { ok: false, msg: error.message };
   }
 }
@@ -818,7 +880,7 @@ function handleGetWeeklyShiftStats(params) {
       return { ok: false, msg: "未授權或 session 已過期" };
     }
     
-    Logger.log('📊 查詢本週排班統計');
+    Logger.log(' 查詢本週排班統計');
     
     const result = getWeeklyShiftStats();
     
@@ -829,7 +891,7 @@ function handleGetWeeklyShiftStats(params) {
     };
     
   } catch (error) {
-    Logger.log('❌ handleGetWeeklyShiftStats 錯誤: ' + error);
+    Logger.log(' handleGetWeeklyShiftStats 錯誤: ' + error);
     return { ok: false, msg: error.message };
   }
 }
@@ -842,7 +904,7 @@ function handleExportShifts(params) {
       return permCheck;
     }
     
-    Logger.log('📥 匯出排班資料');
+    Logger.log(' 匯出排班資料');
     
     const filters = {
       employeeId: params.employeeId,
@@ -861,7 +923,7 @@ function handleExportShifts(params) {
     };
     
   } catch (error) {
-    Logger.log('❌ handleExportShifts 錯誤: ' + error);
+    Logger.log(' handleExportShifts 錯誤: ' + error);
     return { ok: false, msg: error.message };
   }
 }
@@ -872,20 +934,20 @@ function handleExportShifts(params) {
 // ⭐ 修正：補齊所有津貼和扣款參數
 
 /**
- * ✅ 處理設定員工薪資（完全修正版 v5.0）
+ *  處理設定員工薪資（完全修正版 v5.0）
  */
 function handleSetEmployeeSalaryTW(params) {
   try {
     Logger.log('═══════════════════════════════════════');
-    Logger.log('💰 開始設定員工薪資（完整版 v5.0）');
+    Logger.log(' 開始設定員工薪資（完整版 v5.0）');
     Logger.log('═══════════════════════════════════════');
     
     if (!params || Object.keys(params).length === 0) {
-      Logger.log('❌ params 為空或未定義');
+      Logger.log(' params 為空或未定義');
       return { ok: false, msg: "未收到任何參數" };
     }
     
-    Logger.log('📥 收到的參數:');
+    Logger.log(' 收到的參數:');
     Logger.log('   - token: ' + (params.token ? '存在' : '缺少'));
     Logger.log('   - employeeId: ' + (params.employeeId || '缺少'));
     Logger.log('   - employeeName: ' + (params.employeeName || '缺少'));
@@ -898,18 +960,18 @@ function handleSetEmployeeSalaryTW(params) {
     Logger.log('   - otherAllowances: ' + (params.otherAllowances || '0'));
     
     if (!params.token) {
-      Logger.log('❌ 缺少認證 token');
+      Logger.log(' 缺少認證 token');
       return { ok: false, msg: "缺少認證 token" };
     }
     
     const sessionResult = checkSession_(params.token);
     
     if (!sessionResult.ok) {
-      Logger.log('❌ Session 驗證失敗');
+      Logger.log(' Session 驗證失敗');
       return { ok: false, msg: "未授權或 session 已過期" };
     }
     
-    Logger.log('✅ Session 驗證成功');
+    Logger.log(' Session 驗證成功');
     
     const safeString = (value) => {
       if (value === null || value === undefined) return '';
@@ -965,7 +1027,7 @@ function handleSetEmployeeSalaryTW(params) {
     };
     
     Logger.log('');
-    Logger.log('📋 組裝後的 salaryData:');
+    Logger.log(' 組裝後的 salaryData:');
     Logger.log('   基本薪資: ' + salaryData.baseSalary);
     Logger.log('   職務加給: ' + salaryData.positionAllowance);
     Logger.log('   伙食費: ' + salaryData.mealAllowance);
@@ -982,16 +1044,16 @@ function handleSetEmployeeSalaryTW(params) {
     
     // 驗證必填欄位
     if (!salaryData.employeeId || !salaryData.employeeName || salaryData.baseSalary <= 0) {
-      Logger.log('❌ 必填欄位驗證失敗');
+      Logger.log(' 必填欄位驗證失敗');
       return { ok: false, msg: "必填欄位不完整或無效" };
     }
     
-    Logger.log('💾 開始儲存薪資設定...');
+    Logger.log(' 開始儲存薪資設定...');
     
     // 呼叫核心函數
     const result = setEmployeeSalaryTW(salaryData);
     
-    Logger.log('📤 儲存結果: ' + result.success);
+    Logger.log(' 儲存結果: ' + result.success);
     Logger.log('   訊息: ' + result.message);
     Logger.log('═══════════════════════════════════════');
     
@@ -1002,7 +1064,7 @@ function handleSetEmployeeSalaryTW(params) {
     };
     
   } catch (error) {
-    Logger.log('❌❌❌ 發生嚴重錯誤');
+    Logger.log(' 發生嚴重錯誤');
     Logger.log('錯誤訊息: ' + error.message);
     Logger.log('錯誤堆疊: ' + error.stack);
     Logger.log('═══════════════════════════════════════');
@@ -1016,14 +1078,14 @@ function handleSetEmployeeSalaryTW(params) {
 }
 
 /**
- * 🧪 測試函數
+ *  測試函數
  */
 function testHandleSetEmployeeSalaryTW() {
-  Logger.log('🧪 測試 handleSetEmployeeSalaryTW（完整版）');
+  Logger.log(' 測試 handleSetEmployeeSalaryTW（完整版）');
   Logger.log('');
   
   const testParams = {
-    token: '3577f5c0-7e0a-4082-9593-d84fb9ba1db1',  // ⚠️ 替換成有效的 token
+    token: '3577f5c0-7e0a-4082-9593-d84fb9ba1db1',  //  替換成有效的 token
     employeeId: 'Uffac21d92d99e3404b9228fd8c251e2a',
     employeeName: '洪培瑜Eric',
     idNumber: 'A173123222',
@@ -1063,32 +1125,32 @@ function testHandleSetEmployeeSalaryTW() {
     note: '測試完整版薪資設定'
   };
   
-  Logger.log('📥 測試參數已準備');
+  Logger.log(' 測試參數已準備');
   Logger.log('');
   
   const result = handleSetEmployeeSalaryTW(testParams);
   
   Logger.log('');
-  Logger.log('📤 測試結果:');
+  Logger.log(' 測試結果:');
   Logger.log(JSON.stringify(result, null, 2));
   
   if (result.ok) {
     Logger.log('');
-    Logger.log('✅✅✅ 測試成功！');
+    Logger.log(' 測試成功！');
     Logger.log('   請檢查 Google Sheet 中的資料是否正確');
   } else {
     Logger.log('');
-    Logger.log('❌ 測試失敗');
+    Logger.log(' 測試失敗');
     Logger.log('   原因: ' + result.msg);
   }
 }
 
 /**
- * 🔍 檢查 salaryData 物件是否正確組裝
+ *  檢查 salaryData 物件是否正確組裝
  */
 function testCheckSalaryDataObject() {
   Logger.log('═══════════════════════════════════════');
-  Logger.log('🔍 檢查 salaryData 物件組裝');
+  Logger.log(' 檢查 salaryData 物件組裝');
   Logger.log('═══════════════════════════════════════');
   Logger.log('');
   
@@ -1125,7 +1187,7 @@ function testCheckSalaryDataObject() {
     otherDeductions: safeNumber(params.otherDeductions)
   };
   
-  Logger.log('📊 salaryData 物件內容:');
+  Logger.log(' salaryData 物件內容:');
   Logger.log('   employeeId: ' + salaryData.employeeId);
   Logger.log('   employeeName: ' + salaryData.employeeName);
   Logger.log('   baseSalary: ' + salaryData.baseSalary + ' (型別: ' + typeof salaryData.baseSalary + ')');
@@ -1139,9 +1201,9 @@ function testCheckSalaryDataObject() {
   if (salaryData.positionAllowance === 10 && 
       salaryData.mealAllowance === 10 && 
       salaryData.otherAllowances === 47) {
-    Logger.log('✅✅✅ salaryData 物件組裝正確！');
+    Logger.log(' salaryData 物件組裝正確！');
   } else {
-    Logger.log('❌ salaryData 物件組裝有問題');
+    Logger.log(' salaryData 物件組裝有問題');
   }
   
   Logger.log('═══════════════════════════════════════');
@@ -1150,17 +1212,17 @@ function testCheckSalaryDataObject() {
 // 診斷測試腳本 - 完整版
 
 /**
- * 🧪 測試 handleSetEmployeeSalaryTW 是否正確接收參數
+ *  測試 handleSetEmployeeSalaryTW 是否正確接收參數
  */
 function testDiagnoseSalaryParams() {
   Logger.log('═══════════════════════════════════════');
-  Logger.log('🧪 診斷測試：薪資參數接收（完整版 v2.0）');
+  Logger.log(' 診斷測試：薪資參數接收（完整版 v2.0）');
   Logger.log('═══════════════════════════════════════');
   Logger.log('');
   
   // ⭐⭐⭐ 模擬前端送出的參數（完整 29 個參數）
   const testParams = {
-    token: '3577f5c0-7e0a-4082-9593-d84fb9ba1db1',  // ⚠️ 替換成你的有效 token
+    token: '3577f5c0-7e0a-4082-9593-d84fb9ba1db1',  //  替換成你的有效 token
     
     // 基本資訊 (6 個)
     employeeId: 'Uffac21d92d99e3404b9228fd8c251e2a',
@@ -1202,7 +1264,7 @@ function testDiagnoseSalaryParams() {
     note: '診斷測試 v2.0'
   };
   
-  Logger.log('📥 測試參數 (共 29 個):');
+  Logger.log(' 測試參數 (共 29 個):');
   Logger.log('');
   Logger.log('【基本資訊 - 6 個】');
   Logger.log('   1. employeeId: ' + testParams.employeeId);
@@ -1245,30 +1307,30 @@ function testDiagnoseSalaryParams() {
   Logger.log('');
   
   // ⭐ 呼叫 Handler 函數
-  Logger.log('📡 開始呼叫 handleSetEmployeeSalaryTW()');
+  Logger.log(' 開始呼叫 handleSetEmployeeSalaryTW()');
   Logger.log('');
   
   const result = handleSetEmployeeSalaryTW(testParams);
   
   Logger.log('');
-  Logger.log('📤 Handler 返回結果:');
+  Logger.log(' Handler 返回結果:');
   Logger.log('   ok: ' + result.ok);
   Logger.log('   msg: ' + result.msg);
   Logger.log('');
   
   if (result.ok) {
-    Logger.log('✅ Handler 執行成功');
+    Logger.log(' Handler 執行成功');
     Logger.log('');
-    Logger.log('🔍 請檢查 Google Sheet「員工薪資設定」:');
+    Logger.log(' 請檢查 Google Sheet「員工薪資設定」:');
     Logger.log('   G 欄（職務加給）應該是: 10');
     Logger.log('   H 欄（伙食費）應該是: 10');
     Logger.log('   L 欄（其他津貼）應該是: 47');
     Logger.log('   X 欄（宿舍費用）應該是: 67');
     Logger.log('   Z 欄（其他扣款）應該是: 90');
     Logger.log('');
-    Logger.log('🔍 如果以上欄位仍然是 0，則問題在於 setEmployeeSalaryTW()');
+    Logger.log(' 如果以上欄位仍然是 0，則問題在於 setEmployeeSalaryTW()');
   } else {
-    Logger.log('❌ Handler 執行失敗');
+    Logger.log(' Handler 執行失敗');
     Logger.log('   錯誤訊息: ' + result.msg);
   }
   
@@ -1276,11 +1338,11 @@ function testDiagnoseSalaryParams() {
 }
 
 /**
- * 🔍 檢查 salaryData 物件是否正確組裝
+ *  檢查 salaryData 物件是否正確組裝
  */
 function testCheckSalaryDataObject() {
   Logger.log('═══════════════════════════════════════');
-  Logger.log('🔍 檢查 salaryData 物件組裝');
+  Logger.log(' 檢查 salaryData 物件組裝');
   Logger.log('═══════════════════════════════════════');
   Logger.log('');
   
@@ -1317,7 +1379,7 @@ function testCheckSalaryDataObject() {
     otherDeductions: safeNumber(params.otherDeductions)
   };
   
-  Logger.log('📊 salaryData 物件內容:');
+  Logger.log(' salaryData 物件內容:');
   Logger.log('   employeeId: ' + salaryData.employeeId);
   Logger.log('   employeeName: ' + salaryData.employeeName);
   Logger.log('   baseSalary: ' + salaryData.baseSalary + ' (型別: ' + typeof salaryData.baseSalary + ')');
@@ -1331,29 +1393,29 @@ function testCheckSalaryDataObject() {
   if (salaryData.positionAllowance === 10 && 
       salaryData.mealAllowance === 10 && 
       salaryData.otherAllowances === 47) {
-    Logger.log('✅✅✅ salaryData 物件組裝正確！');
+    Logger.log(' salaryData 物件組裝正確！');
   } else {
-    Logger.log('❌ salaryData 物件組裝有問題');
+    Logger.log(' salaryData 物件組裝有問題');
   }
   
   Logger.log('═══════════════════════════════════════');
 }
 
 /**
- * 📋 檢查 Sheet 欄位結構
+ *  檢查 Sheet 欄位結構
  */
 function testCheckSheetStructure() {
   Logger.log('═══════════════════════════════════════');
-  Logger.log('📋 檢查 Sheet 欄位結構');
+  Logger.log(' 檢查 Sheet 欄位結構');
   Logger.log('═══════════════════════════════════════');
   Logger.log('');
   
   const sheet = getEmployeeSalarySheet();
   const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
   
-  Logger.log('📊 Sheet 欄位總數: ' + headers.length);
+  Logger.log(' Sheet 欄位總數: ' + headers.length);
   Logger.log('');
-  Logger.log('📋 完整欄位列表:');
+  Logger.log(' 完整欄位列表:');
   
   headers.forEach((header, index) => {
     const column = String.fromCharCode(65 + index);
@@ -1361,33 +1423,33 @@ function testCheckSheetStructure() {
   });
   
   Logger.log('');
-  Logger.log('🔍 關鍵欄位檢查:');
-  Logger.log('   G 欄 (7):  ' + headers[6] + (headers[6] === '職務加給' ? ' ✅' : ' ❌'));
-  Logger.log('   H 欄 (8):  ' + headers[7] + (headers[7] === '伙食費' ? ' ✅' : ' ❌'));
-  Logger.log('   I 欄 (9):  ' + headers[8] + (headers[8] === '交通補助' ? ' ✅' : ' ❌'));
-  Logger.log('   L 欄 (12): ' + headers[11] + (headers[11] === '其他津貼' ? ' ✅' : ' ❌'));
-  Logger.log('   M 欄 (13): ' + headers[12] + (headers[12] === '銀行代碼' ? ' ✅' : ' ❌'));
-  Logger.log('   N 欄 (14): ' + headers[13] + (headers[13] === '銀行帳號' ? ' ✅' : ' ❌'));
-  Logger.log('   X 欄 (24): ' + headers[23] + (headers[23] === '宿舍費用' ? ' ✅' : ' ❌'));
-  Logger.log('   Z 欄 (26): ' + headers[25] + (headers[25] === '其他扣款' ? ' ✅' : ' ❌'));
+  Logger.log(' 關鍵欄位檢查:');
+  Logger.log('   G 欄 (7):  ' + headers[6] + (headers[6] === '職務加給' ? ' ' : ' '));
+  Logger.log('   H 欄 (8):  ' + headers[7] + (headers[7] === '伙食費' ? ' ' : ' '));
+  Logger.log('   I 欄 (9):  ' + headers[8] + (headers[8] === '交通補助' ? ' ' : ' '));
+  Logger.log('   L 欄 (12): ' + headers[11] + (headers[11] === '其他津貼' ? ' ' : ' '));
+  Logger.log('   M 欄 (13): ' + headers[12] + (headers[12] === '銀行代碼' ? ' ' : ' '));
+  Logger.log('   N 欄 (14): ' + headers[13] + (headers[13] === '銀行帳號' ? ' ' : ' '));
+  Logger.log('   X 欄 (24): ' + headers[23] + (headers[23] === '宿舍費用' ? ' ' : ' '));
+  Logger.log('   Z 欄 (26): ' + headers[25] + (headers[25] === '其他扣款' ? ' ' : ' '));
   
   Logger.log('═══════════════════════════════════════');
 }
 /**
- * 📋 檢查 Sheet 欄位結構
+ *  檢查 Sheet 欄位結構
  */
 function testCheckSheetStructure() {
   Logger.log('═══════════════════════════════════════');
-  Logger.log('📋 檢查 Sheet 欄位結構');
+  Logger.log(' 檢查 Sheet 欄位結構');
   Logger.log('═══════════════════════════════════════');
   Logger.log('');
   
   const sheet = getEmployeeSalarySheet();
   const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
   
-  Logger.log('📊 Sheet 欄位總數: ' + headers.length);
+  Logger.log(' Sheet 欄位總數: ' + headers.length);
   Logger.log('');
-  Logger.log('📋 完整欄位列表:');
+  Logger.log(' 完整欄位列表:');
   
   headers.forEach((header, index) => {
     const column = String.fromCharCode(65 + index);
@@ -1395,20 +1457,20 @@ function testCheckSheetStructure() {
   });
   
   Logger.log('');
-  Logger.log('🔍 關鍵欄位檢查:');
-  Logger.log('   G 欄 (7):  ' + headers[6] + (headers[6] === '職務加給' ? ' ✅' : ' ❌'));
-  Logger.log('   H 欄 (8):  ' + headers[7] + (headers[7] === '伙食費' ? ' ✅' : ' ❌'));
-  Logger.log('   I 欄 (9):  ' + headers[8] + (headers[8] === '交通補助' ? ' ✅' : ' ❌'));
-  Logger.log('   L 欄 (12): ' + headers[11] + (headers[11] === '其他津貼' ? ' ✅' : ' ❌'));
-  Logger.log('   M 欄 (13): ' + headers[12] + (headers[12] === '銀行代碼' ? ' ✅' : ' ❌'));
-  Logger.log('   N 欄 (14): ' + headers[13] + (headers[13] === '銀行帳號' ? ' ✅' : ' ❌'));
-  Logger.log('   X 欄 (24): ' + headers[23] + (headers[23] === '宿舍費用' ? ' ✅' : ' ❌'));
-  Logger.log('   Z 欄 (26): ' + headers[25] + (headers[25] === '其他扣款' ? ' ✅' : ' ❌'));
+  Logger.log(' 關鍵欄位檢查:');
+  Logger.log('   G 欄 (7):  ' + headers[6] + (headers[6] === '職務加給' ? ' ' : ' '));
+  Logger.log('   H 欄 (8):  ' + headers[7] + (headers[7] === '伙食費' ? ' ' : ' '));
+  Logger.log('   I 欄 (9):  ' + headers[8] + (headers[8] === '交通補助' ? ' ' : ' '));
+  Logger.log('   L 欄 (12): ' + headers[11] + (headers[11] === '其他津貼' ? ' ' : ' '));
+  Logger.log('   M 欄 (13): ' + headers[12] + (headers[12] === '銀行代碼' ? ' ' : ' '));
+  Logger.log('   N 欄 (14): ' + headers[13] + (headers[13] === '銀行帳號' ? ' ' : ' '));
+  Logger.log('   X 欄 (24): ' + headers[23] + (headers[23] === '宿舍費用' ? ' ' : ' '));
+  Logger.log('   Z 欄 (26): ' + headers[25] + (headers[25] === '其他扣款' ? ' ' : ' '));
   
   Logger.log('═══════════════════════════════════════');
 }
 /**
- * ✅ 處理取得員工薪資
+ *  處理取得員工薪資
  */
 function handleGetEmployeeSalaryTW(params) {
   try {
@@ -1424,57 +1486,57 @@ function handleGetEmployeeSalaryTW(params) {
     return { ok: result.success, data: result.data, msg: result.message };
     
   } catch (error) {
-    Logger.log('❌ handleGetEmployeeSalaryTW 錯誤: ' + error);
+    Logger.log(' handleGetEmployeeSalaryTW 錯誤: ' + error);
     return { ok: false, msg: error.message };
   }
 }
 
 // Handlers.gs - handleGetMySalary 完全修正版（修復 userId = null 問題）
 
-// ✅✅✅ 最終修正版 - 使用 Logger.log 而不是 console.log
+//  最終修正版 - 使用 Logger.log 而不是 console.log
 
 
 
 /**
- * ✅ 處理取得我的薪資（最終修正版 - 使用 Logger.log）
+ *  處理取得我的薪資（最終修正版 - 使用 Logger.log）
  */
 function handleGetMySalary(params) {
   try {
     Logger.log('═══════════════════════════════════════');
-    Logger.log('🎯 handleGetMySalary 開始');
+    Logger.log(' handleGetMySalary 開始');
     Logger.log('═══════════════════════════════════════');
     
     // ⭐ 步驟 1：檢查參數
     if (!params || !params.token) {
-      Logger.log('❌ 缺少 token');
+      Logger.log(' 缺少 token');
       return { ok: false, msg: "缺少 token" };
     }
     
-    Logger.log('📥 收到的參數:');
+    Logger.log(' 收到的參數:');
     Logger.log('   - token: ' + params.token.substring(0, 20) + '...');
     Logger.log('   - yearMonth: ' + (params.yearMonth || '缺少'));
     Logger.log('');
     
     // ⭐ 步驟 2：驗證 Session
-    Logger.log('📡 驗證 Session...');
+    Logger.log(' 驗證 Session...');
     const session = checkSession_(params.token);
     
-    Logger.log('📤 Session 檢查結果:');
+    Logger.log(' Session 檢查結果:');
     Logger.log('   - ok: ' + session.ok);
     Logger.log('   - code: ' + (session.code || '無'));
     
     if (!session.ok) {
-      Logger.log('❌ Session 無效');
+      Logger.log(' Session 無效');
       return { ok: false, msg: "未授權或 session 已過期" };
     }
     
     // ⭐ 步驟 3：檢查並取得 user 物件
     if (!session.user) {
-      Logger.log('❌ Session 中沒有 user 資訊');
+      Logger.log(' Session 中沒有 user 資訊');
       return { ok: false, msg: "無法取得使用者資訊" };
     }
     
-    Logger.log('👤 使用者資訊:');
+    Logger.log(' 使用者資訊:');
     Logger.log('   - userId: ' + (session.user.userId || 'undefined'));
     Logger.log('   - employeeId: ' + (session.user.employeeId || 'undefined'));
     Logger.log('   - name: ' + (session.user.name || 'undefined'));
@@ -1487,27 +1549,27 @@ function handleGetMySalary(params) {
     // 優先順序：userId > employeeId > id
     if (session.user.userId) {
       employeeId = String(session.user.userId).trim();
-      Logger.log('✅ 從 session.user.userId 取得: ' + employeeId);
+      Logger.log(' 從 session.user.userId 取得: ' + employeeId);
     } else if (session.user.employeeId) {
       employeeId = String(session.user.employeeId).trim();
-      Logger.log('✅ 從 session.user.employeeId 取得: ' + employeeId);
+      Logger.log(' 從 session.user.employeeId 取得: ' + employeeId);
     } else if (session.user.id) {
       employeeId = String(session.user.id).trim();
-      Logger.log('✅ 從 session.user.id 取得: ' + employeeId);
+      Logger.log(' 從 session.user.id 取得: ' + employeeId);
     }
     
     if (!employeeId || employeeId === 'null' || employeeId === 'undefined') {
-      Logger.log('❌ 無法取得有效的員工ID');
+      Logger.log(' 無法取得有效的員工ID');
       Logger.log('   完整 user 物件: ' + JSON.stringify(session.user));
       return { ok: false, msg: "無法取得員工ID" };
     }
     
-    Logger.log('✅ 最終員工ID: ' + employeeId);
+    Logger.log(' 最終員工ID: ' + employeeId);
     Logger.log('');
     
     // ⭐ 步驟 4：檢查 yearMonth
     if (!params.yearMonth) {
-      Logger.log('❌ 缺少 yearMonth 參數');
+      Logger.log(' 缺少 yearMonth 參數');
       return { ok: false, msg: "缺少年月參數" };
     }
     
@@ -1517,9 +1579,9 @@ function handleGetMySalary(params) {
       yearMonth = yearMonth.substring(0, 7);
     }
     
-    Logger.log('📅 查詢年月: ' + yearMonth);
+    Logger.log(' 查詢年月: ' + yearMonth);
     Logger.log('');
-    Logger.log('💰 開始查詢薪資...');
+    Logger.log(' 開始查詢薪資...');
     Logger.log('   employeeId: ' + employeeId);
     Logger.log('   yearMonth: ' + yearMonth);
     Logger.log('');
@@ -1528,7 +1590,7 @@ function handleGetMySalary(params) {
     const result = getMySalary(employeeId, yearMonth);
     
     Logger.log('');
-    Logger.log('📤 查詢結果:');
+    Logger.log(' 查詢結果:');
     Logger.log('   - success: ' + result.success);
     Logger.log('   - message: ' + (result.message || result.msg || '無'));
     
@@ -1553,7 +1615,7 @@ function handleGetMySalary(params) {
     
   } catch (error) {
     Logger.log('');
-    Logger.log('❌❌❌ 發生錯誤');
+    Logger.log(' 發生錯誤');
     Logger.log('錯誤訊息: ' + error.message);
     Logger.log('錯誤堆疊: ' + error.stack);
     Logger.log('═══════════════════════════════════════');
@@ -1568,28 +1630,28 @@ function handleGetMySalary(params) {
 }
 
 /**
- * ✅ 處理取得我的薪資歷史（修正版）
+ *  處理取得我的薪資歷史（修正版）
  */
 function handleGetMySalaryHistory(params) {
   try {
     Logger.log('═══════════════════════════════════════');
-    Logger.log('📋 handleGetMySalaryHistory 開始');
+    Logger.log(' handleGetMySalaryHistory 開始');
     Logger.log('═══════════════════════════════════════');
     
     if (!params.token) {
-      Logger.log('❌ 缺少 token');
+      Logger.log(' 缺少 token');
       return { ok: false, msg: "缺少 token" };
     }
     
-    Logger.log('📡 驗證 Session...');
+    Logger.log(' 驗證 Session...');
     const session = checkSession_(params.token);
     
     if (!session.ok || !session.user) {
-      Logger.log('❌ Session 無效');
+      Logger.log(' Session 無效');
       return { ok: false, msg: "未授權" };
     }
     
-    Logger.log('✅ Session 有效');
+    Logger.log(' Session 有效');
     
     // 取得員工ID
     let employeeId = null;
@@ -1600,18 +1662,18 @@ function handleGetMySalaryHistory(params) {
     }
     
     if (!employeeId) {
-      Logger.log('❌ 無法取得員工ID');
+      Logger.log(' 無法取得員工ID');
       return { ok: false, msg: "無法取得員工ID" };
     }
     
-    Logger.log('👤 員工ID: ' + employeeId);
+    Logger.log(' 員工ID: ' + employeeId);
     
     const limit = parseInt(params.limit) || 12;
-    Logger.log('📋 查詢筆數限制: ' + limit);
+    Logger.log(' 查詢筆數限制: ' + limit);
     
     const result = getMySalaryHistory(employeeId, limit);
     
-    Logger.log('📤 查詢結果:');
+    Logger.log(' 查詢結果:');
     Logger.log('   - success: ' + result.success);
     Logger.log('   - total: ' + (result.total || 0));
     Logger.log('═══════════════════════════════════════');
@@ -1624,16 +1686,16 @@ function handleGetMySalaryHistory(params) {
     };
     
   } catch (error) {
-    Logger.log('❌ handleGetMySalaryHistory 錯誤: ' + error);
+    Logger.log(' handleGetMySalaryHistory 錯誤: ' + error);
     return { ok: false, msg: error.message };
   }
 }
 
 /**
- * 🧪 測試函數
+ *  測試函數
  */
 function testHandleGetMySalaryFinal() {
-  Logger.log('🧪 測試最終修正版 handleGetMySalary');
+  Logger.log(' 測試最終修正版 handleGetMySalary');
   Logger.log('');
   
   const testParams = {
@@ -1641,7 +1703,7 @@ function testHandleGetMySalaryFinal() {
     yearMonth: '2025-11'
   };
   
-  Logger.log('📥 測試參數:');
+  Logger.log(' 測試參數:');
   Logger.log('   token: ' + testParams.token.substring(0, 20) + '...');
   Logger.log('   yearMonth: ' + testParams.yearMonth);
   Logger.log('');
@@ -1649,64 +1711,64 @@ function testHandleGetMySalaryFinal() {
   const result = handleGetMySalary(testParams);
   
   Logger.log('');
-  Logger.log('📤 最終結果:');
+  Logger.log(' 最終結果:');
   Logger.log(JSON.stringify(result, null, 2));
   
   if (result.ok) {
     Logger.log('');
-    Logger.log('✅✅✅ 測試成功！');
+    Logger.log(' 測試成功！');
   } else {
     Logger.log('');
-    Logger.log('❌❌❌ 測試失敗');
+    Logger.log(' 測試失敗');
     Logger.log('   原因: ' + result.msg);
   }
 }
 function manualTestGetMySalary() {
-  Logger.log('🧪 手動測試 getMySalary');
+  Logger.log(' 手動測試 getMySalary');
   Logger.log('');
   
   const token = '04fd1452-4aca-4b03-ad17-45f03144c6ff';
   const yearMonth = '2025-11';
   
-  Logger.log('📡 Step 1: 檢查 Session');
+  Logger.log(' Step 1: 檢查 Session');
   const session = checkSession_(token);
   Logger.log('Session 結果: ' + JSON.stringify(session, null, 2));
   
   if (!session.ok) {
-    Logger.log('❌ Session 無效');
+    Logger.log(' Session 無效');
     return;
   }
   
   Logger.log('');
-  Logger.log('📡 Step 2: 取得 userId');
+  Logger.log(' Step 2: 取得 userId');
   const userId = session.user.userId;
   Logger.log('userId: ' + userId);
   Logger.log('userId 型別: ' + typeof userId);
   
   if (!userId) {
-    Logger.log('❌ userId 是 null 或 undefined');
+    Logger.log(' userId 是 null 或 undefined');
     return;
   }
   
   Logger.log('');
-  Logger.log('📡 Step 3: 呼叫 getMySalary');
+  Logger.log(' Step 3: 呼叫 getMySalary');
   const result = getMySalary(userId, yearMonth);
   
   Logger.log('');
-  Logger.log('📤 最終結果:');
+  Logger.log(' 最終結果:');
   Logger.log(JSON.stringify(result, null, 2));
   
   if (result.success) {
     Logger.log('');
-    Logger.log('✅✅✅ 成功！');
+    Logger.log(' 成功！');
   } else {
     Logger.log('');
-    Logger.log('❌❌❌ 失敗');
+    Logger.log(' 失敗');
   }
 }
 
 /**
- * ✅ 處理計算月薪
+ *  處理計算月薪
  */
 function handleCalculateMonthlySalary(params) {
   try {
@@ -1722,7 +1784,7 @@ function handleCalculateMonthlySalary(params) {
       return { ok: false, msg: "缺少年月參數" };
     }
     
-    Logger.log('💰 計算月薪: ' + params.employeeId + ', ' + params.yearMonth);
+    Logger.log(' 計算月薪: ' + params.employeeId + ', ' + params.yearMonth);
     
     const result = calculateMonthlySalary(params.employeeId, params.yearMonth);
     
@@ -1733,13 +1795,13 @@ function handleCalculateMonthlySalary(params) {
     };
     
   } catch (error) {
-    Logger.log('❌ handleCalculateMonthlySalary 錯誤: ' + error);
+    Logger.log(' handleCalculateMonthlySalary 錯誤: ' + error);
     return { ok: false, msg: error.message };
   }
 }
 
 /**
- * ✅ 處理儲存月薪記錄
+ *  處理儲存月薪記錄
  */
 function handleSaveMonthlySalary(params) {
   try {
@@ -1747,7 +1809,7 @@ function handleSaveMonthlySalary(params) {
       return { ok: false, msg: "未授權或 session 已過期" };
     }
     
-    Logger.log('💾 儲存月薪資單');
+    Logger.log(' 儲存月薪資單');
     
     let salaryData;
     if (params.data) {
@@ -1755,7 +1817,7 @@ function handleSaveMonthlySalary(params) {
         try {
           salaryData = JSON.parse(decodeURIComponent(params.data));
         } catch (e) {
-          Logger.log('❌ 解析 data 參數失敗: ' + e);
+          Logger.log(' 解析 data 參數失敗: ' + e);
           return { ok: false, msg: "資料格式錯誤" };
         }
       } else {
@@ -1792,13 +1854,13 @@ function handleSaveMonthlySalary(params) {
     };
     
   } catch (error) {
-    Logger.log('❌ handleSaveMonthlySalary 錯誤: ' + error);
+    Logger.log(' handleSaveMonthlySalary 錯誤: ' + error);
     return { ok: false, msg: error.message };
   }
 }
 
 /**
- * ✅ 處理取得所有員工薪資列表
+ *  處理取得所有員工薪資列表
  */
 function handleGetAllMonthlySalary(params) {
   try {
@@ -1810,13 +1872,13 @@ function handleGetAllMonthlySalary(params) {
     return { ok: result.success, data: result.data, msg: result.message };
     
   } catch (error) {
-    Logger.log('❌ handleGetAllMonthlySalary 錯誤: ' + error);
+    Logger.log(' handleGetAllMonthlySalary 錯誤: ' + error);
     return { ok: false, msg: error.message };
   }
 }
 
 /**
- * ✅ 從 Session 取得員工ID的輔助函數
+ *  從 Session 取得員工ID的輔助函數
  */
 function getUserIdFromSession(token) {
   try {
@@ -1826,7 +1888,7 @@ function getUserIdFromSession(token) {
     }
     return null;
   } catch (error) {
-    Logger.log('❌ getUserIdFromSession 錯誤: ' + error);
+    Logger.log(' getUserIdFromSession 錯誤: ' + error);
     return null;
   }
 }
@@ -1834,18 +1896,18 @@ function getUserIdFromSession(token) {
 // ==================== 測試函數 ====================
 
 /**
- * 🧪 測試取得我的薪資
+ *  測試取得我的薪資
  */
 function testHandleGetMySalary() {
-  Logger.log('🧪🧪🧪 測試 handleGetMySalary');
+  Logger.log(' 測試 handleGetMySalary');
   Logger.log('');
   
   const testParams = {
-    token: '04fd1452-4aca-4b03-ad17-45f03144c6ff',  // ⚠️ 替換成有效的 token
+    token: '04fd1452-4aca-4b03-ad17-45f03144c6ff',  //  替換成有效的 token
     yearMonth: '2025-11'
   };
   
-  Logger.log('📥 測試參數:');
+  Logger.log(' 測試參數:');
   Logger.log('   token: ' + testParams.token.substring(0, 20) + '...');
   Logger.log('   yearMonth: ' + testParams.yearMonth);
   Logger.log('');
@@ -1853,21 +1915,21 @@ function testHandleGetMySalary() {
   const result = handleGetMySalary(testParams);
   
   Logger.log('');
-  Logger.log('📤 最終結果:');
+  Logger.log(' 最終結果:');
   Logger.log(JSON.stringify(result, null, 2));
   Logger.log('');
   
   if (result.ok) {
-    Logger.log('✅✅✅ 測試成功！');
+    Logger.log(' 測試成功！');
     if (result.data) {
       Logger.log('');
-      Logger.log('💰 薪資資料:');
+      Logger.log(' 薪資資料:');
       Logger.log('   員工姓名: ' + result.data['員工姓名']);
       Logger.log('   年月: ' + result.data['年月']);
       Logger.log('   實發金額: ' + result.data['實發金額']);
     }
   } else {
-    Logger.log('❌ 測試失敗');
+    Logger.log(' 測試失敗');
     Logger.log('   原因: ' + result.msg);
   }
 }
@@ -1875,7 +1937,7 @@ function testHandleGetMySalary() {
 // DailySalaryHandlers.gs - 日薪系統 Handler 函數
 
 /**
- * ✅ 處理設定日薪員工
+ *  處理設定日薪員工
  */
 function handleSetDailyEmployee(params) {
   try {
@@ -1918,13 +1980,13 @@ function handleSetDailyEmployee(params) {
     };
     
   } catch (error) {
-    Logger.log('❌ handleSetDailyEmployee 錯誤: ' + error);
+    Logger.log(' handleSetDailyEmployee 錯誤: ' + error);
     return { ok: false, msg: error.message };
   }
 }
 
 /**
- * ✅ 處理取得日薪員工資料
+ *  處理取得日薪員工資料
  */
 function handleGetDailyEmployee(params) {
   try {
@@ -1955,11 +2017,11 @@ function handleCalculateDailySalary(params) {
       return { ok: false, msg: "缺少必要參數" };
     }
     
-    Logger.log('💰 處理日薪計算請求');
+    Logger.log(' 處理日薪計算請求');
     Logger.log('   員工ID: ' + params.employeeId);
     Logger.log('   年月: ' + params.yearMonth);
     
-    // ✅ 關鍵修正：組裝手動輸入的參數
+    //  關鍵修正：組裝手動輸入的參數
     const manualInputs = {
       workDays: parseFloat(params.workDays) || 0,
       overtimeHours: parseFloat(params.overtimeHours) || 0,
@@ -1970,19 +2032,19 @@ function handleCalculateDailySalary(params) {
       fineDeduction: parseFloat(params.fineDeduction) || 0
     };
     
-    Logger.log('📝 手動輸入參數:');
+    Logger.log(' 手動輸入參數:');
     Logger.log('   上班天數: ' + manualInputs.workDays);
     Logger.log('   加班時數: ' + manualInputs.overtimeHours);
     Logger.log('   請假扣款: ' + manualInputs.leaveDeduction);
     
-    // ✅ 傳遞第三個參數給核心函數
+    //  傳遞第三個參數給核心函數
     const result = calculateDailySalary(
       params.employeeId, 
       params.yearMonth,
       manualInputs  // ⭐ 傳遞手動輸入
     );
     
-    Logger.log('📤 計算結果: ' + result.success);
+    Logger.log(' 計算結果: ' + result.success);
     
     return { 
       ok: result.success, 
@@ -1991,13 +2053,13 @@ function handleCalculateDailySalary(params) {
     };
     
   } catch (error) {
-    Logger.log('❌ handleCalculateDailySalary 錯誤: ' + error);
+    Logger.log(' handleCalculateDailySalary 錯誤: ' + error);
     return { ok: false, msg: error.message };
   }
 }
 
 /**
- * ✅ 處理設定日薪員工（保持不變）
+ *  處理設定日薪員工（保持不變）
  */
 function handleSetDailyEmployee(params) {
   try {
@@ -2040,13 +2102,13 @@ function handleSetDailyEmployee(params) {
     };
     
   } catch (error) {
-    Logger.log('❌ handleSetDailyEmployee 錯誤: ' + error);
+    Logger.log(' handleSetDailyEmployee 錯誤: ' + error);
     return { ok: false, msg: error.message };
   }
 }
 
 /**
- * ✅ 處理取得日薪員工資料（保持不變）
+ *  處理取得日薪員工資料（保持不變）
  */
 function handleGetDailyEmployee(params) {
   try {
@@ -2067,7 +2129,7 @@ function handleGetDailyEmployee(params) {
 }
 
 /**
- * ✅ 處理儲存日薪記錄（保持不變）
+ *  處理儲存日薪記錄（保持不變）
  */
 function handleSaveDailySalaryRecord(params) {
   try {
@@ -2098,13 +2160,13 @@ function handleSaveDailySalaryRecord(params) {
     };
     
   } catch (error) {
-    Logger.log('❌ handleSaveDailySalaryRecord 錯誤: ' + error);
+    Logger.log(' handleSaveDailySalaryRecord 錯誤: ' + error);
     return { ok: false, msg: error.message };
   }
 }
 
 /**
- * ✅ 處理取得所有日薪員工（保持不變）
+ *  處理取得所有日薪員工（保持不變）
  */
 function handleGetAllDailyEmployees(params) {
   try {
@@ -2121,7 +2183,7 @@ function handleGetAllDailyEmployees(params) {
 }
 
 /**
- * ✅ 處理取得日薪計算記錄（保持不變）
+ *  處理取得日薪計算記錄（保持不變）
  */
 function handleGetDailySalaryRecords(params) {
   try {
@@ -2138,7 +2200,7 @@ function handleGetDailySalaryRecords(params) {
 }
 
 /**
- * ✅ 處理 initApp（合併 checkSession 和 getAbnormalRecords）
+ *  處理 initApp（合併 checkSession 和 getAbnormalRecords）
  */
 function handleInitApp(params) {
   try {
@@ -2163,10 +2225,10 @@ function handleInitApp(params) {
     const records = getAttendanceRecords(month, userId);
     const abnormalResults = checkAttendanceAbnormal(records);
     
-    // 👇 3. 取得加班記錄（新增）
+    //  3. 取得加班記錄（新增）
     const overtimeRecords = getApprovedOvertimeRecords(userId, month);
     
-    // 👇 4. 將加班記錄加入異常記錄陣列
+    //  4. 將加班記錄加入異常記錄陣列
     overtimeRecords.forEach(ot => {
       abnormalResults.push({
         date: ot.date,
@@ -2191,7 +2253,7 @@ function handleInitApp(params) {
     };
     
   } catch (error) {
-    Logger.log('❌ handleInitApp 錯誤: ' + error);
+    Logger.log(' handleInitApp 錯誤: ' + error);
     return { ok: false, code: "INTERNAL_ERROR", msg: error.message };
   }
 }
@@ -2228,7 +2290,7 @@ function handleInitApp(params) {
 //     };
     
 //   } catch (error) {
-//     Logger.log('❌ handleInitApp 錯誤: ' + error);
+//     Logger.log(' handleInitApp 錯誤: ' + error);
 //     return { ok: false, code: "INTERNAL_ERROR", msg: error.message };
 //   }
 // }
@@ -2265,14 +2327,14 @@ function handleGetEmployeeMonthlyPunchData(params) {
     };
     
   } catch (error) {
-    Logger.log('❌ handleGetEmployeeMonthlyPunchData 錯誤: ' + error);
+    Logger.log(' handleGetEmployeeMonthlyPunchData 錯誤: ' + error);
     return { ok: false, msg: error.message };
   }
 }
 
 
 /**
- * ✅ 取得員工本月打卡記錄（前端專用）
+ *  取得員工本月打卡記錄（前端專用）
  */
 function handleGetEmployeeMonthlyAttendance(params) {
   try {
@@ -2285,7 +2347,7 @@ function handleGetEmployeeMonthlyAttendance(params) {
       return { ok: false, message: "缺少年月參數" };
     }
     
-    Logger.log(`📋 員工 ${user.name} 查詢 ${yearMonth} 打卡記錄`);
+    Logger.log(` 員工 ${user.name} 查詢 ${yearMonth} 打卡記錄`);
     
     const records = getEmployeeMonthlyAttendance(user.userId, yearMonth);
     
@@ -2295,13 +2357,13 @@ function handleGetEmployeeMonthlyAttendance(params) {
     };
     
   } catch (error) {
-    Logger.log("❌ 取得打卡記錄失敗: " + error);
+    Logger.log(" 取得打卡記錄失敗: " + error);
     return { ok: false, message: error.toString() };
   }
 }
 
 /**
- * ✅ 取得員工本月加班記錄（前端專用）
+ *  取得員工本月加班記錄（前端專用）
  */
 function handleGetEmployeeMonthlyOvertime(params) {
   try {
@@ -2314,7 +2376,7 @@ function handleGetEmployeeMonthlyOvertime(params) {
       return { ok: false, message: "缺少年月參數" };
     }
     
-    Logger.log(`📋 員工 ${user.name} 查詢 ${yearMonth} 加班記錄`);
+    Logger.log(` 員工 ${user.name} 查詢 ${yearMonth} 加班記錄`);
     
     const records = getEmployeeMonthlyOvertime(user.userId, yearMonth);
     
@@ -2324,7 +2386,7 @@ function handleGetEmployeeMonthlyOvertime(params) {
     };
     
   } catch (error) {
-    Logger.log("❌ 取得加班記錄失敗: " + error);
+    Logger.log(" 取得加班記錄失敗: " + error);
     return { ok: false, message: error.toString() };
   }
 }
@@ -2372,7 +2434,7 @@ function handleGetAnnouncements(params) {
  */
 function handleAddAnnouncement(params) {
   try {
-    // ✅ 驗證管理員權限
+    //  驗證管理員權限
     const user = getUserByToken(params.token);
     if (!user || user.dept !== '管理員') {
       return { ok: false, msg: '無權限' };
@@ -2409,13 +2471,13 @@ function handleAddAnnouncement(params) {
 function handleDeleteAnnouncement(params) {
   try {
     Logger.log('═══════════════════════════════════════');
-    Logger.log('🗑️ 開始刪除公告');
+    Logger.log(' 開始刪除公告');
     Logger.log('   收到的 ID: ' + params.id);
     Logger.log('   ID 型別: ' + typeof params.id);
     
     const user = getUserByToken(params.token);
     if (!user || user.dept !== '管理員') {
-      Logger.log('❌ 無權限');
+      Logger.log(' 無權限');
       return { ok: false, msg: '無權限' };
     }
     
@@ -2423,7 +2485,7 @@ function handleDeleteAnnouncement(params) {
     const sheet = ss.getSheetByName('公告');
     
     if (!sheet) {
-      Logger.log('❌ 工作表不存在');
+      Logger.log(' 工作表不存在');
       return { ok: false, msg: '工作表不存在' };
     }
     
@@ -2441,16 +2503,16 @@ function handleDeleteAnnouncement(params) {
       Logger.log(`   檢查第 ${i + 1} 行: ID = "${rowId}"`);
       
       if (rowId === announcementId) {
-        Logger.log(`   ✅ 找到匹配！刪除第 ${i + 1} 行`);
+        Logger.log(`    找到匹配！刪除第 ${i + 1} 行`);
         sheet.deleteRow(i + 1);
         Logger.log('═══════════════════════════════════════');
         return { ok: true, msg: '公告已刪除' };
       }
     }
     
-    Logger.log('   ❌ 沒有找到匹配的 ID');
+    Logger.log('    沒有找到匹配的 ID');
     Logger.log('');
-    Logger.log('📋 工作表中所有的 ID:');
+    Logger.log(' 工作表中所有的 ID:');
     for (let i = 1; i < data.length; i++) {
       Logger.log(`   - "${data[i][0]}" (${typeof data[i][0]})`);
     }
@@ -2459,7 +2521,7 @@ function handleDeleteAnnouncement(params) {
     return { ok: false, msg: '找不到公告' };
     
   } catch (error) {
-    Logger.log('❌ 錯誤: ' + error);
+    Logger.log(' 錯誤: ' + error);
     Logger.log('═══════════════════════════════════════');
     return { ok: false, msg: error.toString() };
   }
@@ -2485,7 +2547,7 @@ function handleSubmitAdvanceApplication(params) {
     
     return result;
   } catch (error) {
-    Logger.log('❌ handleSubmitAdvanceApplication 錯誤: ' + error);
+    Logger.log(' handleSubmitAdvanceApplication 錯誤: ' + error);
     return { ok: false, msg: error.message };
   }
 }
@@ -2515,7 +2577,7 @@ function handleSubmitReimbursement(params) {
     
     return result;
   } catch (error) {
-    Logger.log('❌ handleSubmitReimbursement 錯誤: ' + error);
+    Logger.log(' handleSubmitReimbursement 錯誤: ' + error);
     return { ok: false, msg: error.message };
   }
 }
@@ -2534,7 +2596,7 @@ function handleGetAdvanceRecords(params) {
     
     return result;
   } catch (error) {
-    Logger.log('❌ handleGetAdvanceRecords 錯誤: ' + error);
+    Logger.log(' handleGetAdvanceRecords 錯誤: ' + error);
     return { ok: false, msg: error.message };
   }
 }
@@ -2553,7 +2615,7 @@ function handleGetReimbursementRecords(params) {
     
     return result;
   } catch (error) {
-    Logger.log('❌ handleGetReimbursementRecords 錯誤: ' + error);
+    Logger.log(' handleGetReimbursementRecords 錯誤: ' + error);
     return { ok: false, msg: error.message };
   }
 }
@@ -2583,7 +2645,7 @@ function handleReviewAdvanceApplication(params) {
     
     return result;
   } catch (error) {
-    Logger.log('❌ handleReviewAdvanceApplication 錯誤: ' + error);
+    Logger.log(' handleReviewAdvanceApplication 錯誤: ' + error);
     return { ok: false, msg: error.message };
   }
 }
@@ -2613,7 +2675,7 @@ function handleReviewReimbursement(params) {
     
     return result;
   } catch (error) {
-    Logger.log('❌ handleReviewReimbursement 錯誤: ' + error);
+    Logger.log(' handleReviewReimbursement 錯誤: ' + error);
     return { ok: false, msg: error.message };
   }
 }
@@ -2622,11 +2684,11 @@ function handleReviewReimbursement(params) {
 // ==================== 員工基本資料 Handler ====================
 
 /**
- * ✅ 處理設定員工基本資料（員工自己填寫版）
+ *  處理設定員工基本資料（員工自己填寫版）
  */
 function handleSetEmployeeBasicInfo(params) {
   try {
-    Logger.log('📝 處理設定員工基本資料請求（員工自填）');
+    Logger.log(' 處理設定員工基本資料請求（員工自填）');
     
     // ⭐ 驗證 Session（所有員工都可以使用）
     if (!params.token || !validateSession(params.token)) {
@@ -2641,7 +2703,7 @@ function handleSetEmployeeBasicInfo(params) {
     
     const currentUser = session.user;
     
-    Logger.log('👤 當前使用者: ' + currentUser.name);
+    Logger.log(' 當前使用者: ' + currentUser.name);
     Logger.log('   userId: ' + currentUser.userId);
     
     // ⭐⭐⭐ 關鍵修正：使用當前使用者的 ID，不從前端接收
@@ -2654,7 +2716,7 @@ function handleSetEmployeeBasicInfo(params) {
       birthDate: params.birthDate            // 從前端接收
     };
     
-    Logger.log('📋 準備儲存資料:');
+    Logger.log(' 準備儲存資料:');
     Logger.log('   員工ID: ' + employeeData.employeeId);
     Logger.log('   姓名: ' + employeeData.employeeName);
     Logger.log('   身分證: ' + (employeeData.idNumber || '未填'));
@@ -2668,16 +2730,16 @@ function handleSetEmployeeBasicInfo(params) {
     };
     
   } catch (error) {
-    Logger.log('❌ handleSetEmployeeBasicInfo 錯誤: ' + error);
+    Logger.log(' handleSetEmployeeBasicInfo 錯誤: ' + error);
     return { ok: false, msg: error.message };
   }
 }
 /**
- * ✅ 處理取得員工基本資料（查詢自己的資料）
+ *  處理取得員工基本資料（查詢自己的資料）
  */
 function handleGetEmployeeBasicInfo(params) {
   try {
-    Logger.log('🔍 處理查詢員工基本資料請求');
+    Logger.log(' 處理查詢員工基本資料請求');
     
     // 驗證 Session
     if (!params.token || !validateSession(params.token)) {
@@ -2692,7 +2754,7 @@ function handleGetEmployeeBasicInfo(params) {
     
     const currentUser = session.user;
     
-    Logger.log('👤 查詢員工: ' + currentUser.name);
+    Logger.log(' 查詢員工: ' + currentUser.name);
     
     // ⭐⭐⭐ 只能查詢自己的資料
     const result = getEmployeeBasicInfo(currentUser.userId);
@@ -2704,17 +2766,17 @@ function handleGetEmployeeBasicInfo(params) {
     };
     
   } catch (error) {
-    Logger.log('❌ handleGetEmployeeBasicInfo 錯誤: ' + error);
+    Logger.log(' handleGetEmployeeBasicInfo 錯誤: ' + error);
     return { ok: false, msg: error.message };
   }
 }
 
 /**
- * ✅ 處理取得所有員工基本資料
+ *  處理取得所有員工基本資料
  */
 function handleGetAllEmployeeBasicInfo(params) {
   try {
-    Logger.log('📋 處理取得所有員工基本資料請求');
+    Logger.log(' 處理取得所有員工基本資料請求');
     
     // 驗證 Session
     if (!params.token || !validateSession(params.token)) {
@@ -2737,17 +2799,17 @@ function handleGetAllEmployeeBasicInfo(params) {
     };
     
   } catch (error) {
-    Logger.log('❌ handleGetAllEmployeeBasicInfo 錯誤: ' + error);
+    Logger.log(' handleGetAllEmployeeBasicInfo 錯誤: ' + error);
     return { ok: false, msg: error.message };
   }
 }
 
 /**
- * ✅ 處理刪除員工基本資料
+ *  處理刪除員工基本資料
  */
 function handleDeleteEmployeeBasicInfo(params) {
   try {
-    Logger.log('🗑️ 處理刪除員工基本資料請求');
+    Logger.log(' 處理刪除員工基本資料請求');
     
     // 驗證 Session
     if (!params.token || !validateSession(params.token)) {
@@ -2772,7 +2834,7 @@ function handleDeleteEmployeeBasicInfo(params) {
     };
     
   } catch (error) {
-    Logger.log('❌ handleDeleteEmployeeBasicInfo 錯誤: ' + error);
+    Logger.log(' handleDeleteEmployeeBasicInfo 錯誤: ' + error);
     return { ok: false, msg: error.message };
   }
 }
@@ -2800,7 +2862,7 @@ function checkSchedulingPermission(token) {
     return { ok: false, msg: '權限不足：需要管理員或排班人員權限' };
     
   } catch (error) {
-    Logger.log('❌ checkSchedulingPermission 錯誤: ' + error);
+    Logger.log(' checkSchedulingPermission 錯誤: ' + error);
     return { ok: false, msg: error.message };
   }
 }

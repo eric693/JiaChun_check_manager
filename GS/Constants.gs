@@ -23,6 +23,23 @@ const SHEET_OVERTIME_RECORDS = '加班紀錄';
 const SHEET_LEAVE_RECORDS = '請假紀錄';
 const SHEET_LEAVE_BALANCE = '員工假期額度';
 
+// 獎金系統
+const SHEET_BONUS_RECORDS = '獎金發放記錄';
+
+// ==================== 三節獎金類型 ====================
+const BONUS_TYPES = {
+  DRAGON_BOAT:     '端午節獎金',
+  MID_AUTUMN:      '中秋節獎金',
+  SPRING_FESTIVAL: '春節獎金'
+};
+
+// ==================== 薪資類型 ====================
+const SALARY_TYPES = {
+  MONTHLY: '月薪',
+  HOURLY:  '時薪',
+  WEEKLY:  '週薪'  // 週領薪水，不扣勞健保
+};
+
 // ==================== 工作表名稱（新增）====================
 // const SHEET_WORKLOG = '工作日誌';
 

@@ -1,6 +1,6 @@
 // leave.js - 請假系統前端邏輯（無時段限制版）
 
-// ⭐ 添加全域標記
+//  添加全域標記
 let leaveTabInitialized = false;
 let leaveEventsBound = false;
 
@@ -8,14 +8,14 @@ let leaveEventsBound = false;
  * 初始化請假頁籤（防重複版）
  */
 async function initLeaveTab() {
-    console.log('📋 initLeaveTab 被調用');
+    console.log(' initLeaveTab 被調用');
     
     if (leaveTabInitialized) {
-        console.log('⏭️ 請假系統已初始化，跳過');
+        console.log('⏭ 請假系統已初始化，跳過');
         return;
     }
     
-    console.log('🔄 開始初始化請假系統...');
+    console.log(' 開始初始化請假系統...');
     
     leaveTabInitialized = true;
     
@@ -24,9 +24,9 @@ async function initLeaveTab() {
         await loadLeaveRecords();
         bindLeaveEventListeners();
         
-        console.log('✅ 請假系統初始化完成');
+        console.log(' 請假系統初始化完成');
     } catch (error) {
-        console.error('❌ 請假系統初始化失敗:', error);
+        console.error(' 請假系統初始化失敗:', error);
         leaveTabInitialized = false;
     }
 }
@@ -36,11 +36,11 @@ async function initLeaveTab() {
  */
 function bindLeaveEventListeners() {
     if (leaveEventsBound) {
-        console.log('⏭️ 事件監聽器已綁定，跳過');
+        console.log('⏭ 事件監聽器已綁定，跳過');
         return;
     }
     
-    console.log('🔗 綁定事件監聽器...');
+    console.log(' 綁定事件監聽器...');
     
     const leaveTypeSelect = document.getElementById('leave-type');
     if (leaveTypeSelect) {
@@ -52,12 +52,12 @@ function bindLeaveEventListeners() {
     
     if (startInput) {
         startInput.addEventListener('change', updateWorkHoursPreview);
-        console.log('✅ 已綁定開始時間事件');
+        console.log(' 已綁定開始時間事件');
     }
     
     if (endInput) {
         endInput.addEventListener('change', updateWorkHoursPreview);
-        console.log('✅ 已綁定結束時間事件');
+        console.log(' 已綁定結束時間事件');
     }
     
     leaveEventsBound = true;
@@ -67,7 +67,7 @@ function bindLeaveEventListeners() {
  * 重置初始化狀態（用於手動刷新）
  */
 function resetLeaveTab() {
-    console.log('🔄 重置請假系統狀態');
+    console.log(' 重置請假系統狀態');
     leaveTabInitialized = false;
     leaveEventsBound = false;
 }
@@ -76,13 +76,13 @@ function resetLeaveTab() {
  * 手動刷新請假數據（不重新綁定事件）
  */
 async function refreshLeaveData() {
-    console.log('🔄 手動刷新請假數據...');
+    console.log(' 手動刷新請假數據...');
     await loadLeaveBalance();
     await loadLeaveRecords();
 }
 
 /**
- * ✅ 完全無限制版：計算工作時數（24小時制，不限制時段）
+ *  完全無限制版：計算工作時數（24小時制，不限制時段）
  * 
  * 修改內容：
  * 1. 移除 09:00-18:00 的時段限制
@@ -99,25 +99,25 @@ function calculateWorkHours(startTime, endTime) {
     
     // 檢查日期是否有效
     if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-        console.error('❌ 無效的日期格式');
+        console.error(' 無效的日期格式');
         return 0;
     }
     
     // 檢查結束時間是否早於開始時間
     if (end <= start) {
-        console.error('❌ 結束時間必須晚於開始時間');
+        console.error(' 結束時間必須晚於開始時間');
         return 0;
     }
     
-    console.log('📊 開始計算工時:', {
+    console.log(' 開始計算工時:', {
         start: start.toISOString(),
         end: end.toISOString()
     });
     
-    // ⭐ 午休時間設定（可選是否扣除）
+    //  午休時間設定（可選是否扣除）
     const LUNCH_START = 12;         // 午休開始 12:00
     const LUNCH_END = 13;           // 午休結束 13:00
-    const DEDUCT_LUNCH = true;      // ⭐ 設為 false 可以不扣除午休
+    const DEDUCT_LUNCH = true;      //  設為 false 可以不扣除午休
     
     // 計算總毫秒數
     const totalMs = end - start;
@@ -125,9 +125,9 @@ function calculateWorkHours(startTime, endTime) {
     // 轉換為小時
     let totalHours = totalMs / (1000 * 60 * 60);
     
-    console.log(`   ⏱️ 原始時數: ${totalHours.toFixed(2)} 小時`);
+    console.log(`   ⏱ 原始時數: ${totalHours.toFixed(2)} 小時`);
     
-    // ⭐ 扣除午休時間（如果啟用）
+    //  扣除午休時間（如果啟用）
     if (DEDUCT_LUNCH) {
         // 計算跨越的天數
         const startDate = new Date(start.getFullYear(), start.getMonth(), start.getDate());
@@ -156,7 +156,7 @@ function calculateWorkHours(startTime, endTime) {
                 const overlapHours = overlapMs / (1000 * 60 * 60);
                 lunchHoursToDeduct += overlapHours;
                 
-                console.log(`   🍱 ${currentDate.toLocaleDateString()} 扣除午休: ${overlapHours.toFixed(2)} 小時`);
+                console.log(`    ${currentDate.toLocaleDateString()} 扣除午休: ${overlapHours.toFixed(2)} 小時`);
             }
             
             // 移到下一天
@@ -166,7 +166,7 @@ function calculateWorkHours(startTime, endTime) {
         totalHours -= lunchHoursToDeduct;
         
         if (lunchHoursToDeduct > 0) {
-            console.log(`   🍱 總共扣除午休: ${lunchHoursToDeduct.toFixed(2)} 小時`);
+            console.log(`    總共扣除午休: ${lunchHoursToDeduct.toFixed(2)} 小時`);
         }
     }
     
@@ -176,7 +176,7 @@ function calculateWorkHours(startTime, endTime) {
     // 四捨五入到小數點後 2 位
     const finalHours = Math.round(totalHours * 100) / 100;
     
-    console.log(`   ✅ 最終工時: ${finalHours} 小時`);
+    console.log(`    最終工時: ${finalHours} 小時`);
     
     return finalHours;
 }
@@ -185,7 +185,7 @@ function calculateWorkHours(startTime, endTime) {
  * 更新工時預覽（即時顯示）
  */
 function updateWorkHoursPreview() {
-    console.log('🔄 updateWorkHoursPreview 被觸發');
+    console.log(' updateWorkHoursPreview 被觸發');
     
     const startTime = document.getElementById('leave-start-datetime').value;
     const endTime = document.getElementById('leave-end-datetime').value;
@@ -193,14 +193,14 @@ function updateWorkHoursPreview() {
     const hoursEl = document.getElementById('calculated-hours');
     const warningEl = document.getElementById('work-hours-warning');
     
-    console.log('📥 輸入值:', {
+    console.log(' 輸入值:', {
         startTime: startTime,
         endTime: endTime
     });
     
     // 如果沒有輸入，隱藏預覽
     if (!startTime || !endTime) {
-        console.log('⚠️ 開始或結束時間為空');
+        console.log(' 開始或結束時間為空');
         if (previewEl) previewEl.classList.add('hidden');
         return;
     }
@@ -208,7 +208,7 @@ function updateWorkHoursPreview() {
     // 計算工時
     const workHours = calculateWorkHours(startTime, endTime);
     
-    console.log('💡 計算結果:', workHours, '小時');
+    console.log(' 計算結果:', workHours, '小時');
     
     // 顯示預覽區塊
     if (previewEl) previewEl.classList.remove('hidden');
@@ -226,10 +226,10 @@ function updateWorkHoursPreview() {
     
     if (workHours <= 0) {
         hasError = true;
-        errorMsg = '❌ 結束時間必須晚於開始時間';
+        errorMsg = ' 結束時間必須晚於開始時間';
     } else if (!Number.isInteger(workHours)) {
         hasError = true;
-        errorMsg = `❌ 請假時數必須是整數小時（目前為 ${workHours} 小時）\n請調整時間使其為整數小時`;
+        errorMsg = ` 請假時數必須是整數小時（目前為 ${workHours} 小時）\n請調整時間使其為整數小時`;
     }
     
     // 顯示警告訊息
@@ -257,7 +257,7 @@ function updateWorkHoursPreview() {
             warningEl.classList.remove('text-red-600', 'dark:text-red-400');
             warningEl.classList.add('text-green-600', 'dark:text-green-400');
             
-            // ⭐ 顯示時段資訊
+            //  顯示時段資訊
             const start = new Date(startTime);
             const end = new Date(endTime);
             const startHour = start.getHours();
@@ -268,7 +268,7 @@ function updateWorkHoursPreview() {
                 timeInfo = '（包含非標準工作時段）';
             }
             
-            warningEl.textContent = `✅ 時數計算正確${timeInfo}，可以提交申請`;
+            warningEl.textContent = ` 時數計算正確${timeInfo}，可以提交申請`;
         }
     }
 }
@@ -277,7 +277,7 @@ function updateWorkHoursPreview() {
  * 快速選擇時段
  */
 function quickSelectTimeRange(type) {
-    console.log('🎯 快速選擇:', type);
+    console.log(' 快速選擇:', type);
     
     const now = new Date();
     const today = now.toISOString().split('T')[0]; // YYYY-MM-DD
@@ -306,11 +306,11 @@ function quickSelectTimeRange(type) {
             break;
             
         default:
-            console.error('❌ 未知的時段類型:', type);
+            console.error(' 未知的時段類型:', type);
             return;
     }
     
-    console.log('📅 設定時間:', { startTime, endTime });
+    console.log(' 設定時間:', { startTime, endTime });
     
     // 設定時間
     const startInput = document.getElementById('leave-start-datetime');
@@ -324,10 +324,10 @@ function quickSelectTimeRange(type) {
 }
 
 async function submitLeaveApplication() {
-    console.log('📤 開始提交請假申請');
+    console.log(' 開始提交請假申請');
     
     if (!validateLeaveForm()) {
-        console.error('❌ 表單驗證失敗');
+        console.error(' 表單驗證失敗');
         return;
     }
     
@@ -337,7 +337,7 @@ async function submitLeaveApplication() {
     const reason = document.getElementById('leave-reason').value;
     const workHours = calculateWorkHours(startTime, endTime);
     
-    console.log('📋 提交資料:', {
+    console.log(' 提交資料:', {
         leaveType,
         startTime,
         endTime,
@@ -352,7 +352,7 @@ async function submitLeaveApplication() {
         if (balanceRes.ok && balanceRes.balance) {
             const availableHours = balanceRes.balance[leaveType] || 0;
             
-            console.log(`💰 假期餘額檢查:`, {
+            console.log(` 假期餘額檢查:`, {
                 假別: leaveType,
                 可用小時: availableHours,
                 申請小時: workHours
@@ -367,7 +367,7 @@ async function submitLeaveApplication() {
             }
         }
     } catch (error) {
-        console.error('❌ 檢查餘額失敗:', error);
+        console.error(' 檢查餘額失敗:', error);
     }
     
     const button = document.getElementById('submit-leave-btn');
@@ -384,7 +384,7 @@ async function submitLeaveApplication() {
             `&reason=${encodeURIComponent(reason)}`
         );
         
-        console.log('📥 後端回應:', response);
+        console.log(' 後端回應:', response);
         
         if (response.ok) {
             showNotification(`請假申請已提交！時數：${workHours} 小時`, 'success');
@@ -398,18 +398,18 @@ async function submitLeaveApplication() {
             const previewEl = document.getElementById('work-hours-preview');
             if (previewEl) previewEl.classList.add('hidden');
             
-            console.log('🔄 重新載入假期餘額...');
+            console.log(' 重新載入假期餘額...');
             await loadLeaveBalance();
             
-            console.log('🔄 重新載入請假記錄...');
+            console.log(' 重新載入請假記錄...');
             await loadLeaveRecords();
             
-            console.log('✅ 資料更新完成');
+            console.log(' 資料更新完成');
         } else {
             showNotification(response.msg || '提交失敗', 'error');
         }
     } catch (error) {
-        console.error('❌ 提交請假申請失敗:', error);
+        console.error(' 提交請假申請失敗:', error);
         showNotification('網路錯誤，請稍後再試', 'error');
     } finally {
         if (button) {
@@ -483,26 +483,26 @@ function validateLeaveForm() {
 async function loadLeaveBalance() {
     const loadingEl = document.getElementById('leave-balance-loading');
     
-    console.log('🔄 開始載入假期餘額...');
+    console.log(' 開始載入假期餘額...');
     
     if (loadingEl) loadingEl.style.display = 'block';
     
     try {
         const res = await callApifetch('getLeaveBalance');
         
-        console.log('📥 後端返回的假期餘額:', res);
+        console.log(' 後端返回的假期餘額:', res);
         
         if (res.ok && res.balance) {
-            console.log('✅ 假期餘額數據:', res.balance);
+            console.log(' 假期餘額數據:', res.balance);
             renderLeaveBalance(res.balance);
         } else {
-            console.error('❌ 載入假期餘額失敗:', res);
+            console.error(' 載入假期餘額失敗:', res);
         }
     } catch (err) {
-        console.error('❌ 載入假期餘額錯誤:', err);
+        console.error(' 載入假期餘額錯誤:', err);
     } finally {
         if (loadingEl) loadingEl.style.display = 'none';
-        console.log('✅ 假期餘額載入完成');
+        console.log(' 假期餘額載入完成');
     }
 }
 
@@ -513,7 +513,7 @@ function renderLeaveBalance(balance) {
     const listEl = document.getElementById('leave-balance-list');
     if (!listEl) return;
     
-    console.log('📊 開始渲染假期餘額:', balance);
+    console.log(' 開始渲染假期餘額:', balance);
     
     listEl.innerHTML = '';
     
@@ -548,7 +548,7 @@ function renderLeaveBalance(balance) {
         }
     });
     
-    console.log('✅ 假期餘額渲染完成');
+    console.log(' 假期餘額渲染完成');
 }
 
 /**
@@ -560,7 +560,7 @@ async function loadLeaveRecords() {
     const emptyEl = document.getElementById('leave-records-empty');
     const listEl = document.getElementById('leave-records-list');
     
-    console.log('🔄 開始載入請假記錄...');
+    console.log(' 開始載入請假記錄...');
     
     try {
         if (loadingEl) loadingEl.style.display = 'block';
@@ -569,12 +569,12 @@ async function loadLeaveRecords() {
         
         const res = await callApifetch(`getEmployeeLeaveRecords&employeeId=${userId}`);
         
-        console.log('📥 後端返回的請假記錄:', res);
+        console.log(' 後端返回的請假記錄:', res);
         
         if (loadingEl) loadingEl.style.display = 'none';
         
         if (res.ok && res.records && res.records.length > 0) {
-            console.log(`✅ 獲取到 ${res.records.length} 筆記錄`);
+            console.log(` 獲取到 ${res.records.length} 筆記錄`);
             
             const uniqueRecords = [];
             const seenIds = new Set();
@@ -587,18 +587,18 @@ async function loadLeaveRecords() {
                     seenIds.add(uniqueKey);
                     uniqueRecords.push(record);
                 } else {
-                    console.warn('⚠️ 發現重複記錄:', record);
+                    console.warn(' 發現重複記錄:', record);
                 }
             });
             
-            console.log(`✅ 去重後剩餘 ${uniqueRecords.length} 筆記錄`);
+            console.log(` 去重後剩餘 ${uniqueRecords.length} 筆記錄`);
             renderLeaveRecords(uniqueRecords);
         } else {
-            console.log('ℹ️ 沒有請假記錄');
+            console.log('ℹ 沒有請假記錄');
             if (emptyEl) emptyEl.style.display = 'block';
         }
     } catch (error) {
-        console.error('❌ 載入請假紀錄失敗:', error);
+        console.error(' 載入請假紀錄失敗:', error);
         if (loadingEl) loadingEl.style.display = 'none';
         if (emptyEl) emptyEl.style.display = 'block';
     }
@@ -623,7 +623,7 @@ function formatDateTime(isoString) {
         
         return `${year}-${month}-${day} ${hours}:${minutes}`;
     } catch (error) {
-        console.error('❌ 日期格式化失敗:', error);
+        console.error(' 日期格式化失敗:', error);
         return isoString;
     }
 }
@@ -635,7 +635,7 @@ function renderLeaveRecords(records) {
     const listEl = document.getElementById('leave-records-list');
     if (!listEl) return;
     
-    console.log(`📋 開始渲染 ${records.length} 筆請假記錄`);
+    console.log(` 開始渲染 ${records.length} 筆請假記錄`);
     
     listEl.innerHTML = '';
     
@@ -659,7 +659,7 @@ function renderLeaveRecords(records) {
         const endTime = formatDateTime(record.endDateTime || record.endTime);
         
         if (index === 0) {
-            console.log('📋 記錄範例:', {
+            console.log(' 記錄範例:', {
                 leaveType: record.leaveType,
                 startDateTime: record.startDateTime,
                 endDateTime: record.endDateTime,
@@ -708,7 +708,7 @@ function renderLeaveRecords(records) {
         listEl.appendChild(card);
     });
     
-    console.log(`✅ 渲染完成，共 ${records.length} 筆記錄`);
+    console.log(` 渲染完成，共 ${records.length} 筆記錄`);
 }
 
 /**
@@ -771,7 +771,7 @@ function renderPendingLeaveRequests(requests) {
         
         const balanceWarning = req.insufficientBalance 
             ? `<p class="text-xs text-red-600 dark:text-red-400 mt-2 font-semibold">
-                   ⚠️ 該員工餘額不足（剩餘 ${req.remainingBalance} 天）
+                    該員工餘額不足（剩餘 ${req.remainingBalance} 天）
                </p>`
             : '';
         

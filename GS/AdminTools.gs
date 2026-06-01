@@ -8,7 +8,7 @@ function batchInitializeAllEmployeesLeave() {
   const employeeSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_EMPLOYEES);
   
   if (!employeeSheet) {
-    Logger.log("❌ 找不到員工資料表");
+    Logger.log(" 找不到員工資料表");
     return;
   }
   
@@ -16,7 +16,7 @@ function batchInitializeAllEmployeesLeave() {
   let successCount = 0;
   let errorCount = 0;
   
-  Logger.log('🚀 開始批次初始化所有員工假期...\n');
+  Logger.log(' 開始批次初始化所有員工假期...\n');
   Logger.log('=' .repeat(60));
   
   // 從第二行開始（跳過標題）
@@ -27,7 +27,7 @@ function batchInitializeAllEmployeesLeave() {
     
     // 只處理啟用的員工
     if (status !== '啟用') {
-      Logger.log(`⏭️  [${i}] 跳過未啟用員工: ${name} (${userId})`);
+      Logger.log(`⏭  [${i}] 跳過未啟用員工: ${name} (${userId})`);
       continue;
     }
     
@@ -38,7 +38,7 @@ function batchInitializeAllEmployeesLeave() {
       // 如果沒有到職日期，使用建立時間
       if (!hireDate) {
         hireDate = values[i][EMPLOYEE_COL.CREATED] || new Date();
-        Logger.log(`⚠️  [${i}] 員工 ${name} 沒有到職日期，使用建立時間: ${hireDate}`);
+        Logger.log(`  [${i}] 員工 ${name} 沒有到職日期，使用建立時間: ${hireDate}`);
       }
       
       // 初始化假期額度
@@ -48,19 +48,19 @@ function batchInitializeAllEmployeesLeave() {
       const annualLeave = calculateAnnualLeave_(new Date(hireDate));
       
       successCount++;
-      Logger.log(`✅ [${i}] ${name} - 特休假: ${annualLeave} 天`);
+      Logger.log(` [${i}] ${name} - 特休假: ${annualLeave} 天`);
       
     } catch (err) {
       errorCount++;
-      Logger.log(`❌ [${i}] 初始化員工 ${name} 失敗: ${err.message}`);
+      Logger.log(` [${i}] 初始化員工 ${name} 失敗: ${err.message}`);
     }
   }
   
   Logger.log('\n' + '='.repeat(60));
   Logger.log(`
-📊 批次初始化完成！
-✅ 成功: ${successCount} 位員工
-❌ 失敗: ${errorCount} 位員工
+ 批次初始化完成！
+ 成功: ${successCount} 位員工
+ 失敗: ${errorCount} 位員工
   `);
 }
 
@@ -72,7 +72,7 @@ function batchInitializeAllEmployeesLeave() {
 function manualInitializeEmployeeLeave(userId, hireDate) {
   try {
     initializeLeaveBalance_(userId, new Date(hireDate));
-    Logger.log(`✅ 成功初始化員工 ${userId} 的假期額度`);
+    Logger.log(` 成功初始化員工 ${userId} 的假期額度`);
     Logger.log(`   到職日期: ${hireDate}`);
     
     // 顯示計算出的特休假
@@ -80,7 +80,7 @@ function manualInitializeEmployeeLeave(userId, hireDate) {
     Logger.log(`   特休假: ${annualLeave} 天`);
     
   } catch (err) {
-    Logger.log(`❌ 初始化失敗: ${err.message}`);
+    Logger.log(` 初始化失敗: ${err.message}`);
   }
 }
 
@@ -101,7 +101,7 @@ function testAnnualLeaveCalculation() {
     { hireDate: '1994-10-01', description: '30年（應得30天，最高上限）' }
   ];
   
-  Logger.log('📋 特休假計算規則測試：\n');
+  Logger.log(' 特休假計算規則測試：\n');
   Logger.log('=' .repeat(60));
   
   testCases.forEach(testCase => {
@@ -120,14 +120,14 @@ function generateLeaveUsageReport() {
   const leaveSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_LEAVE_RECORDS);
   
   if (!balanceSheet) {
-    Logger.log("❌ 找不到假期額度表");
+    Logger.log(" 找不到假期額度表");
     return;
   }
   
   const balanceValues = balanceSheet.getDataRange().getValues();
   const currentYear = new Date().getFullYear();
   
-  Logger.log(`📊 ${currentYear} 年度假期使用報表\n`);
+  Logger.log(` ${currentYear} 年度假期使用報表\n`);
   Logger.log('=' .repeat(60));
   
   for (let i = 1; i < balanceValues.length; i++) {
@@ -139,7 +139,7 @@ function generateLeaveUsageReport() {
     const sickLeave = balanceValues[i][5];
     const personalLeave = balanceValues[i][6];
     
-    Logger.log(`\n👤 員工: ${name} (${userId})`);
+    Logger.log(`\n 員工: ${name} (${userId})`);
     Logger.log(`  特休假剩餘: ${annualLeave} 天`);
     Logger.log(`  病假剩餘: ${sickLeave} 天`);
     Logger.log(`  事假剩餘: ${personalLeave} 天`);
@@ -150,7 +150,7 @@ function generateLeaveUsageReport() {
 
 /**
  * 重置年度假期（新年度時使用）
- * ⚠️ 注意：這會重新計算所有員工的假期額度
+ *  注意：這會重新計算所有員工的假期額度
  */
 function resetAnnualLeave() {
   const userResponse = Browser.msgBox(
@@ -160,14 +160,14 @@ function resetAnnualLeave() {
   );
   
   if (userResponse !== 'yes') {
-    Logger.log('❌ 操作已取消');
+    Logger.log(' 操作已取消');
     return;
   }
   
   const employeeSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_EMPLOYEES);
   
   if (!employeeSheet) {
-    Logger.log("❌ 找不到員工資料表");
+    Logger.log(" 找不到員工資料表");
     return;
   }
   
@@ -185,11 +185,11 @@ function resetAnnualLeave() {
       initializeLeaveBalance_(userId, new Date(hireDate));
       successCount++;
     } catch (err) {
-      Logger.log(`❌ 重置員工 ${userId} 失敗: ${err.message}`);
+      Logger.log(` 重置員工 ${userId} 失敗: ${err.message}`);
     }
   }
   
-  Logger.log(`✅ 成功重置 ${successCount} 位員工的年度假期`);
+  Logger.log(` 成功重置 ${successCount} 位員工的年度假期`);
 }
 
 /**
@@ -197,11 +197,11 @@ function resetAnnualLeave() {
  */
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
-  ui.createMenu('🛠️ 請假系統管理')
-    .addItem('📊 特休假計算測試', 'testAnnualLeaveCalculation')
-    .addItem('🔄 批次初始化所有員工假期', 'batchInitializeAllEmployeesLeave')
-    .addItem('📈 查看假期使用報表', 'generateLeaveUsageReport')
+  ui.createMenu(' 請假系統管理')
+    .addItem(' 特休假計算測試', 'testAnnualLeaveCalculation')
+    .addItem(' 批次初始化所有員工假期', 'batchInitializeAllEmployeesLeave')
+    .addItem(' 查看假期使用報表', 'generateLeaveUsageReport')
     .addSeparator()
-    .addItem('🔁 重置年度假期（新年度）', 'resetAnnualLeave')
+    .addItem(' 重置年度假期（新年度）', 'resetAnnualLeave')
     .addToUi();
 }

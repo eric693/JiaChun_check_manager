@@ -1,7 +1,7 @@
 // DailySalary.gs - 日薪管理系統（修正版 - 接受前端參數）
 
 /**
- * ✅ 計算日薪（修正版 - 接受前端手動輸入的參數）
+ *  計算日薪（修正版 - 接受前端手動輸入的參數）
  * 
  * @param {string} employeeId - 員工ID
  * @param {string} yearMonth - 年月 (格式: YYYY-MM)
@@ -16,7 +16,7 @@
  */
 function calculateDailySalary(employeeId, yearMonth, manualInputs) {
   try {
-    Logger.log('💰 計算日薪: ' + employeeId + ', ' + yearMonth);
+    Logger.log(' 計算日薪: ' + employeeId + ', ' + yearMonth);
     
     // 1. 取得員工資料
     const employeeResult = getDailyEmployee(employeeId);
@@ -36,8 +36,8 @@ function calculateDailySalary(employeeId, yearMonth, manualInputs) {
     let fineShare = 0;
     
     if (manualInputs && typeof manualInputs === 'object') {
-      // ✅ 使用前端傳來的手動輸入
-      Logger.log('📝 使用手動輸入的參數');
+      //  使用前端傳來的手動輸入
+      Logger.log(' 使用手動輸入的參數');
       
       workDays = parseFloat(manualInputs.workDays) || 0;
       totalOvertimeHours = parseFloat(manualInputs.overtimeHours) || 0;
@@ -51,8 +51,8 @@ function calculateDailySalary(employeeId, yearMonth, manualInputs) {
       Logger.log('   加班時數: ' + totalOvertimeHours);
       
     } else {
-      // ✅ 自動從打卡記錄計算
-      Logger.log('🤖 自動計算（從打卡記錄）');
+      //  自動從打卡記錄計算
+      Logger.log(' 自動計算（從打卡記錄）');
       
       // 取得當月打卡記錄（計算上班天數）
       const attendanceRecords = getAttendanceRecords(yearMonth, employeeId);
@@ -62,7 +62,7 @@ function calculateDailySalary(employeeId, yearMonth, manualInputs) {
         }
       }
       
-      Logger.log('📅 本月上班天數: ' + workDays);
+      Logger.log(' 本月上班天數: ' + workDays);
       
       // 取得加班記錄
       const overtimeRecords = getEmployeeOvertimeForMonth(employeeId, yearMonth);
@@ -144,7 +144,7 @@ function calculateDailySalary(employeeId, yearMonth, manualInputs) {
       bankAccount: employee['銀行帳號']
     };
     
-    Logger.log('✅ 日薪計算完成');
+    Logger.log(' 日薪計算完成');
     Logger.log('   應發: $' + grossSalary);
     Logger.log('   扣款: $' + totalDeductions);
     Logger.log('   實發: $' + netSalary);
@@ -156,7 +156,7 @@ function calculateDailySalary(employeeId, yearMonth, manualInputs) {
     };
     
   } catch (error) {
-    Logger.log('❌ 計算失敗: ' + error);
+    Logger.log(' 計算失敗: ' + error);
     return {
       success: false,
       message: '計算失敗: ' + error.message
@@ -167,14 +167,14 @@ function calculateDailySalary(employeeId, yearMonth, manualInputs) {
 // ==================== 其他函數保持不變 ====================
 
 /**
- * ✅ 取得日薪 Sheet
+ *  取得日薪 Sheet
  */
 function getDailySalarySheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let sheet = ss.getSheetByName('日薪員工');
   
   if (!sheet) {
-    Logger.log('📝 建立日薪員工工作表');
+    Logger.log(' 建立日薪員工工作表');
     sheet = ss.insertSheet('日薪員工');
     
     const headers = [
@@ -195,7 +195,7 @@ function getDailySalarySheet() {
 }
 
 /**
- * ✅ 取得日薪員工資料
+ *  取得日薪員工資料
  */
 function getDailyEmployee(employeeId) {
   try {
@@ -250,7 +250,7 @@ function getDailyEmployee(employeeId) {
 }
 
 /**
- * ✅ 設定日薪員工資料
+ *  設定日薪員工資料
  */
 function setDailyEmployee(data) {
   try {
@@ -312,7 +312,7 @@ function setDailyEmployee(data) {
 }
 
 /**
- * ✅ 儲存日薪計算記錄
+ *  儲存日薪計算記錄
  */
 function saveDailySalaryRecord(data) {
   try {
@@ -387,7 +387,7 @@ function saveDailySalaryRecord(data) {
 }
 
 /**
- * ✅ 取得員工的加班記錄（指定月份）
+ *  取得員工的加班記錄（指定月份）
  */
 function getEmployeeOvertimeForMonth(employeeId, yearMonth) {
   try {
@@ -423,13 +423,13 @@ function getEmployeeOvertimeForMonth(employeeId, yearMonth) {
     return records;
     
   } catch (error) {
-    Logger.log('❌ 取得加班記錄失敗: ' + error);
+    Logger.log(' 取得加班記錄失敗: ' + error);
     return [];
   }
 }
 
 /**
- * ✅ 取得員工的請假記錄（指定月份）
+ *  取得員工的請假記錄（指定月份）
  */
 function getEmployeeLeaveForMonth(employeeId, yearMonth) {
   try {
@@ -465,13 +465,13 @@ function getEmployeeLeaveForMonth(employeeId, yearMonth) {
     return records;
     
   } catch (error) {
-    Logger.log('❌ 取得請假記錄失敗: ' + error);
+    Logger.log(' 取得請假記錄失敗: ' + error);
     return [];
   }
 }
 
 /**
- * ✅ 取得所有日薪員工列表
+ *  取得所有日薪員工列表
  */
 function getAllDailyEmployees() {
   try {
@@ -508,7 +508,7 @@ function getAllDailyEmployees() {
 }
 
 /**
- * ✅ 取得日薪計算記錄（指定年月）
+ *  取得日薪計算記錄（指定年月）
  */
 function getDailySalaryRecords(yearMonth) {
   try {

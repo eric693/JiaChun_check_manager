@@ -7,7 +7,7 @@
 function setupLeaveSystemDatabase() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   
-  Logger.log('🚀 開始建立請假系統資料庫（15種假別）...\n');
+  Logger.log(' 開始建立請假系統資料庫（15種假別）...\n');
   
   // 1. 建立「員工假期額度」工作表
   createLeaveBalanceSheet_(ss);
@@ -18,10 +18,10 @@ function setupLeaveSystemDatabase() {
   // 3. 檢查並更新「員工資料」工作表
   updateEmployeeSheet_(ss);
   
-  Logger.log('\n✅ 請假系統資料庫建立完成！');
-  Logger.log('📌 下一步：');
+  Logger.log('\n 請假系統資料庫建立完成！');
+  Logger.log(' 下一步：');
   Logger.log('   1. 在員工資料表的 G 欄填寫所有員工的到職日期');
-  Logger.log('   2. 執行選單 > 🛠️ 請假系統管理 > 批次初始化所有員工假期');
+  Logger.log('   2. 執行選單 >  請假系統管理 > 批次初始化所有員工假期');
 }
 
 /**
@@ -31,11 +31,11 @@ function createLeaveBalanceSheet_(ss) {
   let sheet = ss.getSheetByName(SHEET_LEAVE_BALANCE);
   
   if (sheet) {
-    Logger.log('⚠️  「員工假期額度」工作表已存在，跳過建立');
+    Logger.log('  「員工假期額度」工作表已存在，跳過建立');
     return;
   }
   
-  Logger.log('📊 建立「員工假期額度」工作表（15種假別）...');
+  Logger.log(' 建立「員工假期額度」工作表（15種假別）...');
   
   sheet = ss.insertSheet(SHEET_LEAVE_BALANCE);
   
@@ -88,7 +88,7 @@ function createLeaveBalanceSheet_(ss) {
   // 凍結標題行
   sheet.setFrozenRows(1);
   
-  Logger.log('✅ 「員工假期額度」工作表建立完成（15種假別）');
+  Logger.log(' 「員工假期額度」工作表建立完成（15種假別）');
 }
 
 /**
@@ -98,11 +98,11 @@ function createLeaveRecordsSheet_(ss) {
   let sheet = ss.getSheetByName(SHEET_LEAVE_RECORDS);
   
   if (sheet) {
-    Logger.log('⚠️  「請假紀錄」工作表已存在，跳過建立');
+    Logger.log('  「請假紀錄」工作表已存在，跳過建立');
     return;
   }
   
-  Logger.log('📝 建立「請假紀錄」工作表...');
+  Logger.log(' 建立「請假紀錄」工作表...');
   
   sheet = ss.insertSheet(SHEET_LEAVE_RECORDS);
   
@@ -158,7 +158,7 @@ function createLeaveRecordsSheet_(ss) {
   
   sheet.getRange('J2:J1000').setDataValidation(statusRule);
   
-  Logger.log('✅ 「請假紀錄」工作表建立完成');
+  Logger.log(' 「請假紀錄」工作表建立完成');
 }
 
 /**
@@ -168,12 +168,12 @@ function updateEmployeeSheet_(ss) {
   const sheet = ss.getSheetByName(SHEET_EMPLOYEES);
   
   if (!sheet) {
-    Logger.log('❌ 找不到「員工資料」工作表');
+    Logger.log(' 找不到「員工資料」工作表');
     Logger.log('   請先建立員工資料表，或檢查工作表名稱是否正確');
     return;
   }
   
-  Logger.log('👥 檢查「員工資料」工作表...');
+  Logger.log(' 檢查「員工資料」工作表...');
   
   const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
   
@@ -181,16 +181,16 @@ function updateEmployeeSheet_(ss) {
   const hireDateIndex = headers.indexOf('到職日期');
   
   if (hireDateIndex === -1) {
-    Logger.log('⚠️  未找到「到職日期」欄位');
+    Logger.log('  未找到「到職日期」欄位');
     Logger.log('   建議在員工資料表中新增「到職日期」欄位（建議位置：G 欄，第 7 欄）');
     Logger.log('   或者系統會使用「建立時間」作為替代');
   } else {
-    Logger.log(`✅ 找到「到職日期」欄位（第 ${hireDateIndex + 1} 欄，${String.fromCharCode(65 + hireDateIndex)} 欄）`);
+    Logger.log(` 找到「到職日期」欄位（第 ${hireDateIndex + 1} 欄，${String.fromCharCode(65 + hireDateIndex)} 欄）`);
   }
   
   // 檢查員工數量
   const employeeCount = sheet.getLastRow() - 1; // 扣除標題行
-  Logger.log(`📊 目前共有 ${employeeCount} 位員工`);
+  Logger.log(` 目前共有 ${employeeCount} 位員工`);
   
   // 檢查有多少員工已填寫到職日期
   if (hireDateIndex !== -1 && employeeCount > 0) {
@@ -201,11 +201,11 @@ function updateEmployeeSheet_(ss) {
       if (values[i][0]) filledCount++;
     }
     
-    Logger.log(`📋 已填寫到職日期: ${filledCount} 位`);
-    Logger.log(`📋 未填寫到職日期: ${employeeCount - filledCount} 位`);
+    Logger.log(` 已填寫到職日期: ${filledCount} 位`);
+    Logger.log(` 未填寫到職日期: ${employeeCount - filledCount} 位`);
     
     if (filledCount < employeeCount) {
-      Logger.log('\n⚠️  建議：請為所有員工填寫到職日期，才能正確計算特休假天數');
+      Logger.log('\n  建議：請為所有員工填寫到職日期，才能正確計算特休假天數');
     }
   }
 }
@@ -218,16 +218,16 @@ function validateLeaveSystemDatabase() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let isValid = true;
   
-  Logger.log('🔍 開始驗證請假系統資料庫結構（15種假別）...\n');
+  Logger.log(' 開始驗證請假系統資料庫結構（15種假別）...\n');
   Logger.log('='.repeat(60));
   
   // 檢查「員工假期額度」工作表
   const balanceSheet = ss.getSheetByName(SHEET_LEAVE_BALANCE);
   if (!balanceSheet) {
-    Logger.log('❌ 找不到「員工假期額度」工作表');
+    Logger.log(' 找不到「員工假期額度」工作表');
     isValid = false;
   } else {
-    Logger.log('✅ 「員工假期額度」工作表存在');
+    Logger.log(' 「員工假期額度」工作表存在');
     
     // 檢查欄位
     const headers = balanceSheet.getRange(1, 1, 1, balanceSheet.getLastColumn()).getValues()[0];
@@ -242,18 +242,18 @@ function validateLeaveSystemDatabase() {
     let allFieldsPresent = true;
     requiredHeaders.forEach(header => {
       if (headers.indexOf(header) === -1) {
-        Logger.log(`   ❌ 缺少欄位：${header}`);
+        Logger.log(`    缺少欄位：${header}`);
         allFieldsPresent = false;
         isValid = false;
       }
     });
     
     if (allFieldsPresent) {
-      Logger.log('   ✅ 所有欄位完整（15種假別）');
+      Logger.log('    所有欄位完整（15種假別）');
       
       // 檢查是否有資料
       const rowCount = balanceSheet.getLastRow() - 1;
-      Logger.log(`   📊 已初始化 ${rowCount} 位員工的假期額度`);
+      Logger.log(`    已初始化 ${rowCount} 位員工的假期額度`);
     }
   }
   
@@ -262,10 +262,10 @@ function validateLeaveSystemDatabase() {
   // 檢查「請假紀錄」工作表
   const recordsSheet = ss.getSheetByName(SHEET_LEAVE_RECORDS);
   if (!recordsSheet) {
-    Logger.log('❌ 找不到「請假紀錄」工作表');
+    Logger.log(' 找不到「請假紀錄」工作表');
     isValid = false;
   } else {
-    Logger.log('✅ 「請假紀錄」工作表存在');
+    Logger.log(' 「請假紀錄」工作表存在');
     
     const headers = recordsSheet.getRange(1, 1, 1, recordsSheet.getLastColumn()).getValues()[0];
     const requiredHeaders = [
@@ -277,18 +277,18 @@ function validateLeaveSystemDatabase() {
     let allFieldsPresent = true;
     requiredHeaders.forEach(header => {
       if (headers.indexOf(header) === -1) {
-        Logger.log(`   ❌ 缺少欄位：${header}`);
+        Logger.log(`    缺少欄位：${header}`);
         allFieldsPresent = false;
         isValid = false;
       }
     });
     
     if (allFieldsPresent) {
-      Logger.log('   ✅ 所有欄位完整');
+      Logger.log('    所有欄位完整');
       
       // 檢查是否有資料
       const rowCount = recordsSheet.getLastRow() - 1;
-      Logger.log(`   📊 目前有 ${rowCount} 筆請假記錄`);
+      Logger.log(`    目前有 ${rowCount} 筆請假記錄`);
     }
   }
   
@@ -297,32 +297,32 @@ function validateLeaveSystemDatabase() {
   // 檢查「員工資料」工作表
   const employeeSheet = ss.getSheetByName(SHEET_EMPLOYEES);
   if (!employeeSheet) {
-    Logger.log('❌ 找不到「員工資料」工作表');
+    Logger.log(' 找不到「員工資料」工作表');
     isValid = false;
   } else {
-    Logger.log('✅ 「員工資料」工作表存在');
+    Logger.log(' 「員工資料」工作表存在');
     
     const headers = employeeSheet.getRange(1, 1, 1, employeeSheet.getLastColumn()).getValues()[0];
     const hireDateIndex = headers.indexOf('到職日期');
     
     if (hireDateIndex === -1) {
-      Logger.log('   ⚠️  未找到「到職日期」欄位（建議在 G 欄新增）');
+      Logger.log('     未找到「到職日期」欄位（建議在 G 欄新增）');
       Logger.log('   系統將使用「建立時間」作為替代');
     } else {
-      Logger.log(`   ✅ 找到「到職日期」欄位（${String.fromCharCode(65 + hireDateIndex)} 欄）`);
+      Logger.log(`    找到「到職日期」欄位（${String.fromCharCode(65 + hireDateIndex)} 欄）`);
     }
   }
   
   Logger.log('\n' + '='.repeat(60));
   
   if (isValid) {
-    Logger.log('✅ 資料庫結構驗證通過！');
-    Logger.log('\n📌 系統已準備就緒，下一步：');
+    Logger.log(' 資料庫結構驗證通過！');
+    Logger.log('\n 系統已準備就緒，下一步：');
     Logger.log('   1. 確認所有員工都有填寫到職日期（G 欄）');
-    Logger.log('   2. 執行：選單 > 🛠️ 請假系統管理 > 批次初始化所有員工假期');
+    Logger.log('   2. 執行：選單 >  請假系統管理 > 批次初始化所有員工假期');
   } else {
-    Logger.log('❌ 資料庫結構驗證失敗');
-    Logger.log('\n📌 請執行以下函數建立資料表：');
+    Logger.log(' 資料庫結構驗證失敗');
+    Logger.log('\n 請執行以下函數建立資料表：');
     Logger.log('   setupLeaveSystemDatabase()');
   }
   
@@ -331,11 +331,11 @@ function validateLeaveSystemDatabase() {
 
 /**
  * 清理測試資料
- * ⚠️ 警告：這會刪除所有請假相關的資料！
+ *  警告：這會刪除所有請假相關的資料！
  */
 function cleanupLeaveSystemData() {
   const userResponse = Browser.msgBox(
-    '⚠️ 警告',
+    ' 警告',
     '這將刪除所有請假紀錄和假期額度資料！\n\n' +
     '建議先備份資料再執行此操作。\n\n' +
     '是否確定要繼續？',
@@ -343,7 +343,7 @@ function cleanupLeaveSystemData() {
   );
   
   if (userResponse !== 'yes') {
-    Logger.log('❌ 操作已取消');
+    Logger.log(' 操作已取消');
     return;
   }
   
@@ -355,7 +355,7 @@ function cleanupLeaveSystemData() {
     const lastRow = balanceSheet.getLastRow();
     if (lastRow > 1) {
       balanceSheet.deleteRows(2, lastRow - 1);
-      Logger.log('✅ 已清空「員工假期額度」資料');
+      Logger.log(' 已清空「員工假期額度」資料');
     }
   }
   
@@ -365,11 +365,11 @@ function cleanupLeaveSystemData() {
     const lastRow = recordsSheet.getLastRow();
     if (lastRow > 1) {
       recordsSheet.deleteRows(2, lastRow - 1);
-      Logger.log('✅ 已清空「請假紀錄」資料');
+      Logger.log(' 已清空「請假紀錄」資料');
     }
   }
   
-  Logger.log('\n📌 資料清理完成！請重新執行「批次初始化所有員工假期」');
+  Logger.log('\n 資料清理完成！請重新執行「批次初始化所有員工假期」');
 }
 
 /**
@@ -380,7 +380,7 @@ function exportLeaveDataToCSV() {
   const balanceSheet = ss.getSheetByName(SHEET_LEAVE_BALANCE);
   
   if (!balanceSheet) {
-    Logger.log('❌ 找不到「員工假期額度」工作表');
+    Logger.log(' 找不到「員工假期額度」工作表');
     return;
   }
   
@@ -393,9 +393,9 @@ function exportLeaveDataToCSV() {
   // 儲存到 Google Drive
   const file = DriveApp.createFile(blob);
   
-  Logger.log('✅ CSV 檔案已建立');
-  Logger.log('📁 檔案名稱：' + fileName);
-  Logger.log('🔗 連結：' + file.getUrl());
+  Logger.log(' CSV 檔案已建立');
+  Logger.log(' 檔案名稱：' + fileName);
+  Logger.log(' 連結：' + file.getUrl());
   
   return file.getUrl();
 }
@@ -408,14 +408,14 @@ function batchFillHireDateFromCreated() {
   const employeeSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_EMPLOYEES);
   
   if (!employeeSheet) {
-    Logger.log('❌ 找不到員工資料表');
+    Logger.log(' 找不到員工資料表');
     return;
   }
   
   const values = employeeSheet.getDataRange().getValues();
   let updateCount = 0;
   
-  Logger.log('🔄 開始批次填寫到職日期...\n');
+  Logger.log(' 開始批次填寫到職日期...\n');
   
   for (let i = 1; i < values.length; i++) {
     const hireDate = values[i][EMPLOYEE_COL.HIRE_DATE];
@@ -426,11 +426,11 @@ function batchFillHireDateFromCreated() {
     if (!hireDate && createdDate) {
       employeeSheet.getRange(i + 1, EMPLOYEE_COL.HIRE_DATE + 1).setValue(createdDate);
       updateCount++;
-      Logger.log(`✅ [${i}] ${name} - 填入到職日期: ${createdDate}`);
+      Logger.log(` [${i}] ${name} - 填入到職日期: ${createdDate}`);
     }
   }
   
-  Logger.log(`\n📊 完成！共更新 ${updateCount} 位員工的到職日期`);
+  Logger.log(`\n 完成！共更新 ${updateCount} 位員工的到職日期`);
 }
 
 /**
@@ -441,13 +441,13 @@ function previewAnnualLeaveCalculation() {
   const employeeSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_EMPLOYEES);
   
   if (!employeeSheet) {
-    Logger.log('❌ 找不到員工資料表');
+    Logger.log(' 找不到員工資料表');
     return;
   }
   
   const values = employeeSheet.getDataRange().getValues();
   
-  Logger.log('📋 員工特休假預覽\n');
+  Logger.log(' 員工特休假預覽\n');
   Logger.log('='.repeat(80));
   Logger.log(sprintf('%-30s %-15s %-8s %s', '姓名', '到職日期', '年資', '特休假'));
   Logger.log('-'.repeat(80));

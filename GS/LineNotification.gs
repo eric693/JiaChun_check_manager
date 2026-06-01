@@ -30,14 +30,14 @@ function sendLineNotification_(userId, flexMessage) {
     const result = JSON.parse(response.getContentText());
     
     if (response.getResponseCode() === 200) {
-      Logger.log(`✅ LINE 通知已發送給 ${userId}`);
+      Logger.log(` LINE 通知已發送給 ${userId}`);
       return { ok: true };
     } else {
-      Logger.log(`❌ LINE 通知發送失敗: ${result.message}`);
+      Logger.log(` LINE 通知發送失敗: ${result.message}`);
       return { ok: false, error: result.message };
     }
   } catch (err) {
-    Logger.log(`❌ LINE API 錯誤: ${err.message}`);
+    Logger.log(` LINE API 錯誤: ${err.message}`);
     return { ok: false, error: err.message };
   }
 }
@@ -45,12 +45,12 @@ function sendLineNotification_(userId, flexMessage) {
 // ==================== Flex Message 模板 ====================
 
 /**
- * 🔔 忘記打卡提醒
+ *  忘記打卡提醒
  */
 function createForgotPunchNotification(employeeName, date, punchType) {
   return {
     type: "flex",
-    altText: `⚠️ ${employeeName}，您忘記${punchType}打卡了！`,
+    altText: ` ${employeeName}，您忘記${punchType}打卡了！`,
     contents: {
       type: "bubble",
       size: "mega",
@@ -60,7 +60,7 @@ function createForgotPunchNotification(employeeName, date, punchType) {
         contents: [
           {
             type: "text",
-            text: "⚠️ 忘記打卡提醒",
+            text: " 忘記打卡提醒",
             weight: "bold",
             size: "xl",
             color: "#FF6B6B",
@@ -187,12 +187,12 @@ function createForgotPunchNotification(employeeName, date, punchType) {
 }
 
 /**
- * ✅ 補打卡審核通知（核准）
+ *  補打卡審核通知（核准）
  */
 function createPunchApprovedNotification(employeeName, date, time, punchType, reviewer) {
   return {
     type: "flex",
-    altText: `✅ 您的補打卡申請已核准`,
+    altText: ` 您的補打卡申請已核准`,
     contents: {
       type: "bubble",
       size: "mega",
@@ -202,7 +202,7 @@ function createPunchApprovedNotification(employeeName, date, time, punchType, re
         contents: [
           {
             type: "text",
-            text: "✅ 審核通過",
+            text: " 審核通過",
             weight: "bold",
             size: "xl",
             color: "#FFFFFF",
@@ -359,12 +359,12 @@ function createPunchApprovedNotification(employeeName, date, time, punchType, re
 }
 
 /**
- * ❌ 補打卡審核通知（拒絕）
+ *  補打卡審核通知（拒絕）
  */
 function createPunchRejectedNotification(employeeName, date, time, punchType, reviewer, reason) {
   return {
     type: "flex",
-    altText: `❌ 您的補打卡申請已被拒絕`,
+    altText: ` 您的補打卡申請已被拒絕`,
     contents: {
       type: "bubble",
       size: "mega",
@@ -374,7 +374,7 @@ function createPunchRejectedNotification(employeeName, date, time, punchType, re
         contents: [
           {
             type: "text",
-            text: "❌ 審核未通過",
+            text: " 審核未通過",
             weight: "bold",
             size: "xl",
             color: "#FFFFFF",
@@ -534,12 +534,12 @@ function createPunchRejectedNotification(employeeName, date, time, punchType, re
 }
 
 /**
- * ✅ 請假審核通知（核准）
+ *  請假審核通知（核准）
  */
 function createLeaveApprovedNotification(employeeName, leaveType, startDate, endDate, days, reviewer) {
   return {
     type: "flex",
-    altText: `✅ 您的${leaveType}申請已核准`,
+    altText: ` 您的${leaveType}申請已核准`,
     contents: {
       type: "bubble",
       size: "mega",
@@ -549,7 +549,7 @@ function createLeaveApprovedNotification(employeeName, leaveType, startDate, end
         contents: [
           {
             type: "text",
-            text: "✅ 請假核准通知",
+            text: " 請假核准通知",
             weight: "bold",
             size: "xl",
             color: "#FFFFFF",
@@ -686,7 +686,7 @@ function createLeaveApprovedNotification(employeeName, leaveType, startDate, end
           },
           {
             type: "text",
-            text: "🎉 祝您有個愉快的假期！",
+            text: " 祝您有個愉快的假期！",
             size: "sm",
             color: "#2196F3",
             margin: "lg",
@@ -719,12 +719,12 @@ function createLeaveApprovedNotification(employeeName, leaveType, startDate, end
 }
 
 /**
- * ❌ 請假審核通知（拒絕）
+ *  請假審核通知（拒絕）
  */
 function createLeaveRejectedNotification(employeeName, leaveType, startDate, endDate, days, reviewer, reason) {
   return {
     type: "flex",
-    altText: `❌ 您的${leaveType}申請已被拒絕`,
+    altText: ` 您的${leaveType}申請已被拒絕`,
     contents: {
       type: "bubble",
       size: "mega",
@@ -734,7 +734,7 @@ function createLeaveRejectedNotification(employeeName, leaveType, startDate, end
         contents: [
           {
             type: "text",
-            text: "❌ 請假未核准",
+            text: " 請假未核准",
             weight: "bold",
             size: "xl",
             color: "#FFFFFF",
@@ -893,12 +893,12 @@ function createLeaveRejectedNotification(employeeName, leaveType, startDate, end
 }
 
 /**
- * ✅ 加班審核通知（核准）
+ *  加班審核通知（核准）
  */
 function createOvertimeApprovedNotification(employeeName, date, hours, reviewer) {
   return {
     type: "flex",
-    altText: `✅ 您的加班申請已核准`,
+    altText: ` 您的加班申請已核准`,
     contents: {
       type: "bubble",
       size: "mega",
@@ -908,7 +908,7 @@ function createOvertimeApprovedNotification(employeeName, date, hours, reviewer)
         contents: [
           {
             type: "text",
-            text: "✅ 加班核准通知",
+            text: " 加班核准通知",
             weight: "bold",
             size: "xl",
             color: "#FFFFFF",
@@ -1022,7 +1022,7 @@ function createOvertimeApprovedNotification(employeeName, date, hours, reviewer)
           },
           {
             type: "text",
-            text: "💪 辛苦了！",
+            text: " 辛苦了！",
             size: "sm",
             color: "#FF9800",
             margin: "lg",
@@ -1055,12 +1055,12 @@ function createOvertimeApprovedNotification(employeeName, date, hours, reviewer)
 }
 
 /**
- * ❌ 加班審核通知（拒絕）
+ *  加班審核通知（拒絕）
  */
 function createOvertimeRejectedNotification(employeeName, date, hours, reviewer, reason) {
   return {
     type: "flex",
-    altText: `❌ 您的加班申請已被拒絕`,
+    altText: ` 您的加班申請已被拒絕`,
     contents: {
       type: "bubble",
       size: "mega",
@@ -1070,7 +1070,7 @@ function createOvertimeRejectedNotification(employeeName, date, hours, reviewer,
         contents: [
           {
             type: "text",
-            text: "❌ 加班未核准",
+            text: " 加班未核准",
             weight: "bold",
             size: "xl",
             color: "#FFFFFF",
@@ -1290,9 +1290,9 @@ function checkForgotPunchDaily() {
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
   
-  // ✅ 新增：檢查昨天是否為平日
+  //  新增：檢查昨天是否為平日
   if (!isWeekday(yesterday)) {
-    Logger.log(`⏭️ ${Utilities.formatDate(yesterday, "GMT+8", "yyyy-MM-dd")} 是週末，跳過檢查`);
+    Logger.log(`⏭ ${Utilities.formatDate(yesterday, "GMT+8", "yyyy-MM-dd")} 是週末，跳過檢查`);
     return;
   }
   
@@ -1302,7 +1302,7 @@ function checkForgotPunchDaily() {
   const employeeSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_EMPLOYEES);
   
   if (!attendanceSheet || !employeeSheet) {
-    Logger.log("❌ 找不到必要的工作表");
+    Logger.log(" 找不到必要的工作表");
     return;
   }
   
@@ -1310,7 +1310,7 @@ function checkForgotPunchDaily() {
   const attendances = attendanceSheet.getDataRange().getValues();
   const headers = attendances[0];
   
-  Logger.log(`📅 開始檢查 ${dateStr} (平日) 的下班打卡`);
+  Logger.log(` 開始檢查 ${dateStr} (平日) 的下班打卡`);
   
   // 遍歷所有員工
   for (let i = 1; i < employees.length; i++) {
@@ -1338,14 +1338,14 @@ function checkForgotPunchDaily() {
     if (!hasPunchOut) {
       try {
         notifyForgotPunch(userId, name, dateStr, "下班");
-        Logger.log(`📤 已提醒 ${name} 昨天忘記下班打卡`);
+        Logger.log(` 已提醒 ${name} 昨天忘記下班打卡`);
       } catch (err) {
-        Logger.log(`⚠️ 提醒 ${name} 失敗: ${err.message}`);
+        Logger.log(` 提醒 ${name} 失敗: ${err.message}`);
       }
     }
   }
   
-  Logger.log("✅ 下班打卡檢查完成");
+  Logger.log(" 下班打卡檢查完成");
 }
 
 /**
@@ -1356,9 +1356,9 @@ function checkForgotPunchInMorning() {
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
   
-  // ✅ 新增：檢查昨天是否為平日
+  //  新增：檢查昨天是否為平日
   if (!isWeekday(yesterday)) {
-    Logger.log(`⏭️ ${Utilities.formatDate(yesterday, "GMT+8", "yyyy-MM-dd")} 是週末，跳過檢查`);
+    Logger.log(`⏭ ${Utilities.formatDate(yesterday, "GMT+8", "yyyy-MM-dd")} 是週末，跳過檢查`);
     return;
   }
   
@@ -1368,14 +1368,14 @@ function checkForgotPunchInMorning() {
   const employeeSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_EMPLOYEES);
   
   if (!attendanceSheet || !employeeSheet) {
-    Logger.log("❌ 找不到必要的工作表");
+    Logger.log(" 找不到必要的工作表");
     return;
   }
   
   const employees = employeeSheet.getDataRange().getValues();
   const attendances = attendanceSheet.getDataRange().getValues();
   
-  Logger.log(`📅 開始檢查 ${dateStr} (平日) 的上班打卡`);
+  Logger.log(` 開始檢查 ${dateStr} (平日) 的上班打卡`);
   
   for (let i = 1; i < employees.length; i++) {
     const userId = employees[i][EMPLOYEE_COL.USER_ID];
@@ -1400,14 +1400,14 @@ function checkForgotPunchInMorning() {
     if (!hasPunchIn) {
       try {
         notifyForgotPunch(userId, name, dateStr, "上班");
-        Logger.log(`📤 已提醒 ${name} 昨天忘記上班打卡`);
+        Logger.log(` 已提醒 ${name} 昨天忘記上班打卡`);
       } catch (err) {
-        Logger.log(`⚠️ 提醒 ${name} 失敗: ${err.message}`);
+        Logger.log(` 提醒 ${name} 失敗: ${err.message}`);
       }
     }
   }
   
-  Logger.log("✅ 上班打卡檢查完成");
+  Logger.log(" 上班打卡檢查完成");
 }
 
 // ==================== 測試函式 ====================
@@ -1420,9 +1420,9 @@ function testForgotPunchNotification() {
   const testName = "測試員工";
   const testDate = "2025-10-12";
   
-  Logger.log("📤 測試發送忘記打卡通知...");
+  Logger.log(" 測試發送忘記打卡通知...");
   const result = notifyForgotPunch(testUserId, testName, testDate, "上班");
-  Logger.log(result.ok ? "✅ 通知發送成功" : "❌ 通知發送失敗: " + result.error);
+  Logger.log(result.ok ? " 通知發送成功" : " 通知發送失敗: " + result.error);
 }
 
 /**
@@ -1435,9 +1435,9 @@ function testPunchApprovedNotification() {
   const testTime = "09:00";
   const reviewer = "管理員";
   
-  Logger.log("📤 測試發送補打卡核准通知...");
+  Logger.log(" 測試發送補打卡核准通知...");
   const result = notifyPunchReview(testUserId, testName, testDate, testTime, "上班", reviewer, true);
-  Logger.log(result.ok ? "✅ 通知發送成功" : "❌ 通知發送失敗: " + result.error);
+  Logger.log(result.ok ? " 通知發送成功" : " 通知發送失敗: " + result.error);
 }
 
 /**
@@ -1451,9 +1451,9 @@ function testPunchRejectedNotification() {
   const reviewer = "管理員";
   const reason = "時間不符，請重新申請";
   
-  Logger.log("📤 測試發送補打卡拒絕通知...");
+  Logger.log(" 測試發送補打卡拒絕通知...");
   const result = notifyPunchReview(testUserId, testName, testDate, testTime, "上班", reviewer, false, reason);
-  Logger.log(result.ok ? "✅ 通知發送成功" : "❌ 通知發送失敗: " + result.error);
+  Logger.log(result.ok ? " 通知發送成功" : " 通知發送失敗: " + result.error);
 }
 
 /**
@@ -1468,9 +1468,9 @@ function testLeaveApprovedNotification() {
   const days = 3;
   const reviewer = "管理員";
   
-  Logger.log("📤 測試發送請假核准通知...");
+  Logger.log(" 測試發送請假核准通知...");
   const result = notifyLeaveReview(testUserId, testName, leaveType, startDate, endDate, days, reviewer, true);
-  Logger.log(result.ok ? "✅ 通知發送成功" : "❌ 通知發送失敗: " + result.error);
+  Logger.log(result.ok ? " 通知發送成功" : " 通知發送失敗: " + result.error);
 }
 
 /**
@@ -1486,9 +1486,9 @@ function testLeaveRejectedNotification() {
   const reviewer = "管理員";
   const reason = "該時段人力不足，請調整日期";
   
-  Logger.log("📤 測試發送請假拒絕通知...");
+  Logger.log(" 測試發送請假拒絕通知...");
   const result = notifyLeaveReview(testUserId, testName, leaveType, startDate, endDate, days, reviewer, false, reason);
-  Logger.log(result.ok ? "✅ 通知發送成功" : "❌ 通知發送失敗: " + result.error);
+  Logger.log(result.ok ? " 通知發送成功" : " 通知發送失敗: " + result.error);
 }
 
 /**
@@ -1501,9 +1501,9 @@ function testOvertimeApprovedNotification() {
   const hours = 3;
   const reviewer = "管理員";
   
-  Logger.log("📤 測試發送加班核准通知...");
+  Logger.log(" 測試發送加班核准通知...");
   const result = notifyOvertimeReview(testUserId, testName, date, hours, reviewer, true);
-  Logger.log(result.ok ? "✅ 通知發送成功" : "❌ 通知發送失敗: " + result.error);
+  Logger.log(result.ok ? " 通知發送成功" : " 通知發送失敗: " + result.error);
 }
 
 /**
@@ -1517,9 +1517,9 @@ function testOvertimeRejectedNotification() {
   const reviewer = "管理員";
   const reason = "未事先申請，請下次提前告知";
   
-  Logger.log("📤 測試發送加班拒絕通知...");
+  Logger.log(" 測試發送加班拒絕通知...");
   const result = notifyOvertimeReview(testUserId, testName, date, hours, reviewer, false, reason);
-  Logger.log(result.ok ? "✅ 通知發送成功" : "❌ 通知發送失敗: " + result.error);
+  Logger.log(result.ok ? " 通知發送成功" : " 通知發送失敗: " + result.error);
 }
 
 /**
@@ -1575,10 +1575,10 @@ function getAdminUserIds_() {
       }
     }
 
-    Logger.log('👮 管理員清單: ' + JSON.stringify(adminIds));
+    Logger.log(' 管理員清單: ' + JSON.stringify(adminIds));
     return adminIds;
   } catch (err) {
-    Logger.log('❌ getAdminUserIds_ 錯誤: ' + err.message);
+    Logger.log(' getAdminUserIds_ 錯誤: ' + err.message);
     return [];
   }
 }
@@ -1589,26 +1589,26 @@ function getAdminUserIds_() {
 function notifyAllAdmins_(message) {
   const adminIds = getAdminUserIds_();
   if (adminIds.length === 0) {
-    Logger.log('⚠️ 找不到任何管理員，略過通知');
+    Logger.log(' 找不到任何管理員，略過通知');
     return;
   }
   adminIds.forEach(adminId => {
     try {
       sendLineNotification_(adminId, message);
-      Logger.log('✅ 已通知管理員: ' + adminId);
+      Logger.log(' 已通知管理員: ' + adminId);
     } catch (err) {
-      Logger.log('⚠️ 通知管理員失敗 (' + adminId + '): ' + err.message);
+      Logger.log(' 通知管理員失敗 (' + adminId + '): ' + err.message);
     }
   });
 }
 
 /**
- * 🔔 請假新申請通知（給管理員）
+ *  請假新申請通知（給管理員）
  */
 function createNewLeaveRequestNotification_(employeeName, leaveType, startDateTime, endDateTime, workHours, reason) {
   return {
     type: "flex",
-    altText: `🔔 ${employeeName} 提出請假申請，請前往審核`,
+    altText: ` ${employeeName} 提出請假申請，請前往審核`,
     contents: {
       type: "bubble",
       size: "mega",
@@ -1617,7 +1617,7 @@ function createNewLeaveRequestNotification_(employeeName, leaveType, startDateTi
         layout: "vertical",
         contents: [{
           type: "text",
-          text: "🔔 新請假申請待審核",
+          text: " 新請假申請待審核",
           weight: "bold",
           size: "xl",
           color: "#FFFFFF",
@@ -1682,12 +1682,12 @@ function createNewLeaveRequestNotification_(employeeName, leaveType, startDateTi
 }
 
 /**
- * 🔔 加班新申請通知（給管理員）
+ *  加班新申請通知（給管理員）
  */
 function createNewOvertimeRequestNotification_(employeeName, overtimeDate, startTime, endTime, hours, reason) {
   return {
     type: "flex",
-    altText: `🔔 ${employeeName} 提出加班申請，請前往審核`,
+    altText: ` ${employeeName} 提出加班申請，請前往審核`,
     contents: {
       type: "bubble",
       size: "mega",
@@ -1696,7 +1696,7 @@ function createNewOvertimeRequestNotification_(employeeName, overtimeDate, start
         layout: "vertical",
         contents: [{
           type: "text",
-          text: "🔔 新加班申請待審核",
+          text: " 新加班申請待審核",
           weight: "bold",
           size: "xl",
           color: "#FFFFFF",

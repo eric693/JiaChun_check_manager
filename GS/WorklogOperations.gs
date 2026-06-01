@@ -49,7 +49,7 @@ function getWorklogSheet() {
     // 凍結標題列
     sheet.setFrozenRows(1);
     
-    Logger.log('✅ 工作日誌工作表已建立');
+    Logger.log(' 工作日誌工作表已建立');
   }
   
   return sheet;
@@ -58,12 +58,12 @@ function getWorklogSheet() {
 // ==================== 新增工作日誌 ====================
 
 /**
- * ✅ 提交工作日誌
+ *  提交工作日誌
  */
 function submitWorklog(userId, userName, department, date, hours, content) {
   try {
     Logger.log('═══════════════════════════════════════');
-    Logger.log('📝 開始提交工作日誌');
+    Logger.log(' 開始提交工作日誌');
     Logger.log('   員工: ' + userName);
     Logger.log('   日期: ' + date);
     Logger.log('   時數: ' + hours);
@@ -71,20 +71,20 @@ function submitWorklog(userId, userName, department, date, hours, content) {
     
     // 驗證必填欄位
     if (!userId || !date || !hours || !content) {
-      Logger.log('❌ 缺少必填欄位');
+      Logger.log(' 缺少必填欄位');
       return { success: false, message: '缺少必填欄位' };
     }
     
     // 驗證工作時數
     const hoursNum = parseFloat(hours);
     if (isNaN(hoursNum) || hoursNum <= 0 || hoursNum > 24) {
-      Logger.log('❌ 工作時數無效');
+      Logger.log(' 工作時數無效');
       return { success: false, message: '工作時數必須在 0.5 ~ 24 小時之間' };
     }
     
     // 驗證工作內容長度
     if (content.trim().length < 10) {
-      Logger.log('❌ 工作內容太短');
+      Logger.log(' 工作內容太短');
       return { success: false, message: '工作內容至少需要 10 個字' };
     }
     
@@ -96,7 +96,7 @@ function submitWorklog(userId, userName, department, date, hours, content) {
       if (data[i][1] === userId && 
           data[i][4] === date && 
           data[i][7] === WORKLOG_STATUS.PENDING) {
-        Logger.log('❌ 該日期已有待審核的工作日誌');
+        Logger.log(' 該日期已有待審核的工作日誌');
         return { success: false, message: '該日期已有待審核的工作日誌，請先撤回或等待審核' };
       }
     }
@@ -123,7 +123,7 @@ function submitWorklog(userId, userName, department, date, hours, content) {
     
     sheet.appendRow(newRow);
     
-    Logger.log('✅ 工作日誌提交成功');
+    Logger.log(' 工作日誌提交成功');
     Logger.log('   日誌ID: ' + worklogId);
     Logger.log('═══════════════════════════════════════');
     
@@ -134,7 +134,7 @@ function submitWorklog(userId, userName, department, date, hours, content) {
     };
     
   } catch (error) {
-    Logger.log('❌ submitWorklog 錯誤: ' + error);
+    Logger.log(' submitWorklog 錯誤: ' + error);
     return { success: false, message: error.message };
   }
 }
@@ -142,11 +142,11 @@ function submitWorklog(userId, userName, department, date, hours, content) {
 // ==================== 查詢工作日誌 ====================
 
 /**
- * ✅ 取得員工的工作日誌列表
+ *  取得員工的工作日誌列表
  */
 function getWorklogs(userId, limit = 30) {
   try {
-    Logger.log('📋 查詢工作日誌: ' + userId);
+    Logger.log(' 查詢工作日誌: ' + userId);
     
     const sheet = getWorklogSheet();
     const data = sheet.getDataRange().getValues();
@@ -178,7 +178,7 @@ function getWorklogs(userId, limit = 30) {
     // 限制回傳筆數
     const limitedWorklogs = worklogs.slice(0, limit);
     
-    Logger.log('✅ 找到 ' + worklogs.length + ' 筆工作日誌');
+    Logger.log(' 找到 ' + worklogs.length + ' 筆工作日誌');
     
     return {
       success: true,
@@ -187,13 +187,13 @@ function getWorklogs(userId, limit = 30) {
     };
     
   } catch (error) {
-    Logger.log('❌ getWorklogs 錯誤: ' + error);
+    Logger.log(' getWorklogs 錯誤: ' + error);
     return { success: false, message: error.message };
   }
 }
 
 /**
- * ✅ 取得單筆工作日誌詳情
+ *  取得單筆工作日誌詳情
  */
 function getWorklogDetail(worklogId) {
   try {
@@ -225,7 +225,7 @@ function getWorklogDetail(worklogId) {
     return { success: false, message: '找不到工作日誌' };
     
   } catch (error) {
-    Logger.log('❌ getWorklogDetail 錯誤: ' + error);
+    Logger.log(' getWorklogDetail 錯誤: ' + error);
     return { success: false, message: error.message };
   }
 }
@@ -233,11 +233,11 @@ function getWorklogDetail(worklogId) {
 // ==================== 管理員功能 ====================
 
 /**
- * ✅ 取得所有待審核的工作日誌
+ *  取得所有待審核的工作日誌
  */
 function getPendingWorklogs() {
   try {
-    Logger.log('📋 查詢待審核工作日誌');
+    Logger.log(' 查詢待審核工作日誌');
     
     const sheet = getWorklogSheet();
     const data = sheet.getDataRange().getValues();
@@ -263,7 +263,7 @@ function getPendingWorklogs() {
     // 按提交時間升序排列（最早的在前）
     pendingWorklogs.sort((a, b) => new Date(a.submittedAt) - new Date(b.submittedAt));
     
-    Logger.log('✅ 找到 ' + pendingWorklogs.length + ' 筆待審核工作日誌');
+    Logger.log(' 找到 ' + pendingWorklogs.length + ' 筆待審核工作日誌');
     
     return {
       success: true,
@@ -272,25 +272,25 @@ function getPendingWorklogs() {
     };
     
   } catch (error) {
-    Logger.log('❌ getPendingWorklogs 錯誤: ' + error);
+    Logger.log(' getPendingWorklogs 錯誤: ' + error);
     return { success: false, message: error.message };
   }
 }
 
 /**
- * ✅ 審核工作日誌（核准/拒絕）
+ *  審核工作日誌（核准/拒絕）
  */
 function reviewWorklog(worklogId, action, reviewerId, reviewerName, comment) {
   try {
     Logger.log('═══════════════════════════════════════');
-    Logger.log('📝 審核工作日誌');
+    Logger.log(' 審核工作日誌');
     Logger.log('   日誌ID: ' + worklogId);
     Logger.log('   動作: ' + action);
     Logger.log('   審核人: ' + reviewerName);
     Logger.log('═══════════════════════════════════════');
     
     if (action !== 'approve' && action !== 'reject') {
-      Logger.log('❌ 無效的審核動作');
+      Logger.log(' 無效的審核動作');
       return { success: false, message: '無效的審核動作' };
     }
     
@@ -303,7 +303,7 @@ function reviewWorklog(worklogId, action, reviewerId, reviewerName, comment) {
         
         // 檢查狀態
         if (data[i][7] !== WORKLOG_STATUS.PENDING) {
-          Logger.log('❌ 該工作日誌已審核');
+          Logger.log(' 該工作日誌已審核');
           return { success: false, message: '該工作日誌已審核，無法重複審核' };
         }
         
@@ -316,7 +316,7 @@ function reviewWorklog(worklogId, action, reviewerId, reviewerName, comment) {
         sheet.getRange(i + 1, 11).setValue(reviewedAt);         // K: 審核時間
         sheet.getRange(i + 1, 12).setValue(comment || '');      // L: 審核意見
         
-        Logger.log('✅ 工作日誌審核完成');
+        Logger.log(' 工作日誌審核完成');
         Logger.log('   新狀態: ' + newStatus);
         Logger.log('═══════════════════════════════════════');
         
@@ -327,24 +327,24 @@ function reviewWorklog(worklogId, action, reviewerId, reviewerName, comment) {
       }
     }
     
-    Logger.log('❌ 找不到工作日誌');
+    Logger.log(' 找不到工作日誌');
     return { success: false, message: '找不到工作日誌' };
     
   } catch (error) {
-    Logger.log('❌ reviewWorklog 錯誤: ' + error);
+    Logger.log(' reviewWorklog 錯誤: ' + error);
     return { success: false, message: error.message };
   }
 }
 
 /**
- * ✅ 核准工作日誌（便捷函數）
+ *  核准工作日誌（便捷函數）
  */
 function approveWorklog(worklogId, reviewerId, reviewerName, comment) {
   return reviewWorklog(worklogId, 'approve', reviewerId, reviewerName, comment);
 }
 
 /**
- * ✅ 拒絕工作日誌（便捷函數）
+ *  拒絕工作日誌（便捷函數）
  */
 function rejectWorklog(worklogId, reviewerId, reviewerName, comment) {
   return reviewWorklog(worklogId, 'reject', reviewerId, reviewerName, comment);
@@ -353,13 +353,13 @@ function rejectWorklog(worklogId, reviewerId, reviewerName, comment) {
 // ==================== 報表功能 ====================
 
 /**
- * ✅ 完全修正版：取得員工指定月份的工作日誌報表
+ *  完全修正版：取得員工指定月份的工作日誌報表
  * 修正：正確處理日期物件格式
  */
 function getWorklogReport(employeeId, yearMonth) {
   try {
     Logger.log('═══════════════════════════════════════');
-    Logger.log('📊 查詢工作日誌報表');
+    Logger.log(' 查詢工作日誌報表');
     Logger.log('   員工ID: "' + employeeId + '"');
     Logger.log('   年月: "' + yearMonth + '"');
     Logger.log('═══════════════════════════════════════');
@@ -373,7 +373,7 @@ function getWorklogReport(employeeId, yearMonth) {
     // 解析目標年月
     const [targetYear, targetMonth] = yearMonth.split('-').map(Number);
     
-    Logger.log('\n🔍 開始搜尋資料...');
+    Logger.log('\n 開始搜尋資料...');
     Logger.log('   目標年份: ' + targetYear);
     Logger.log('   目標月份: ' + targetMonth);
     Logger.log('   總行數（含標題）: ' + data.length);
@@ -406,11 +406,11 @@ function getWorklogReport(employeeId, yearMonth) {
                          String(worklogMonth).padStart(2, '0') + '-' + 
                          String(worklogDay).padStart(2, '0');
         } catch (e) {
-          Logger.log('⚠️ 無法解析日期: ' + worklogDateRaw);
+          Logger.log(' 無法解析日期: ' + worklogDateRaw);
           continue;
         }
       } else {
-        Logger.log('⚠️ 未知的日期格式');
+        Logger.log(' 未知的日期格式');
         continue;
       }
       
@@ -426,8 +426,8 @@ function getWorklogReport(employeeId, yearMonth) {
         Logger.log(`     原始日期: ${worklogDateRaw}`);
         Logger.log(`     格式化: ${formattedDate}`);
         Logger.log(`     年月: ${worklogYear}-${worklogMonth}`);
-        Logger.log(`     員工ID: "${rowUserId}" ${employeeMatch ? '✅匹配' : '❌不匹配'}`);
-        Logger.log(`     月份: ${monthMatch ? '✅匹配' : '❌不匹配'}`);
+        Logger.log(`     員工ID: "${rowUserId}" ${employeeMatch ? '匹配' : '不匹配'}`);
+        Logger.log(`     月份: ${monthMatch ? '匹配' : '不匹配'}`);
       }
       
       // 如果員工ID和月份都匹配，加入結果
@@ -451,14 +451,14 @@ function getWorklogReport(employeeId, yearMonth) {
           approvedHours += worklog.hours;
         }
         
-        Logger.log(`   ✅ 找到匹配: ${formattedDate} (${worklog.hours}小時)`);
+        Logger.log(`    找到匹配: ${formattedDate} (${worklog.hours}小時)`);
       }
     }
     
     // 按日期排序
     worklogs.sort((a, b) => a.date.localeCompare(b.date));
     
-    Logger.log('\n📊 查詢結果:');
+    Logger.log('\n 查詢結果:');
     Logger.log('   找到工作日誌: ' + worklogs.length + ' 筆');
     Logger.log('   總工時: ' + totalHours + ' 小時');
     Logger.log('   已核准工時: ' + approvedHours + ' 小時');
@@ -476,7 +476,7 @@ function getWorklogReport(employeeId, yearMonth) {
     };
     
   } catch (error) {
-    Logger.log('❌ getWorklogReport 錯誤: ' + error);
+    Logger.log(' getWorklogReport 錯誤: ' + error);
     Logger.log('   錯誤堆疊: ' + error.stack);
     return { success: false, message: error.message };
   }
@@ -484,10 +484,10 @@ function getWorklogReport(employeeId, yearMonth) {
 // ==================== 測試函數 ====================
 
 /**
- * 🧪 測試提交工作日誌
+ *  測試提交工作日誌
  */
 function testSubmitWorklog() {
-  Logger.log('🧪 測試提交工作日誌');
+  Logger.log(' 測試提交工作日誌');
   
   const result = submitWorklog(
     'U123456',
@@ -502,10 +502,10 @@ function testSubmitWorklog() {
 }
 
 /**
- * 🧪 測試查詢工作日誌
+ *  測試查詢工作日誌
  */
 function testGetWorklogs() {
-  Logger.log('🧪 測試查詢工作日誌');
+  Logger.log(' 測試查詢工作日誌');
   
   const result = getWorklogs('U123456');
   
@@ -513,10 +513,10 @@ function testGetWorklogs() {
 }
 
 /**
- * 🧪 測試審核工作日誌
+ *  測試審核工作日誌
  */
 function testReviewWorklog() {
-  Logger.log('🧪 測試審核工作日誌');
+  Logger.log(' 測試審核工作日誌');
   
   // 先取得待審核的工作日誌
   const pending = getPendingWorklogs();
@@ -539,10 +539,10 @@ function testReviewWorklog() {
 }
 
 /**
- * 🧪 測試核准工作日誌（使用便捷函數）
+ *  測試核准工作日誌（使用便捷函數）
  */
 function testApproveWorklog() {
-  Logger.log('🧪 測試核准工作日誌');
+  Logger.log(' 測試核准工作日誌');
   
   const pending = getPendingWorklogs();
   
@@ -563,10 +563,10 @@ function testApproveWorklog() {
 }
 
 /**
- * 🧪 測試拒絕工作日誌（使用便捷函數）
+ *  測試拒絕工作日誌（使用便捷函數）
  */
 function testRejectWorklog() {
-  Logger.log('🧪 測試拒絕工作日誌');
+  Logger.log(' 測試拒絕工作日誌');
   
   const pending = getPendingWorklogs();
   
@@ -587,10 +587,10 @@ function testRejectWorklog() {
 }
 
 /**
- * 🧪 測試修正後的 getWorklogReport 函數
+ *  測試修正後的 getWorklogReport 函數
  */
 function testFixedWorklogReport() {
-  Logger.log('🧪 測試修正後的工作日誌匯出功能');
+  Logger.log(' 測試修正後的工作日誌匯出功能');
   
   // ⭐ 使用實際存在的員工ID
   const tests = [
@@ -600,7 +600,7 @@ function testFixedWorklogReport() {
   
   tests.forEach(test => {
     Logger.log('\n' + '='.repeat(60));
-    Logger.log('🔍 測試員工: ' + test.name);
+    Logger.log(' 測試員工: ' + test.name);
     Logger.log('   員工ID: ' + test.id);
     Logger.log('   年月: 2026-01');
     Logger.log('='.repeat(60));
@@ -608,38 +608,38 @@ function testFixedWorklogReport() {
     // ⭐ 呼叫修正後的 getWorklogReport（不是 Debug 版本）
     const result = getWorklogReport(test.id, '2026-01');
     
-    Logger.log('\n📊 結果:');
+    Logger.log('\n 結果:');
     Logger.log('   成功: ' + result.success);
     Logger.log('   找到筆數: ' + result.worklogs.length);
     
     if (result.worklogs && result.worklogs.length > 0) {
-      Logger.log('\n✅ 工作日誌列表:');
+      Logger.log('\n 工作日誌列表:');
       result.worklogs.forEach((log, index) => {
         Logger.log(`   [${index + 1}] ${log.date} - ${log.hours}小時 - ${log.status}`);
         Logger.log(`       內容: ${log.content.substring(0, 50)}...`);
       });
       
-      Logger.log('\n📈 統計:');
+      Logger.log('\n 統計:');
       Logger.log('   總時數: ' + result.summary.totalHours);
       Logger.log('   已核准時數: ' + result.summary.approvedHours);
     } else {
-      Logger.log('   ⚠️ 沒有找到工作日誌');
+      Logger.log('    沒有找到工作日誌');
     }
   });
   
   Logger.log('\n' + '='.repeat(60));
-  Logger.log('✅ 測試完成');
+  Logger.log(' 測試完成');
   Logger.log('='.repeat(60));
 }
 
 
 /**
- * ✅ 取得所有員工指定月份的工作日誌報表
+ *  取得所有員工指定月份的工作日誌報表
  */
 function getAllWorklogReport(yearMonth) {
   try {
     Logger.log('═══════════════════════════════════════');
-    Logger.log('📊 查詢全部員工工作日誌報表');
+    Logger.log(' 查詢全部員工工作日誌報表');
     Logger.log('   年月: "' + yearMonth + '"');
     Logger.log('═══════════════════════════════════════');
     
@@ -650,7 +650,7 @@ function getAllWorklogReport(yearMonth) {
     // 解析目標年月
     const [targetYear, targetMonth] = yearMonth.split('-').map(Number);
     
-    Logger.log('\n🔍 開始搜尋資料...');
+    Logger.log('\n 開始搜尋資料...');
     Logger.log('   目標年份: ' + targetYear);
     Logger.log('   目標月份: ' + targetMonth);
     
@@ -710,7 +710,7 @@ function getAllWorklogReport(yearMonth) {
       return a.date.localeCompare(b.date);
     });
     
-    Logger.log('\n📊 查詢結果:');
+    Logger.log('\n 查詢結果:');
     Logger.log('   找到工作日誌: ' + worklogs.length + ' 筆');
     Logger.log('═══════════════════════════════════════');
     
@@ -721,7 +721,7 @@ function getAllWorklogReport(yearMonth) {
     };
     
   } catch (error) {
-    Logger.log('❌ getAllWorklogReport 錯誤: ' + error);
+    Logger.log(' getAllWorklogReport 錯誤: ' + error);
     return { success: false, message: error.message };
   }
 }

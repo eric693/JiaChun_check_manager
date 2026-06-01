@@ -208,27 +208,27 @@ function renderWorklogRecords(worklogs) {
                 actionButtons = `
                     <button onclick="editWorklog('${log.id}')" 
                             class="px-3 py-1.5 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors">
-                        ✏️ ${btnEdit}
+                         ${btnEdit}
                     </button>
                     <button onclick="deleteWorklog('${log.id}')" 
                             class="px-3 py-1.5 text-sm bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors">
-                        🗑️ ${btnDelete}
+                         ${btnDelete}
                     </button>
                 `;
                 break;
             case 'APPROVED':
                 statusClass = 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
                 statusText = safeTranslate('STATUS_APPROVED', '已核准');
-                statusIcon = '✅';
+                statusIcon = '';
                 break;
             case 'REJECTED':
                 statusClass = 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
                 statusText = safeTranslate('STATUS_REJECTED', '已拒絕');
-                statusIcon = '❌';
+                statusIcon = '';
                 actionButtons = `
                     <button onclick="editWorklog('${log.id}')" 
                             class="px-3 py-1.5 text-sm bg-orange-500 hover:bg-orange-600 text-white rounded-md transition-colors">
-                        🔄 ${btnResubmit}
+                         ${btnResubmit}
                     </button>
                 `;
                 break;
@@ -244,8 +244,8 @@ function renderWorklogRecords(worklogs) {
                         </span>
                     </div>
                     <div class="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
-                        <span>⏱️ ${log.hours} ${unitHours}</span>
-                        ${submittedTimeStr ? `<span>📅 ${submittedTimeStr}</span>` : ''}
+                        <span>⏱ ${log.hours} ${unitHours}</span>
+                        ${submittedTimeStr ? `<span> ${submittedTimeStr}</span>` : ''}
                     </div>
                 </div>
             </div>
@@ -257,7 +257,7 @@ function renderWorklogRecords(worklogs) {
             ${log.reviewComment ? `
                 <div class="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-400 dark:border-blue-600 rounded p-3 mb-3">
                     <p class="text-xs font-semibold text-blue-800 dark:text-blue-300 mb-1">
-                        💬 ${reviewComment}：
+                         ${reviewComment}：
                     </p>
                     <p class="text-sm text-blue-700 dark:text-blue-400">${log.reviewComment}</p>
                 </div>
@@ -432,14 +432,14 @@ function renderPendingWorklogs(worklogs) {
     
     listEl.innerHTML = '';
     
-    // ✅ 安全翻譯函數
+    //  安全翻譯函數
     const safeTranslate = (key, fallback) => {
         if (typeof t !== 'function') return fallback;
         const result = t(key);
         return (result && result !== key) ? result : fallback;
     };
     
-    // ✅ 預先取得所有翻譯
+    //  預先取得所有翻譯
     const unitHours = safeTranslate('UNIT_HOURS', '小時');
     const submittedAt = safeTranslate('SUBMITTED_AT', '提交於');
     const workContent = safeTranslate('WORK_CONTENT', '工作內容');
@@ -501,23 +501,23 @@ function renderPendingWorklogs(worklogs) {
                         </span>
                     </div>
                     <div class="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
-                        <span>📅 ${workDateStr}</span>
-                        <span>⏱️ ${log.hours} ${unitHours}</span>
-                        ${submittedTimeStr ? `<span>🕐 ${submittedAt} ${submittedTimeStr}</span>` : ''}
+                        <span> ${workDateStr}</span>
+                        <span>⏱ ${log.hours} ${unitHours}</span>
+                        ${submittedTimeStr ? `<span> ${submittedAt} ${submittedTimeStr}</span>` : ''}
                     </div>
                 </div>
             </div>
             
             <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 mb-3">
                 <p class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                    📝 ${workContent}：
+                     ${workContent}：
                 </p>
                 <p class="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap">${log.content}</p>
             </div>
             
             <div class="mb-3">
                 <label for="review-comment-${log.id}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    💬 ${reviewCommentLabel} <span class="text-xs text-gray-500">(${optionalLabel})</span>
+                     ${reviewCommentLabel} <span class="text-xs text-gray-500">(${optionalLabel})</span>
                 </label>
                 <textarea id="review-comment-${log.id}" 
                           rows="2" 
@@ -528,11 +528,11 @@ function renderPendingWorklogs(worklogs) {
             <div class="flex space-x-2">
                 <button onclick="approveWorklog('${log.id}')" 
                         class="flex-1 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md font-semibold transition-colors">
-                    ✅ ${btnApprove}
+                     ${btnApprove}
                 </button>
                 <button onclick="rejectWorklog('${log.id}')" 
                         class="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md font-semibold transition-colors">
-                    ❌ ${btnReject}
+                     ${btnReject}
                 </button>
             </div>
         `;
@@ -676,7 +676,7 @@ async function generateWorklogExcel(employeeName, yearMonth, worklogs) {
     
     const isAllEmployees = (employeeName === (t('ALL_EMPLOYEES') || '全部員工'));
     
-    // ✅ 翻譯表頭
+    //  翻譯表頭
     const headers = {
         employeeName: t('EMPLOYEE_NAME') || '員工姓名',
         department: t('DEPARTMENT') || '部門',
@@ -785,10 +785,10 @@ async function loadWorklogExportEmployees() {
                 employeeSelect.appendChild(option);
             });
             
-            console.log('✅ 員工選單載入成功（含全部員工選項）');
+            console.log(' 員工選單載入成功（含全部員工選項）');
         }
         
     } catch (error) {
-        console.error('❌ 載入員工列表失敗:', error);
+        console.error(' 載入員工列表失敗:', error);
     }
 }

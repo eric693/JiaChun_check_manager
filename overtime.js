@@ -2,7 +2,7 @@
 
 // ==================== 初始化加班頁面 ====================
 
-// ✅ 使用 Promise 單例取代 boolean 鎖
+//  使用 Promise 單例取代 boolean 鎖
 // boolean 鎖在 async/await 間有競態，Promise 單例才能真正防止重入
 let _pendingOvertimePromise = null;
 let _employeeOvertimePromise = null;
@@ -45,7 +45,7 @@ async function loadEmployeeOvertimeRecords() {
         recordsLoading.style.display = 'none';
         
         if (res.ok && res.requests && res.requests.length > 0) {
-            // ✅ 計算本月已核准加班時數
+            //  計算本月已核准加班時數
             const now = new Date();
             const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
             
@@ -59,7 +59,7 @@ async function loadEmployeeOvertimeRecords() {
                 return sum + (parseFloat(req.hours) || 0);
             }, 0);
             
-            // ✅ 顯示本月統計
+            //  顯示本月統計
             displayMonthlyOvertimeStats(totalApprovedHours);
             
             renderOvertimeRecords(res.requests, recordsList);
@@ -75,7 +75,7 @@ async function loadEmployeeOvertimeRecords() {
 }
 
 /**
- * ✨ 新增：顯示本月加班統計
+ *  新增：顯示本月加班統計
  */
 function displayMonthlyOvertimeStats(approvedHours) {
     const now = new Date();
@@ -110,7 +110,7 @@ function displayMonthlyOvertimeStats(approvedHours) {
             ${exceeded > 0 ? `
                 <div class="mt-3 p-2 bg-orange-100 dark:bg-orange-900/30 border border-orange-300 dark:border-orange-700 rounded text-center">
                     <p class="text-xs font-semibold text-orange-800 dark:text-orange-300">
-                        ⚠️ 已超過每月上限，超出部分需轉為補休
+                         已超過每月上限，超出部分需轉為補休
                     </p>
                 </div>
             ` : ''}
@@ -169,14 +169,14 @@ function renderOvertimeRecords(requests, container) {
         const startTime = formatTimeDisplay(req.startTime);
         const endTime = formatTimeDisplay(req.endTime);
         
-        // 🔧 確保時數正確顯示
+        //  確保時數正確顯示
         const hours = parseFloat(req.hours) || 0;
         const compHours = parseFloat(req.compensatoryHours) || 0;
         // 狀態顯示
         let statusBadge = '';
         let statusClass = '';
         
-        // 🔧 統一處理狀態（轉為小寫比對）
+        //  統一處理狀態（轉為小寫比對）
         const status = String(req.status).toLowerCase().trim();
         
         console.log(`渲染加班記錄: 狀態=${status}, 時間=${startTime}-${endTime}, 時數=${hours}`);
@@ -295,7 +295,7 @@ async function handleOvertimeSubmit() {
         return;
     }
     
-    // ✅ 檢查是否超過本月上限
+    //  檢查是否超過本月上限
     const checkResult = await checkMonthlyOvertimeLimit(overtimeDate, hours);
     
     if (!checkResult.withinLimit) {
@@ -309,7 +309,7 @@ async function handleOvertimeSubmit() {
 }
 
 /**
- * ✨ 修改：提交加班申請（加入補休時數參數）
+ *  修改：提交加班申請（加入補休時數參數）
  */
 async function submitOvertimeRequest(overtimeDate, startTime, endTime, hours, reason, compensatoryHours) {
     const submitBtn = document.getElementById('submit-overtime-btn');
@@ -348,7 +348,7 @@ async function submitOvertimeRequest(overtimeDate, startTime, endTime, hours, re
 }
 
 /**
- * ✨ 新增：檢查本月加班時數上限
+ *  新增：檢查本月加班時數上限
  */
 async function checkMonthlyOvertimeLimit(overtimeDate, requestHours) {
     try {
@@ -388,13 +388,13 @@ async function checkMonthlyOvertimeLimit(overtimeDate, requestHours) {
 }
 
 /**
- * ✨ 新增：顯示補休時數輸入欄位
+ *  新增：顯示補休時數輸入欄位
  */
 function showCompensatoryHoursInput(currentHours, requestHours, exceededHours) {
     const formHtml = `
         <div id="compensatory-hours-form" class="mt-4 p-4 bg-orange-50 dark:bg-orange-900/20 border-2 border-orange-300 dark:border-orange-700 rounded-lg">
             <h3 class="text-lg font-bold text-orange-800 dark:text-orange-300 mb-3">
-                ⚠️ 超過每月加班時數上限
+                 超過每月加班時數上限
             </h3>
             
             <div class="space-y-2 mb-4 text-sm">
@@ -494,12 +494,12 @@ function showCompensatoryHoursInput(currentHours, requestHours, exceededHours) {
 // ==================== 管理員審核功能 ====================
 
 async function loadPendingOvertimeRequests() {
-    // ✅ Promise 單例：若已有進行中的請求，直接返回同一個 Promise（不重跑）
+    //  Promise 單例：若已有進行中的請求，直接返回同一個 Promise（不重跑）
     // boolean 鎖在 await 之前就被跳過了（JS 是單執行緒，但 await 讓出控制權時鎖已設好）
     // 真正的問題是：兩次呼叫同時在事件循環佇列中，第一個 await 前鎖還沒設
     // Promise 單例確保無論呼叫幾次，都只執行一次 API
     if (_pendingOvertimePromise) {
-        console.log('⚠️ loadPendingOvertimeRequests 已在執行，跳過重複呼叫');
+        console.log(' loadPendingOvertimeRequests 已在執行，跳過重複呼叫');
         return _pendingOvertimePromise;
     }
 
@@ -518,7 +518,7 @@ async function _doLoadPendingOvertime() {
 
     if (!requestsList || !requestsEmpty || !requestsLoading) return;
 
-    requestsList.innerHTML = '';  // ✅ 強制清空
+    requestsList.innerHTML = '';  //  強制清空
     requestsLoading.style.display = 'block';
     requestsEmpty.style.display = 'none';
     
@@ -526,12 +526,12 @@ async function _doLoadPendingOvertime() {
         const res = await callApifetch('getPendingOvertime');
         requestsLoading.style.display = 'none';
         if (res.ok && res.requests && res.requests.length > 0) {
-            // ✅ 前端去重：同一個 rowNumber 只保留一筆
+            //  前端去重：同一個 rowNumber 只保留一筆
             const seen = new Set();
             const uniqueRequests = res.requests.filter(req => {
                 const key = req.rowNumber || (req.overtimeDate + '_' + req.startTime + '_' + req.employeeId);
                 if (seen.has(key)) {
-                    console.warn('⚠️ 過濾重複記錄:', key);
+                    console.warn(' 過濾重複記錄:', key);
                     return false;
                 }
                 seen.add(key);
@@ -616,7 +616,7 @@ async function handleOvertimeReview(button, action) {
     const rowNumber = button.dataset.row;
     const loadingText = t('LOADING') || '處理中...';
     
-    // ✅ 禁用同一列所有按鈕，防止重複點擊
+    //  禁用同一列所有按鈕，防止重複點擊
     const parentLi = button.closest('li');
     const allBtnsInRow = parentLi ? parentLi.querySelectorAll('button') : [button];
     allBtnsInRow.forEach(btn => {
@@ -642,7 +642,7 @@ async function handleOvertimeReview(button, action) {
                 : (t('OVERTIME_REJECTED') || '已拒絕加班申請');
             showNotification(successMsg, 'success');
             
-            // ✅ 直接移除該列（不重新載入整個列表，避免競態重複）
+            //  直接移除該列（不重新載入整個列表，避免競態重複）
             if (parentLi) {
                 parentLi.style.transition = 'opacity 0.3s';
                 parentLi.style.opacity = '0';
@@ -705,14 +705,14 @@ function generalButtonState(button, state, loadingText = '處理中...') {
 }
 
 /**
- * ⭐ 快速申請加班（從每日記錄觸發）
+ *  快速申請加班（從每日記錄觸發）
  * @param {string} date - 加班日期 (YYYY-MM-DD)
  * @param {string} startTime - 開始時間 (HH:mm)
  * @param {string} endTime - 結束時間 (HH:mm)
  * @param {number} hours - 加班時數
  */
 function quickApplyOvertime(date, startTime, endTime, hours) {
-    console.log('🚀 快速申請加班:', { date, startTime, endTime, hours });
+    console.log(' 快速申請加班:', { date, startTime, endTime, hours });
     
     // 切換到加班頁籤
     switchTab('overtime-view');

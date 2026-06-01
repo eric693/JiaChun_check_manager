@@ -25,7 +25,7 @@ const ROLE_LEVELS = {
 // DbOperations.gs - 修正後的 writeEmployee_ 函數
 
 /**
- * ✅ 修正版：登入時不覆蓋手動設定的姓名
+ *  修正版：登入時不覆蓋手動設定的姓名
  */
 function writeEmployee_(profile) {
   const sheet = SpreadsheetApp.getActive().getSheetByName(SHEET_EMPLOYEES);
@@ -42,10 +42,10 @@ function writeEmployee_(profile) {
       
       // 只在沒有手動設定姓名時才更新
       if (!nameOverride) {
-        Logger.log(`✅ 更新員工 ${profile.displayName} 的 LINE 姓名`);
+        Logger.log(` 更新員工 ${profile.displayName} 的 LINE 姓名`);
         sheet.getRange(i + 1, 3).setValue(profile.displayName);  // C 欄
       } else {
-        Logger.log(`🔒 保留員工 ${currentName} 的手動設定姓名（忽略 LINE 姓名：${profile.displayName}）`);
+        Logger.log(` 保留員工 ${currentName} 的手動設定姓名（忽略 LINE 姓名：${profile.displayName}）`);
         // 不更新姓名，保持原有的手動設定
       }
       
@@ -54,7 +54,7 @@ function writeEmployee_(profile) {
       sheet.getRange(i + 1, 4).setValue(profile.pictureUrl);
       sheet.getRange(i + 1, 8).setValue("啟用");
       
-      Logger.log(`✅ 更新員工資料完成（保留原有權限：${values[i][5]}）`);
+      Logger.log(` 更新員工資料完成（保留原有權限：${values[i][5]}）`);
       return values[i];
     }
   }
@@ -76,13 +76,13 @@ function writeEmployee_(profile) {
   ];
 
   sheet.appendRow(row);
-  Logger.log(`✅ 新增員工 ${profile.displayName}（權限：${role}）`);
+  Logger.log(` 新增員工 ${profile.displayName}（權限：${role}）`);
   return row;
 }
 // DbOperations.gs - 修正後的 findEmployeeByLineUserId_ 函數
 
 /**
- * ✅ 修正版：優先使用手動設定的姓名
+ *  修正版：優先使用手動設定的姓名
  */
 function findEmployeeByLineUserId_(userId) {
   const sh = SpreadsheetApp.getActive().getSheetByName(SHEET_EMPLOYEES);
@@ -97,15 +97,15 @@ function findEmployeeByLineUserId_(userId) {
       
       const finalName = nameOverride || displayName; // 優先使用手動設定的姓名
       
-      Logger.log(`📋 查詢員工: ${userId}`);
+      Logger.log(` 查詢員工: ${userId}`);
       Logger.log(`   displayName: ${displayName}`);
       Logger.log(`   nameOverride: ${nameOverride}`);
       Logger.log(`   最終姓名: ${finalName}`);
       
       return {
         ok: true,
-        userId: values[i][0],        // ✅ LINE userId
-        employeeId: values[i][0],    // ✅ 員工ID = LINE userId
+        userId: values[i][0],        //  LINE userId
+        employeeId: values[i][0],    //  員工ID = LINE userId
         email: values[i][1] || "",
         name: finalName,             // ⭐ 使用最終姓名
         picture: values[i][3],
@@ -121,11 +121,11 @@ function findEmployeeByLineUserId_(userId) {
 // DbOperations.gs - 新增：解除姓名鎖定功能
 
 /**
- * 🔓 解除姓名鎖定，恢復使用 LINE 姓名
+ *  解除姓名鎖定，恢復使用 LINE 姓名
  */
 function unlockEmployeeName(userId) {
   try {
-    Logger.log('🔓 解除員工姓名鎖定');
+    Logger.log(' 解除員工姓名鎖定');
     Logger.log('   userId: ' + userId);
     
     const sheet = SpreadsheetApp.getActive().getSheetByName(SHEET_EMPLOYEES);
@@ -144,7 +144,7 @@ function unlockEmployeeName(userId) {
         // ⭐ 清除 nameOverride，下次登入時將使用 LINE 姓名
         sheet.getRange(i + 1, 9).setValue("");  // I 欄：nameOverride
         
-        Logger.log('✅ 已解除姓名鎖定');
+        Logger.log(' 已解除姓名鎖定');
         Logger.log('   當前姓名: ' + currentName);
         Logger.log('   下次登入將使用 LINE 姓名');
         
@@ -159,30 +159,30 @@ function unlockEmployeeName(userId) {
     return { ok: false, msg: '找不到該員工' };
     
   } catch (error) {
-    Logger.log('❌ unlockEmployeeName 錯誤: ' + error);
+    Logger.log(' unlockEmployeeName 錯誤: ' + error);
     return { ok: false, msg: error.message };
   }
 }
 
 /**
- * 🧪 測試解除鎖定功能
+ *  測試解除鎖定功能
  */
 function testUnlockEmployeeName() {
-  Logger.log('🧪 測試解除姓名鎖定');
+  Logger.log(' 測試解除姓名鎖定');
   Logger.log('');
   
-  // ⚠️ 替換成實際的 userId
+  //  替換成實際的 userId
   const testUserId = 'Ud3b574f260f5a777337158ccd4ff0ba2';
   
   const result = unlockEmployeeName(testUserId);
   
   Logger.log('');
-  Logger.log('📤 結果:');
+  Logger.log(' 結果:');
   Logger.log(JSON.stringify(result, null, 2));
 }
 
 /**
- * ✅ 取得所有員工列表（根據實際資料表結構）
+ *  取得所有員工列表（根據實際資料表結構）
  * 
  * 資料表欄位:
  * A (0) - userId
@@ -196,13 +196,13 @@ function testUnlockEmployeeName() {
  */
 function getAllUsers() {
   try {
-    Logger.log('📋 開始取得員工列表');
+    Logger.log(' 開始取得員工列表');
     
     // 取得員工資料表
     const sheet = SpreadsheetApp.getActive().getSheetByName(SHEET_EMPLOYEES);
     
     if (!sheet) {
-      Logger.log('❌ 找不到員工工作表: ' + SHEET_EMPLOYEES);
+      Logger.log(' 找不到員工工作表: ' + SHEET_EMPLOYEES);
       return { 
         ok: false, 
         msg: "找不到員工工作表",
@@ -215,7 +215,7 @@ function getAllUsers() {
     
     // 檢查是否有資料
     if (data.length <= 1) {
-      Logger.log('⚠️ 員工工作表只有標題，沒有資料');
+      Logger.log(' 員工工作表只有標題，沒有資料');
       return {
         ok: true,
         users: [],
@@ -226,7 +226,7 @@ function getAllUsers() {
     
     const users = [];
     
-    Logger.log('📊 開始解析員工資料...');
+    Logger.log(' 開始解析員工資料...');
     Logger.log('   總行數（含標題）: ' + data.length);
     Logger.log('');
     
@@ -236,7 +236,7 @@ function getAllUsers() {
       
       // 檢查員工ID是否存在（A欄 = row[0]）
       if (!row[0] || String(row[0]).trim() === '') {
-        Logger.log(`   ⚠️ 第 ${i + 1} 行: 員工ID是空的，跳過`);
+        Logger.log(`    第 ${i + 1} 行: 員工ID是空的，跳過`);
         continue;
       }
       
@@ -245,7 +245,7 @@ function getAllUsers() {
       
       // 只加入「啟用」或空值的員工
       if (status !== '' && status !== '啟用') {
-        Logger.log(`   ⏸️ 第 ${i + 1} 行: ${row[2]} - 狀態是「${status}」，跳過`);
+        Logger.log(`   ⏸ 第 ${i + 1} 行: ${row[2]} - 狀態是「${status}」，跳過`);
         continue;
       }
       
@@ -262,11 +262,11 @@ function getAllUsers() {
       };
       
       users.push(user);
-      Logger.log(`   ✅ 第 ${i + 1} 行: ${user.name} (${user.userId}) - ${user.dept}`);
+      Logger.log(`    第 ${i + 1} 行: ${user.name} (${user.userId}) - ${user.dept}`);
     }
     
     Logger.log('');
-    Logger.log('✅ 員工列表取得完成');
+    Logger.log(' 員工列表取得完成');
     Logger.log('   總筆數: ' + users.length);
     Logger.log('');
     
@@ -278,7 +278,7 @@ function getAllUsers() {
     };
     
   } catch (error) {
-    Logger.log('❌ getAllUsers 錯誤: ' + error);
+    Logger.log(' getAllUsers 錯誤: ' + error);
     Logger.log('   錯誤訊息: ' + error.message);
     Logger.log('   錯誤堆疊: ' + error.stack);
     
@@ -344,7 +344,7 @@ function verifyOneTimeToken_(otoken) {
 }
 
 /**
- * ✅ 檢查 Session（自動延期）- 修正版
+ *  檢查 Session（自動延期）- 修正版
  */
 function checkSession_(sessionToken) {
   if (!sessionToken) return { ok: false, code: "MISSING_SESSION_TOKEN" };
@@ -367,7 +367,7 @@ function checkSession_(sessionToken) {
       // 查詢員工資料
       const employee = findEmployeeByLineUserId_(userId);
       if (!employee.ok) {
-        Logger.log("❌ Session 檢查失敗: " + JSON.stringify(employee));
+        Logger.log(" Session 檢查失敗: " + JSON.stringify(employee));
         return { ok: false, code: employee.code };
       }
       
@@ -392,27 +392,27 @@ function checkSession_(sessionToken) {
 }
 
 /**
- * 🧪 測試 checkSession_
+ *  測試 checkSession_
  */
 function testCheckSession() {
-  Logger.log('🧪 測試 checkSession_');
+  Logger.log(' 測試 checkSession_');
   Logger.log('');
   
   const token = '04fd1452-4aca-4b03-ad17-45f03144c6ff';
   
-  Logger.log('📡 Token: ' + token.substring(0, 20) + '...');
+  Logger.log(' Token: ' + token.substring(0, 20) + '...');
   Logger.log('');
   
   const result = checkSession_(token);
   
-  Logger.log('📤 checkSession_ 結果:');
+  Logger.log(' checkSession_ 結果:');
   Logger.log(JSON.stringify(result, null, 2));
   Logger.log('');
   
   if (result.ok && result.user) {
-    Logger.log('✅ Session 有效');
+    Logger.log(' Session 有效');
     Logger.log('');
-    Logger.log('👤 User 資料:');
+    Logger.log(' User 資料:');
     Logger.log('   - userId: ' + result.user.userId);
     Logger.log('   - employeeId: ' + result.user.employeeId);
     Logger.log('   - name: ' + result.user.name);
@@ -420,10 +420,10 @@ function testCheckSession() {
     Logger.log('   - email: ' + result.user.email);
     Logger.log('   - status: ' + result.user.status);
     Logger.log('');
-    Logger.log('🔍 檢查 user 物件是否乾淨:');
-    Logger.log('   - user.ok 存在嗎? ' + (result.user.ok !== undefined ? '❌ 是（有問題）' : '✅ 否（正常）'));
+    Logger.log(' 檢查 user 物件是否乾淨:');
+    Logger.log('   - user.ok 存在嗎? ' + (result.user.ok !== undefined ? ' 是（有問題）' : ' 否（正常）'));
   } else {
-    Logger.log('❌ Session 無效');
+    Logger.log(' Session 無效');
     Logger.log('   code: ' + result.code);
   }
 }
@@ -620,7 +620,7 @@ function getAttendanceRecords(monthParam, userIdParam) {
  * 取得出勤詳細資料（用於報表匯出）
  */
 /**
- * ✅ 修正版：取得出勤詳細資料（修正 localeCompare 錯誤）
+ *  修正版：取得出勤詳細資料（修正 localeCompare 錯誤）
  * 
  * 修正內容：
  * 1. 修正請假記錄合併時可能產生 undefined date 的問題
@@ -629,7 +629,7 @@ function getAttendanceRecords(monthParam, userIdParam) {
  */
 function getAttendanceDetails(monthParam, userIdParam) {
   try {
-    Logger.log('📋 getAttendanceDetails 開始');
+    Logger.log(' getAttendanceDetails 開始');
     Logger.log(`   monthParam: ${monthParam}`);
     Logger.log(`   userIdParam: ${userIdParam}`);
     
@@ -641,7 +641,7 @@ function getAttendanceDetails(monthParam, userIdParam) {
     Logger.log(`   請假記錄: ${leaveRecords.length} 筆`);
     Logger.log(`   加班記錄: ${overtimeRecords.length} 筆`);
     
-    // ✅ 建立日期集合（過濾掉無效日期）
+    //  建立日期集合（過濾掉無效日期）
     const allDates = new Set();
     
     // 加入打卡記錄的日期
@@ -652,12 +652,12 @@ function getAttendanceDetails(monthParam, userIdParam) {
       }
     });
     
-    // ✅ 加入請假記錄的日期（檢查日期格式）
+    //  加入請假記錄的日期（檢查日期格式）
     leaveRecords.forEach(r => {
       if (r.date && typeof r.date === 'string' && r.date.match(/^\d{4}-\d{2}-\d{2}$/)) {
         allDates.add(r.date);
       } else {
-        Logger.log(`⚠️ 請假記錄日期格式錯誤: ${r.date}`);
+        Logger.log(` 請假記錄日期格式錯誤: ${r.date}`);
       }
     });
     
@@ -670,7 +670,7 @@ function getAttendanceDetails(monthParam, userIdParam) {
     
     Logger.log(`   涉及日期總數: ${allDates.size} 天`);
     
-    // ✅ 按日期建立資料結構
+    //  按日期建立資料結構
     const dailyRecords = {};
     
     // 初始化所有日期
@@ -704,7 +704,7 @@ function getAttendanceDetails(monthParam, userIdParam) {
       }
     });
     
-    // ✅ 填入請假資料
+    //  填入請假資料
     leaveRecords.forEach(leave => {
       const dateKey = leave.date;
       
@@ -750,7 +750,7 @@ function getAttendanceDetails(monthParam, userIdParam) {
       const hasPunchIn = daily.record.some(r => r.type === '上班');
       const hasPunchOut = daily.record.some(r => r.type === '下班');
       
-      // ✅ 修正：如果有請假，根據打卡情況設定狀態
+      //  修正：如果有請假，根據打卡情況設定狀態
       if (daily.leave) {
         if (hasPunchIn && hasPunchOut) {
           // 有打卡也有請假（可能是半天假）
@@ -774,7 +774,7 @@ function getAttendanceDetails(monthParam, userIdParam) {
       }
     });
     
-    // ✅ 修正：轉換為陣列並排序（確保所有 date 都存在）
+    //  修正：轉換為陣列並排序（確保所有 date 都存在）
     const result = Object.values(dailyRecords)
       .filter(r => r.date) // 過濾掉沒有 date 的記錄
       .sort((a, b) => {
@@ -782,13 +782,13 @@ function getAttendanceDetails(monthParam, userIdParam) {
         return a.date.localeCompare(b.date);
       });
     
-    Logger.log(`✅ getAttendanceDetails 完成: ${result.length} 筆`);
+    Logger.log(` getAttendanceDetails 完成: ${result.length} 筆`);
     
-    // ✅ 除錯：顯示所有日期
+    //  除錯：顯示所有日期
     Logger.log('');
-    Logger.log('📅 最終結果包含的日期:');
+    Logger.log(' 最終結果包含的日期:');
     result.forEach(r => {
-      const hasLeave = r.leave ? '🏖️' : '';
+      const hasLeave = r.leave ? '' : '';
       const hasOvertime = r.overtime ? '⏰' : '';
       Logger.log(`   ${r.date} ${hasLeave}${hasOvertime} - ${r.reason}`);
     });
@@ -799,7 +799,7 @@ function getAttendanceDetails(monthParam, userIdParam) {
     };
     
   } catch (error) {
-    Logger.log('❌ getAttendanceDetails 錯誤: ' + error);
+    Logger.log(' getAttendanceDetails 錯誤: ' + error);
     Logger.log('   錯誤堆疊: ' + error.stack);
     return {
       ok: false,
@@ -809,7 +809,7 @@ function getAttendanceDetails(monthParam, userIdParam) {
 }
 
 /**
- * 👉 新增：取得已核准的加班記錄
+ *  新增：取得已核准的加班記錄
  */
 function getApprovedOvertimeRecords(monthParam, userIdParam) {
   try {
@@ -821,21 +821,21 @@ function getApprovedOvertimeRecords(monthParam, userIdParam) {
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_OVERTIME);
     
     if (!sheet) {
-      Logger.log('⚠️ 找不到加班申請工作表');
+      Logger.log(' 找不到加班申請工作表');
       return [];
     }
     
     const values = sheet.getDataRange().getValues();
     
     if (values.length <= 1) {
-      Logger.log('⚠️ 加班工作表只有標題，沒有資料');
+      Logger.log(' 加班工作表只有標題，沒有資料');
       return [];
     }
     
     // ⭐ 步驟 1: 取得標題列
     const headers = values[0];
     
-    Logger.log('📋 加班工作表標題:');
+    Logger.log(' 加班工作表標題:');
     headers.forEach((h, i) => {
       Logger.log(`   ${i}. ${h}`);
     });
@@ -851,7 +851,7 @@ function getApprovedOvertimeRecords(monthParam, userIdParam) {
     const statusCol = headers.indexOf('審核狀態');
     
     Logger.log('');
-    Logger.log('📊 欄位索引:');
+    Logger.log(' 欄位索引:');
     Logger.log(`   員工ID: ${employeeIdCol}`);
     Logger.log(`   員工姓名: ${employeeNameCol}`);
     Logger.log(`   加班日期: ${overtimeDateCol}`);
@@ -894,7 +894,7 @@ function getApprovedOvertimeRecords(monthParam, userIdParam) {
         return str;
         
       } catch (e) {
-        Logger.log(`⚠️ 時間格式化失敗: ${dateTime}, 錯誤: ${e}`);
+        Logger.log(` 時間格式化失敗: ${dateTime}, 錯誤: ${e}`);
         return "";
       }
     };
@@ -936,7 +936,7 @@ function getApprovedOvertimeRecords(monthParam, userIdParam) {
         return str;
         
       } catch (e) {
-        Logger.log(`⚠️ 日期格式化失敗: ${dateValue}, 錯誤: ${e}`);
+        Logger.log(` 日期格式化失敗: ${dateValue}, 錯誤: ${e}`);
         return "";
       }
     };
@@ -945,7 +945,7 @@ function getApprovedOvertimeRecords(monthParam, userIdParam) {
     const overtimeRecords = [];
     
     Logger.log('');
-    Logger.log('🔍 開始篩選記錄...');
+    Logger.log(' 開始篩選記錄...');
     
     for (let i = 1; i < values.length; i++) {
       const row = values[i];
@@ -977,21 +977,21 @@ function getApprovedOvertimeRecords(monthParam, userIdParam) {
         
         overtimeRecords.push(record);
         
-        Logger.log(`      ✅ 符合條件！`);
+        Logger.log(`       符合條件！`);
         Logger.log(`         日期: ${record.date}`);
         Logger.log(`         時間: ${record.startTime} - ${record.endTime}`);
         Logger.log(`         時數: ${record.hours}`);
       } else {
-        Logger.log(`      ❌ 不符合條件`);
+        Logger.log(`       不符合條件`);
       }
     }
     
     Logger.log('');
-    Logger.log(`✅ 找到 ${overtimeRecords.length} 筆已核准加班記錄`);
+    Logger.log(` 找到 ${overtimeRecords.length} 筆已核准加班記錄`);
     
     if (overtimeRecords.length > 0) {
       Logger.log('');
-      Logger.log('📋 加班記錄詳細列表:');
+      Logger.log(' 加班記錄詳細列表:');
       overtimeRecords.forEach((rec, idx) => {
         Logger.log(`   ${idx + 1}. ${rec.date} - ${rec.employeeName}`);
         Logger.log(`      ${rec.startTime} ~ ${rec.endTime} (${rec.hours}h)`);
@@ -1003,7 +1003,7 @@ function getApprovedOvertimeRecords(monthParam, userIdParam) {
     return overtimeRecords;
     
   } catch (error) {
-    Logger.log('❌ getApprovedOvertimeRecords 錯誤: ' + error);
+    Logger.log(' getApprovedOvertimeRecords 錯誤: ' + error);
     Logger.log('   錯誤堆疊: ' + error.stack);
     Logger.log('═══════════════════════════════════════');
     return [];
@@ -1011,18 +1011,18 @@ function getApprovedOvertimeRecords(monthParam, userIdParam) {
 }
 
 function testGetAttendanceDetailsWithOvertime() {
-  Logger.log('🧪 測試 getAttendanceDetails');
+  Logger.log(' 測試 getAttendanceDetails');
   Logger.log('═══════════════════════════════════════');
   
   const monthParam = '2025-12';
   const userIdParam = 'U68e0ca9d516e63ed15bf9387fad174ac';
   
-  Logger.log(`📅 查詢條件: ${monthParam}, userId: ${userIdParam}`);
+  Logger.log(` 查詢條件: ${monthParam}, userId: ${userIdParam}`);
   Logger.log('');
   
   const result = getAttendanceDetails(monthParam, userIdParam);
   
-  Logger.log('📤 API 回應:');
+  Logger.log(' API 回應:');
   Logger.log(`   ok: ${result.ok}`);
   Logger.log(`   records 數量: ${result.records ? result.records.length : 0}`);
   Logger.log('');
@@ -1032,28 +1032,28 @@ function testGetAttendanceDetailsWithOvertime() {
     const dec09 = result.records.find(r => r.date === '2025-12-09');
     
     if (dec09) {
-      Logger.log('✅ 找到 2025-12-09 的記錄:');
+      Logger.log(' 找到 2025-12-09 的記錄:');
       Logger.log('');
-      Logger.log('📋 記錄內容:');
+      Logger.log(' 記錄內容:');
       Logger.log(JSON.stringify(dec09, null, 2));
       Logger.log('');
       
-      Logger.log('🔍 加班資訊檢查:');
+      Logger.log(' 加班資訊檢查:');
       Logger.log(`   overtime 存在: ${dec09.overtime ? '是' : '否'}`);
       
       if (dec09.overtime) {
-        Logger.log('   ✅ 加班資訊:');
+        Logger.log('    加班資訊:');
         Logger.log(`      開始時間: ${dec09.overtime.startTime}`);
         Logger.log(`      結束時間: ${dec09.overtime.endTime}`);
         Logger.log(`      時數: ${dec09.overtime.hours}`);
         Logger.log(`      原因: ${dec09.overtime.reason}`);
       } else {
-        Logger.log('   ❌ 沒有加班資訊');
+        Logger.log('    沒有加班資訊');
       }
     } else {
-      Logger.log('❌ 沒有找到 2025-12-09 的記錄');
+      Logger.log(' 沒有找到 2025-12-09 的記錄');
       Logger.log('');
-      Logger.log('📋 所有記錄的日期:');
+      Logger.log(' 所有記錄的日期:');
       result.records.forEach((r, i) => {
         Logger.log(`   ${i + 1}. ${r.date} - ${r.name}`);
       });
@@ -1064,22 +1064,22 @@ function testGetAttendanceDetailsWithOvertime() {
   Logger.log('═══════════════════════════════════════');
 }
 /**
- * 🧪 測試加班記錄查詢
+ *  測試加班記錄查詢
  */
 function testGetApprovedOvertimeRecords() {
-  Logger.log('🧪 測試加班記錄查詢');
+  Logger.log(' 測試加班記錄查詢');
   Logger.log('═══════════════════════════════════════');
   
   const monthParam = '2025-12';
   const userIdParam = 'U68e0ca9d516e63ed15bf9387fad174ac';  // 替換成您的實際 userId
   
-  Logger.log(`📅 查詢條件: ${monthParam}, userId: ${userIdParam}`);
+  Logger.log(` 查詢條件: ${monthParam}, userId: ${userIdParam}`);
   Logger.log('');
   
   const records = getApprovedOvertimeRecords(monthParam, userIdParam);
   
   Logger.log('');
-  Logger.log('📤 查詢結果:');
+  Logger.log(' 查詢結果:');
   Logger.log(`   找到 ${records.length} 筆記錄`);
   
   if (records.length > 0) {
@@ -1093,7 +1093,7 @@ function testGetApprovedOvertimeRecords() {
       Logger.log(`      原因: ${rec.reason}`);
     });
   } else {
-    Logger.log('   ⚠️ 沒有找到符合條件的記錄');
+    Logger.log('    沒有找到符合條件的記錄');
   }
   
   Logger.log('');
@@ -1121,7 +1121,7 @@ function addLocation(name, lat, lng, radius) {
   const sh = SpreadsheetApp.getActive().getSheetByName(SHEET_LOCATIONS);
   sh.appendRow(["", name, lat, lng, finalRadius]);
   
-  Logger.log(`✅ 新增地點：${name}，範圍：${finalRadius}公尺`);
+  Logger.log(` 新增地點：${name}，範圍：${finalRadius}公尺`);
   return { ok: true, code: "LOCATION_ADD_SUCCESS" };
 }
 
@@ -1156,19 +1156,19 @@ function getLocation() {
  * 取得待審核請求（補打卡）
  */
 function getReviewRequest() {
-  Logger.log('📋 開始取得待審核補打卡申請');
+  Logger.log(' 開始取得待審核補打卡申請');
   
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_ADJUST_PUNCH);
   
   if (!sheet) {
-    Logger.log('❌ 找不到「補打卡申請」工作表');
+    Logger.log(' 找不到「補打卡申請」工作表');
     return { ok: false, msg: "找不到補打卡申請工作表" };
   }
   
   const values = sheet.getDataRange().getValues();
   
   if (values.length <= 1) {
-    Logger.log('⚠️ 補打卡申請工作表只有標題，沒有資料');
+    Logger.log(' 補打卡申請工作表只有標題，沒有資料');
     return { ok: true, reviewRequest: [] };
   }
   
@@ -1196,7 +1196,7 @@ function getReviewRequest() {
     const reason = row[headers.indexOf('原因')];
     const applicationTime = row[headers.indexOf('申請時間')];
     
-    // ✅ 修正：智能格式化日期
+    //  修正：智能格式化日期
     let date, time;
     
     // 處理日期
@@ -1235,7 +1235,7 @@ function getReviewRequest() {
   });
   
   Logger.log('');
-  Logger.log(`✅ 找到 ${reviewRequest.length} 筆待審核申請`);
+  Logger.log(` 找到 ${reviewRequest.length} 筆待審核申請`);
   
   return { ok: true, reviewRequest: reviewRequest };
 }
@@ -1244,26 +1244,26 @@ function getReviewRequest() {
  * 更新審核狀態（含 LINE 通知）
  */
 /**
- * ✅ 更新審核狀態（完整修正版 - 從補打卡申請工作表讀取）
+ *  更新審核狀態（完整修正版 - 從補打卡申請工作表讀取）
  */
 function updateReviewStatus(rowNumber, status, note) {
   try {
     Logger.log('═══════════════════════════════════════');
-    Logger.log('📋 開始審核補打卡');
+    Logger.log(' 開始審核補打卡');
     Logger.log('   行號: ' + rowNumber);
     Logger.log('   狀態: ' + status);
     
-    // ✅ 修正：改為從補打卡申請工作表讀取
+    //  修正：改為從補打卡申請工作表讀取
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_ADJUST_PUNCH);
     
     if (!sheet) {
-      Logger.log('❌ 找不到補打卡申請工作表');
+      Logger.log(' 找不到補打卡申請工作表');
       return { ok: false, msg: "找不到補打卡申請工作表" };
     }
     
     const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
     
-    Logger.log('📋 工作表標題:', headers);
+    Logger.log(' 工作表標題:', headers);
     
     // 找出「狀態」、「審核人」、「審核時間」欄位
     const statusCol = headers.indexOf('狀態') + 1;
@@ -1271,16 +1271,16 @@ function updateReviewStatus(rowNumber, status, note) {
     const reviewTimeCol = headers.indexOf('審核時間') + 1;
     
     if (statusCol === 0) {
-      Logger.log('❌ 找不到「狀態」欄位');
+      Logger.log(' 找不到「狀態」欄位');
       return { ok: false, msg: "找不到「狀態」欄位" };
     }
     
     // 取得該行的申請資料
     const record = sheet.getRange(rowNumber, 1, 1, sheet.getLastColumn()).getValues()[0];
     
-    Logger.log('📄 申請記錄:', record);
+    Logger.log(' 申請記錄:', record);
     
-    // ✅ 從補打卡申請工作表讀取資料
+    //  從補打卡申請工作表讀取資料
     const applicationId = record[headers.indexOf('申請ID')];
     const userId = record[headers.indexOf('用戶ID')];
     const employeeName = record[headers.indexOf('姓名')];
@@ -1289,7 +1289,7 @@ function updateReviewStatus(rowNumber, status, note) {
     const punchType = record[headers.indexOf('類型')];
     const reason = record[headers.indexOf('原因')];
     
-    // ✅ 智能格式化日期時間
+    //  智能格式化日期時間
     let punchDate, punchTime;
     
     // 處理日期
@@ -1327,7 +1327,7 @@ function updateReviewStatus(rowNumber, status, note) {
     }
     
     Logger.log('');
-    Logger.log('📊 解析資料:');
+    Logger.log(' 解析資料:');
     Logger.log('   申請ID: ' + applicationId);
     Logger.log('   用戶ID: ' + userId);
     Logger.log('   員工姓名: ' + employeeName);
@@ -1336,7 +1336,7 @@ function updateReviewStatus(rowNumber, status, note) {
     Logger.log('   類型: ' + punchType);
     Logger.log('   理由: ' + reason);
     
-    // ✅ 更新審核狀態
+    //  更新審核狀態
     const statusText = (status === "v") ? "已核准" : "已拒絕";
     
     sheet.getRange(rowNumber, statusCol).setValue(statusText);
@@ -1349,22 +1349,22 @@ function updateReviewStatus(rowNumber, status, note) {
       sheet.getRange(rowNumber, reviewTimeCol).setValue(new Date());
     }
     
-    Logger.log('✅ 已更新審核狀態為: ' + statusText);
+    Logger.log(' 已更新審核狀態為: ' + statusText);
     
-    // ✅ 如果核准，寫入「出勤紀錄」工作表
+    //  如果核准，寫入「出勤紀錄」工作表
     if (status === "v") {
       const attendanceSheet = SpreadsheetApp.getActive().getSheetByName(SHEET_ATTENDANCE);
       
       if (attendanceSheet) {
         Logger.log('');
-        Logger.log('📝 寫入出勤紀錄...');
+        Logger.log(' 寫入出勤紀錄...');
         
         // 建立完整的日期時間物件
         const punchDateTime = new Date(`${punchDate} ${punchTime}`);
         
         Logger.log('   打卡時間物件: ' + punchDateTime);
         
-        // ✅ 取得員工部門資料（可選）
+        //  取得員工部門資料（可選）
         let employeeDept = '';
         try {
           const employeeInfo = findEmployeeByLineUserId_(userId);
@@ -1372,7 +1372,7 @@ function updateReviewStatus(rowNumber, status, note) {
             employeeDept = employeeInfo.dept || '';
           }
         } catch (e) {
-          Logger.log('⚠️ 無法取得員工部門: ' + e.message);
+          Logger.log(' 無法取得員工部門: ' + e.message);
         }
         
         // 根據出勤紀錄工作表的欄位順序寫入
@@ -1391,19 +1391,19 @@ function updateReviewStatus(rowNumber, status, note) {
         
         attendanceSheet.appendRow(row);
         
-        Logger.log('✅ 已寫入出勤紀錄');
+        Logger.log(' 已寫入出勤紀錄');
         Logger.log('   寫入內容: ' + JSON.stringify(row));
       } else {
-        Logger.log('❌ 找不到出勤紀錄工作表');
+        Logger.log(' 找不到出勤紀錄工作表');
       }
     }
     
-    // ✅ 發送 LINE 通知
+    //  發送 LINE 通知
     const isApproved = (status === "v");
     
     try {
       Logger.log('');
-      Logger.log('📤 發送 LINE 通知...');
+      Logger.log(' 發送 LINE 通知...');
       
       notifyPunchReview(
         userId,
@@ -1416,16 +1416,16 @@ function updateReviewStatus(rowNumber, status, note) {
         note || ""
       );
       
-      Logger.log('✅ LINE 通知已發送');
+      Logger.log(' LINE 通知已發送');
     } catch (notifyError) {
-      Logger.log('⚠️ LINE 通知發送失敗: ' + notifyError.message);
+      Logger.log(' LINE 通知發送失敗: ' + notifyError.message);
     }
     
     Logger.log('═══════════════════════════════════════');
     return { ok: true, msg: "審核成功並已通知員工" };
     
   } catch (err) {
-    Logger.log('❌ updateReviewStatus 錯誤: ' + err.message);
+    Logger.log(' updateReviewStatus 錯誤: ' + err.message);
     Logger.log('   錯誤堆疊: ' + err.stack);
     return { ok: false, msg: `審核失敗：${err.message}` };
   }
@@ -1436,7 +1436,7 @@ function updateReviewStatus(rowNumber, status, note) {
 
 function updateUserRole(userId, newRole) {
   try {
-    Logger.log('📝 開始更新用戶角色');
+    Logger.log(' 開始更新用戶角色');
     Logger.log('   userId: ' + userId);
     Logger.log('   newRole: ' + newRole);
     
@@ -1483,7 +1483,7 @@ function updateUserRole(userId, newRole) {
         
         sheet.getRange(i + 1, 6).setValue(newDept);  // F 欄: 部門
         
-        Logger.log('✅ 已更新角色為: ' + newDept);
+        Logger.log(' 已更新角色為: ' + newDept);
         
         return {
           ok: true,
@@ -1498,7 +1498,7 @@ function updateUserRole(userId, newRole) {
     };
     
   } catch (error) {
-    Logger.log('❌ updateUserRole 錯誤: ' + error);
+    Logger.log(' updateUserRole 錯誤: ' + error);
     return {
       ok: false,
       msg: error.message
@@ -1507,11 +1507,11 @@ function updateUserRole(userId, newRole) {
 }
 
 /**
- * ✅ 刪除用戶
+ *  刪除用戶
  */
 function deleteUser(userId) {
   try {
-    Logger.log('🗑️ 開始刪除用戶');
+    Logger.log(' 開始刪除用戶');
     Logger.log('   userId: ' + userId);
     
     const sheet = SpreadsheetApp.getActive().getSheetByName(SHEET_EMPLOYEES);
@@ -1546,7 +1546,7 @@ function deleteUser(userId) {
       if (data[i][0] === userId) {  // A 欄: userId
         sheet.deleteRow(i + 1);
         
-        Logger.log('✅ 用戶已刪除');
+        Logger.log(' 用戶已刪除');
         
         return {
           ok: true,
@@ -1561,7 +1561,7 @@ function deleteUser(userId) {
     };
     
   } catch (error) {
-    Logger.log('❌ deleteUser 錯誤: ' + error);
+    Logger.log(' deleteUser 錯誤: ' + error);
     return {
       ok: false,
       msg: error.message
@@ -1570,55 +1570,55 @@ function deleteUser(userId) {
 }
 
 /**
- * 🧪 測試審核通知流程
+ *  測試審核通知流程
  */
 function testApproveWithNotification() {
-  Logger.log('🧪 測試審核 + LINE 通知');
+  Logger.log(' 測試審核 + LINE 通知');
   Logger.log('');
   
-  // ⚠️ 請先在 Google Sheet 找一筆「補打卡」且「管理員審核 = ?」的記錄
+  //  請先在 Google Sheet 找一筆「補打卡」且「管理員審核 = ?」的記錄
   const testRowNumber = 20; // 替換成實際的行號
   
-  Logger.log('📋 測試核准補打卡...');
+  Logger.log(' 測試核准補打卡...');
   const approveResult = updateReviewStatus(testRowNumber, "v", "核准");
   
   Logger.log('');
-  Logger.log('📤 審核結果:');
+  Logger.log(' 審核結果:');
   Logger.log(JSON.stringify(approveResult, null, 2));
   
   if (approveResult.ok) {
     Logger.log('');
-    Logger.log('✅✅✅ 測試成功！');
+    Logger.log(' 測試成功！');
     Logger.log('   請檢查 LINE 是否收到通知');
   } else {
     Logger.log('');
-    Logger.log('❌ 測試失敗');
+    Logger.log(' 測試失敗');
   }
 }
 
 /**
- * 🧪 測試拒絕通知流程
+ *  測試拒絕通知流程
  */
 function testRejectWithNotification() {
-  Logger.log('🧪 測試拒絕 + LINE 通知');
+  Logger.log(' 測試拒絕 + LINE 通知');
   Logger.log('');
   
   const testRowNumber = 21; // 替換成實際的行號
   
-  Logger.log('📋 測試拒絕補打卡...');
+  Logger.log(' 測試拒絕補打卡...');
   const rejectResult = updateReviewStatus(testRowNumber, "x", "時間不符，請重新申請");
   
   Logger.log('');
-  Logger.log('📤 審核結果:');
+  Logger.log(' 審核結果:');
   Logger.log(JSON.stringify(rejectResult, null, 2));
   
   if (rejectResult.ok) {
     Logger.log('');
-    Logger.log('✅✅✅ 測試成功！');
+    Logger.log(' 測試成功！');
     Logger.log('   請檢查 LINE 是否收到拒絕通知');
   } else {
     Logger.log('');
-    Logger.log('❌ 測試失敗');
+    Logger.log(' 測試失敗');
   }
 }
 // ==================== 工具函數 ====================
@@ -1686,7 +1686,7 @@ function formatTime(date) {
  */
 function getEmployeeMonthlyPunchData(employeeId, yearMonth) {
   try {
-    Logger.log('📊 取得員工打卡分析資料');
+    Logger.log(' 取得員工打卡分析資料');
     Logger.log('   員工ID: ' + employeeId);
     Logger.log('   月份: ' + yearMonth);
     
@@ -1778,7 +1778,7 @@ function getEmployeeMonthlyPunchData(employeeId, yearMonth) {
     };
     
   } catch (error) {
-    Logger.log('❌ getEmployeeMonthlyPunchData 錯誤: ' + error);
+    Logger.log(' getEmployeeMonthlyPunchData 錯誤: ' + error);
     return {
       success: false,
       message: error.message
@@ -1789,12 +1789,12 @@ function getEmployeeMonthlyPunchData(employeeId, yearMonth) {
 // DbOperations.gs - 修正後的 updateEmployeeName 函數
 
 /**
- * ✅ 修正版：更新員工姓名並設定鎖定標記
+ *  修正版：更新員工姓名並設定鎖定標記
  */
 function updateEmployeeName(userId, newName) {
   try {
     Logger.log('═══════════════════════════════════════');
-    Logger.log('✏️ 開始更新員工姓名');
+    Logger.log(' 開始更新員工姓名');
     Logger.log('   userId: ' + userId);
     Logger.log('   newName: ' + newName);
     
@@ -1842,10 +1842,10 @@ function updateEmployeeName(userId, newName) {
         sheet.getRange(i + 1, 3).setValue(trimmedName);   // C 欄：displayName
         sheet.getRange(i + 1, 9).setValue(trimmedName);   // I 欄：nameOverride（設定鎖定）
         
-        Logger.log('✅ 已更新姓名並設定鎖定');
+        Logger.log(' 已更新姓名並設定鎖定');
         Logger.log('   舊姓名: ' + oldName);
         Logger.log('   新姓名: ' + trimmedName);
-        Logger.log('   nameOverride: ' + trimmedName + ' 🔒');
+        Logger.log('   nameOverride: ' + trimmedName + ' ');
         Logger.log('═══════════════════════════════════════');
         
         return {
@@ -1863,7 +1863,7 @@ function updateEmployeeName(userId, newName) {
     };
     
   } catch (error) {
-    Logger.log('❌ updateEmployeeName 錯誤: ' + error);
+    Logger.log(' updateEmployeeName 錯誤: ' + error);
     Logger.log('═══════════════════════════════════════');
     return {
       ok: false,
@@ -1882,7 +1882,7 @@ function getUserByToken(token) {
     }
     return null;
   } catch (error) {
-    Logger.log('❌ getUserByToken 錯誤: ' + error);
+    Logger.log(' getUserByToken 錯誤: ' + error);
     return null;
   }
 }
@@ -1892,11 +1892,11 @@ function getUserByToken(token) {
 const SHEET_EMPLOYEE_INFO = '員工基本資料';
 
 /**
- * ✅ 設定員工基本資料
+ *  設定員工基本資料
  */
 function setEmployeeBasicInfo(data) {
   try {
-    Logger.log('📝 設定員工基本資料');
+    Logger.log(' 設定員工基本資料');
     Logger.log('   員工ID: ' + data.employeeId);
     
     const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -1922,7 +1922,7 @@ function setEmployeeBasicInfo(data) {
       headerRange.setFontColor('#FFFFFF');
       headerRange.setFontWeight('bold');
       
-      Logger.log('✅ 已建立「員工基本資料」工作表');
+      Logger.log(' 已建立「員工基本資料」工作表');
     }
     
     const allData = sheet.getDataRange().getValues();
@@ -1950,7 +1950,7 @@ function setEmployeeBasicInfo(data) {
       sheet.getRange(rowIndex, 6).setValue(data.birthDate || '');
       sheet.getRange(rowIndex, 8).setValue(now);
       
-      Logger.log('✅ 已更新員工基本資料');
+      Logger.log(' 已更新員工基本資料');
       
     } else {
       // 新增記錄
@@ -1965,7 +1965,7 @@ function setEmployeeBasicInfo(data) {
         now
       ]);
       
-      Logger.log('✅ 已新增員工基本資料');
+      Logger.log(' 已新增員工基本資料');
     }
     
     return {
@@ -1974,7 +1974,7 @@ function setEmployeeBasicInfo(data) {
     };
     
   } catch (error) {
-    Logger.log('❌ setEmployeeBasicInfo 錯誤: ' + error);
+    Logger.log(' setEmployeeBasicInfo 錯誤: ' + error);
     return {
       success: false,
       message: '儲存失敗: ' + error.message
@@ -1983,11 +1983,11 @@ function setEmployeeBasicInfo(data) {
 }
 
 /**
- * ✅ 取得員工基本資料
+ *  取得員工基本資料
  */
 function getEmployeeBasicInfo(employeeId) {
   try {
-    Logger.log('🔍 查詢員工基本資料: ' + employeeId);
+    Logger.log(' 查詢員工基本資料: ' + employeeId);
     
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const sheet = ss.getSheetByName(SHEET_EMPLOYEE_INFO);
@@ -2014,7 +2014,7 @@ function getEmployeeBasicInfo(employeeId) {
           updatedAt: data[i][7]
         };
         
-        Logger.log('✅ 找到員工資料');
+        Logger.log(' 找到員工資料');
         
         return {
           success: true,
@@ -2023,7 +2023,7 @@ function getEmployeeBasicInfo(employeeId) {
       }
     }
     
-    Logger.log('⚠️ 找不到該員工的基本資料');
+    Logger.log(' 找不到該員工的基本資料');
     
     return {
       success: false,
@@ -2031,7 +2031,7 @@ function getEmployeeBasicInfo(employeeId) {
     };
     
   } catch (error) {
-    Logger.log('❌ getEmployeeBasicInfo 錯誤: ' + error);
+    Logger.log(' getEmployeeBasicInfo 錯誤: ' + error);
     return {
       success: false,
       message: '查詢失敗: ' + error.message
@@ -2040,11 +2040,11 @@ function getEmployeeBasicInfo(employeeId) {
 }
 
 /**
- * ✅ 取得所有員工基本資料
+ *  取得所有員工基本資料
  */
 function getAllEmployeeBasicInfo() {
   try {
-    Logger.log('📋 取得所有員工基本資料');
+    Logger.log(' 取得所有員工基本資料');
     
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const sheet = ss.getSheetByName(SHEET_EMPLOYEE_INFO);
@@ -2074,7 +2074,7 @@ function getAllEmployeeBasicInfo() {
       });
     }
     
-    Logger.log(`✅ 共找到 ${employees.length} 筆員工基本資料`);
+    Logger.log(` 共找到 ${employees.length} 筆員工基本資料`);
     
     return {
       success: true,
@@ -2083,7 +2083,7 @@ function getAllEmployeeBasicInfo() {
     };
     
   } catch (error) {
-    Logger.log('❌ getAllEmployeeBasicInfo 錯誤: ' + error);
+    Logger.log(' getAllEmployeeBasicInfo 錯誤: ' + error);
     return {
       success: false,
       message: '查詢失敗: ' + error.message
@@ -2092,11 +2092,11 @@ function getAllEmployeeBasicInfo() {
 }
 
 /**
- * ✅ 刪除員工基本資料
+ *  刪除員工基本資料
  */
 function deleteEmployeeBasicInfo(employeeId) {
   try {
-    Logger.log('🗑️ 刪除員工基本資料: ' + employeeId);
+    Logger.log(' 刪除員工基本資料: ' + employeeId);
     
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const sheet = ss.getSheetByName(SHEET_EMPLOYEE_INFO);
@@ -2114,7 +2114,7 @@ function deleteEmployeeBasicInfo(employeeId) {
       if (data[i][0] === employeeId) {
         sheet.deleteRow(i + 1);
         
-        Logger.log('✅ 已刪除員工基本資料');
+        Logger.log(' 已刪除員工基本資料');
         
         return {
           success: true,
@@ -2129,7 +2129,7 @@ function deleteEmployeeBasicInfo(employeeId) {
     };
     
   } catch (error) {
-    Logger.log('❌ deleteEmployeeBasicInfo 錯誤: ' + error);
+    Logger.log(' deleteEmployeeBasicInfo 錯誤: ' + error);
     return {
       success: false,
       message: '刪除失敗: ' + error.message
@@ -2138,14 +2138,14 @@ function deleteEmployeeBasicInfo(employeeId) {
 }
 
 /**
- * 🧪 測試員工基本資料功能
+ *  測試員工基本資料功能
  */
 function testEmployeeBasicInfo() {
-  Logger.log('🧪 測試員工基本資料功能');
+  Logger.log(' 測試員工基本資料功能');
   Logger.log('═══════════════════════════════════════');
   
   // 步驟 1: 測試直接呼叫 setEmployeeBasicInfo
-  Logger.log('📝 測試 1: 直接呼叫 setEmployeeBasicInfo');
+  Logger.log(' 測試 1: 直接呼叫 setEmployeeBasicInfo');
   const testData1 = {
     employeeId: 'TEST001',
     employeeName: '測試員工',
@@ -2160,9 +2160,9 @@ function testEmployeeBasicInfo() {
   Logger.log('');
   
   // 步驟 2: 測試透過 Handler 呼叫
-  Logger.log('📝 測試 2: 透過 Handler 呼叫');
+  Logger.log(' 測試 2: 透過 Handler 呼叫');
   const testParams = {
-    token: '61ba577e-7b52-463c-9ce9-48d8c18a3da6',  // ⚠️ 替換成有效的 token
+    token: '61ba577e-7b52-463c-9ce9-48d8c18a3da6',  //  替換成有效的 token
     employeeId: 'TEST002',
     employeeName: '測試員工2',
     idNumber: 'B123456789',

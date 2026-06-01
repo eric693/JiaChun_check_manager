@@ -30,8 +30,8 @@ function checkAttendanceAbnormal(attendanceRows) {
   let abnormalIdCounter = 0;
   
   Logger.log("═══════════════════════════════════════");
-  Logger.log("🔍 checkAttendanceAbnormal 開始");
-  Logger.log(`📊 總記錄數: ${attendanceRows.length}`);
+  Logger.log(" checkAttendanceAbnormal 開始");
+  Logger.log(` 總記錄數: ${attendanceRows.length}`);
   
   const today = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd");
   
@@ -48,7 +48,7 @@ function checkAttendanceAbnormal(attendanceRows) {
       if (!targetMonth && date) targetMonth = date.substring(0, 7);
       
       if (date === today) {
-        Logger.log(`⏭️ 跳過今天的資料: ${date}`);
+        Logger.log(`⏭ 跳過今天的資料: ${date}`);
         return;
       }
       
@@ -57,7 +57,7 @@ function checkAttendanceAbnormal(attendanceRows) {
       dailyRecords[userId][date].push(row);
       
     } catch (err) {
-      Logger.log("❌ 解析 row 失敗: " + JSON.stringify(row) + " | 錯誤: " + err.message);
+      Logger.log(" 解析 row 失敗: " + JSON.stringify(row) + " | 錯誤: " + err.message);
     }
   });
   
@@ -76,7 +76,7 @@ function checkAttendanceAbnormal(attendanceRows) {
         allDatesInMonth.push(dateStr);
       }
     }
-    Logger.log(`📅 本月應檢查的日期數: ${allDatesInMonth.length}`);
+    Logger.log(` 本月應檢查的日期數: ${allDatesInMonth.length}`);
   }
   
   // ===== 步驟 3：檢查每一天的打卡狀態 =====
@@ -119,7 +119,7 @@ function checkAttendanceAbnormal(attendanceRows) {
           id: `abnormal-${abnormalIdCounter}`,
           punchTypes: "補上班通過"
         });
-        Logger.log(`✅ ${date}: 補上班已通過`);
+        Logger.log(` ${date}: 補上班已通過`);
       } else if (adjustedPunchIn && adjustedPunchIn.audit === "x") {
         abnormalIdCounter++;
         abnormalRecords.push({
@@ -129,7 +129,7 @@ function checkAttendanceAbnormal(attendanceRows) {
           id: `abnormal-${abnormalIdCounter}`,
           punchTypes: "補上班被拒絕"
         });
-        Logger.log(`❌ ${date}: 補上班被拒絕`);
+        Logger.log(` ${date}: 補上班被拒絕`);
       } else if (!hasPunchIn) {
         abnormalIdCounter++;
         abnormalRecords.push({
@@ -138,7 +138,7 @@ function checkAttendanceAbnormal(attendanceRows) {
           userId: targetUserId,
           id: `abnormal-${abnormalIdCounter}`
         });
-        Logger.log(`📋 ${date}: 缺少上班卡`);
+        Logger.log(` ${date}: 缺少上班卡`);
       }
       
       // ⭐⭐⭐ 處理下班卡狀態
@@ -161,7 +161,7 @@ function checkAttendanceAbnormal(attendanceRows) {
           id: `abnormal-${abnormalIdCounter}`,
           punchTypes: "補下班通過"
         });
-        Logger.log(`✅ ${date}: 補下班已通過`);
+        Logger.log(` ${date}: 補下班已通過`);
       } else if (adjustedPunchOut && adjustedPunchOut.audit === "x") {
         abnormalIdCounter++;
         abnormalRecords.push({
@@ -171,7 +171,7 @@ function checkAttendanceAbnormal(attendanceRows) {
           id: `abnormal-${abnormalIdCounter}`,
           punchTypes: "補下班被拒絕"
         });
-        Logger.log(`❌ ${date}: 補下班被拒絕`);
+        Logger.log(` ${date}: 補下班被拒絕`);
       } else if (!hasPunchOut) {
         abnormalIdCounter++;
         abnormalRecords.push({
@@ -180,13 +180,13 @@ function checkAttendanceAbnormal(attendanceRows) {
           userId: targetUserId,
           id: `abnormal-${abnormalIdCounter}`
         });
-        Logger.log(`📋 ${date}: 缺少下班卡`);
+        Logger.log(` ${date}: 缺少下班卡`);
       }
     }
   }
   
   Logger.log("═══════════════════════════════════════");
-  Logger.log(`📋 檢查完成，發現 ${abnormalRecords.length} 筆異常記錄`);
+  Logger.log(` 檢查完成，發現 ${abnormalRecords.length} 筆異常記錄`);
   Logger.log("異常記錄: " + JSON.stringify(abnormalRecords, null, 2));
   Logger.log("═══════════════════════════════════════");
   
@@ -226,7 +226,7 @@ function checkAttendance(attendanceRows) {
       dailyRecords[userId][date].push(row);
 
     } catch (err) {
-      Logger.log("❌ 解析 row 失敗: " + JSON.stringify(row) + " | 錯誤: " + err.message);
+      Logger.log(" 解析 row 失敗: " + JSON.stringify(row) + " | 錯誤: " + err.message);
     }
   });
 
@@ -234,7 +234,7 @@ function checkAttendance(attendanceRows) {
     for (const date in dailyRecords[userId]) {
       const rows = dailyRecords[userId][date] || [];
 
-      // ✅ 新增：取得員工姓名（從第一筆記錄中取得）
+      //  新增：取得員工姓名（從第一筆記錄中取得）
       const userName = rows[0]?.name || '未知員工';
       const userDept = rows[0]?.dept || '';
 
