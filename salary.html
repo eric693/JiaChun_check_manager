@@ -1653,11 +1653,25 @@
             const allowancesTotal = positionAllowance + mealAllowance + transportAllowance + 
                                 attendanceBonus + performanceBonus + otherAllowances;
             
-            //  修正：區分時薪/月薪的投保級距
+            // 區分薪資類型的投保級距
             const salaryType = document.getElementById('config-salary-type').value;
             let insuredSalary;
             let laborFee;
             let healthFee;
+
+            // 週薪：不扣任何法定費用，直接計算應發/實發即可
+            if (salaryType === '週薪') {
+                const otherDeductionsTotal = welfareFee + dormitoryFee + groupInsurance + otherDeductions;
+                const grossSalary = baseSalary + allowancesTotal;
+                const netSalary = grossSalary - otherDeductionsTotal;
+                setCalculatedValues(
+                    baseSalary, allowancesTotal, baseSalary, // insuredSalary = baseSalary
+                    0, 0, 0, otherDeductionsTotal, netSalary,
+                    0, 0, 0, grossSalary
+                );
+                return;
+            }
+
             if (salaryType === '時薪') {
                 insuredSalary = 11100;
                 
@@ -2377,19 +2391,31 @@
             const baseSalary = parseFloat(document.getElementById('config-base-salary').value) || 0;
             const pensionRate = parseFloat(document.getElementById('config-pension-rate').value) || 0;
             const salaryType = document.getElementById('config-salary-type').value;
-            
+
             if (baseSalary <= 0) {
                 showNotification('請先輸入基本薪資', 'warning');
                 return;
             }
-            
+
+            // 週薪：法定費用全為 0，不需計算
+            if (salaryType === '週薪') {
+                ['config-labor-fee','config-health-fee','config-employment-fee',
+                 'config-pension-self','config-income-tax'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.value = '0';
+                });
+                showNotification('週薪制不適用勞健保，法定扣款已清零', 'info');
+                if (typeof autoCalculateDeductions === 'function') autoCalculateDeductions();
+                return;
+            }
+
             let insuredSalary;
             let laborFee;
             let healthFee;
-            
+
             const laborFeeEl = document.getElementById('config-labor-fee');
             const healthFeeEl = document.getElementById('config-health-fee');
-            
+
             if (salaryType === '時薪') {
                 insuredSalary = 11100;
                 

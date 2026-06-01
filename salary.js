@@ -470,9 +470,9 @@ function displayEmployeeSalary(data) {
         }
     };
     
-    //  關鍵修正：改用英文欄位
     const salaryType = data.salaryType || '月薪';
-    const isHourly = salaryType === '時薪';
+    const isHourly  = salaryType === '時薪';
+    const isWeekly  = salaryType === '週薪';
     
     // 應發總額與實發金額
     safeSet('gross-salary', formatCurrency(data.grossSalary));  // ← 改這裡
@@ -494,44 +494,41 @@ function displayEmployeeSalary(data) {
     
     safeSet('total-deductions', formatCurrency(deductions));
     
-    // 應發項目（全部改成英文欄位）
+    // 應發項目
     if (isHourly) {
         const hourlyRate = parseFloat(data.hourlyRate) || 0;
         const totalWorkHours = parseFloat(data.totalWorkHours) || 0;
-        
-        const baseSalaryLabel = document.querySelector('[for="detail-base-salary"]') || 
-                                document.querySelector('#detail-base-salary')?.previousElementSibling;
-        if (baseSalaryLabel) {
-            baseSalaryLabel.textContent = '基本薪資 (時薪×工時)';
-        }
-        
         safeSet('detail-base-salary', formatCurrency(data.baseSalary));
-        
         const baseSalaryEl = document.getElementById('detail-base-salary');
         if (baseSalaryEl && baseSalaryEl.parentElement) {
-            let hourlyInfo = baseSalaryEl.parentElement.querySelector('.hourly-info');
-            if (!hourlyInfo) {
-                hourlyInfo = document.createElement('div');
-                hourlyInfo.className = 'hourly-info text-xs text-purple-400 mt-1';
-                baseSalaryEl.parentElement.appendChild(hourlyInfo);
+            let info = baseSalaryEl.parentElement.querySelector('.salary-type-info');
+            if (!info) {
+                info = document.createElement('div');
+                info.className = 'salary-type-info text-xs text-purple-400 mt-1';
+                baseSalaryEl.parentElement.appendChild(info);
             }
-            hourlyInfo.textContent = `時薪 $${hourlyRate} × ${Math.floor(totalWorkHours)}h`;
+            info.textContent = '時薪 $' + hourlyRate + ' × ' + Math.floor(totalWorkHours) + 'h';
+        }
+    } else if (isWeekly) {
+        const weeklyRate = parseFloat(data.weeklyRate) || parseFloat(data.baseSalary) || 0;
+        const weekCount  = parseFloat(data.weekCount) || 0;
+        safeSet('detail-base-salary', formatCurrency(data.baseSalary));
+        const baseSalaryEl = document.getElementById('detail-base-salary');
+        if (baseSalaryEl && baseSalaryEl.parentElement) {
+            let info = baseSalaryEl.parentElement.querySelector('.salary-type-info');
+            if (!info) {
+                info = document.createElement('div');
+                info.className = 'salary-type-info text-xs text-amber-400 mt-1';
+                baseSalaryEl.parentElement.appendChild(info);
+            }
+            info.textContent = '週薪 $' + weeklyRate + ' × ' + weekCount + ' 週（不扣勞健保）';
         }
     } else {
         safeSet('detail-base-salary', formatCurrency(data.baseSalary));
-        
         const baseSalaryEl = document.getElementById('detail-base-salary');
         if (baseSalaryEl && baseSalaryEl.parentElement) {
-            const hourlyInfo = baseSalaryEl.parentElement.querySelector('.hourly-info');
-            if (hourlyInfo) {
-                hourlyInfo.remove();
-            }
-            
-            const baseSalaryLabel = document.querySelector('[for="detail-base-salary"]') || 
-                                    baseSalaryEl.previousElementSibling;
-            if (baseSalaryLabel) {
-                baseSalaryLabel.textContent = '基本薪資';
-            }
+            const info = baseSalaryEl.parentElement.querySelector('.salary-type-info');
+            if (info) info.remove();
         }
     }
     
@@ -856,15 +853,16 @@ async function handleSalaryConfigSubmit(e) {
         return;
     }
     
-    //  只有月薪才需要檢查基本薪資 > 0
     if (salaryType === '月薪' && baseSalary <= 0) {
         showNotification('月薪的基本薪資必須大於 0', 'error');
         return;
     }
-    
-    // 時薪可以是 0（表示尚未設定）
-    if (salaryType === '時薪' && isNaN(baseSalary)) {
-        showNotification('請輸入有效的時薪', 'error');
+    if (salaryType === '時薪' && (isNaN(baseSalary) || baseSalary <= 0)) {
+        showNotification('請輸入有效的時薪（必須大於 0）', 'error');
+        return;
+    }
+    if (salaryType === '週薪' && (isNaN(baseSalary) || baseSalary <= 0)) {
+        showNotification('請輸入每週薪資金額（必須大於 0）', 'error');
         return;
     }
 
