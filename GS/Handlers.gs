@@ -2860,9 +2860,60 @@ function checkSchedulingPermission(token) {
     }
     
     return { ok: false, msg: '權限不足：需要管理員或排班人員權限' };
-    
+
   } catch (error) {
     Logger.log(' checkSchedulingPermission 錯誤: ' + error);
+    return { ok: false, msg: error.message };
+  }
+}
+
+// ==================== QR 打卡 Handler ====================
+
+/**
+ * 管理員生成 QR 打卡 Token
+ */
+function handleGenerateQRToken(params) {
+  try {
+    if (!params.token || !validateSession(params.token)) {
+      return { ok: false, msg: '未授權或 session 已過期' };
+    }
+    const session = checkSession_(params.token);
+    if (!session.ok || session.user.dept !== '管理員') {
+      return { ok: false, msg: '此功能僅限管理員使用' };
+    }
+
+    const punchType    = params.punchType || '上班';
+    const validMinutes = parseInt(params.validMinutes) || 10;
+    const locationName = params.locationName || '';
+
+    if (!['上班', '下班'].includes(punchType)) {
+      return { ok: false, msg: '打卡類型錯誤，必須是「上班」或「下班」' };
+    }
+    if (validMinutes < 1 || validMinutes > 1440) {
+      return { ok: false, msg: '有效時間必須在 1~1440 分鐘之間' };
+    }
+
+    return generateQRToken(params.token, punchType, validMinutes, locationName);
+  } catch (error) {
+    Logger.log('handleGenerateQRToken 錯誤: ' + error);
+    return { ok: false, msg: error.message };
+  }
+}
+
+/**
+ * 員工使用 QR Code 打卡
+ */
+function handleQRPunch(params) {
+  try {
+    if (!params.token || !validateSession(params.token)) {
+      return { ok: false, code: 'ERR_SESSION_INVALID', msg: '請先登入再掃描 QR Code' };
+    }
+    if (!params.qrToken) {
+      return { ok: false, msg: '缺少 QR Token 參數' };
+    }
+    return qrPunch(params.token, params.qrToken);
+  } catch (error) {
+    Logger.log('handleQRPunch 錯誤: ' + error);
     return { ok: false, msg: error.message };
   }
 }

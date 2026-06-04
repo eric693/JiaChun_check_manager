@@ -305,6 +305,12 @@ function doGet(e) {
       case "getEmployeeMonthlyPunchData":
         return respond1(handleGetEmployeeMonthlyPunchData(e.parameter));
       
+      // ==================== QR 打卡系統 ====================
+      case "generateQRToken":
+        return respond1(handleGenerateQRToken(e.parameter));
+      case "qrPunch":
+        return respond1(handleQRPunch(e.parameter));
+
       case "getAnnouncements":
         return respond1(handleGetAnnouncements(e.parameter));
       case "addAnnouncement":

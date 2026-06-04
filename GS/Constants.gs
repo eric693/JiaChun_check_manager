@@ -16,6 +16,7 @@ const SHEET_ATTENDANCE = '打卡紀錄';
 const SHEET_SESSION    = 'Session';
 const SHEET_LOCATIONS  = '打卡地點表';
 const SHEET_ADJUST_PUNCH  = "補打卡申請";
+const SHEET_QR_TOKENS     = "QR打卡Token";
 // 加班系統
 const SHEET_OVERTIME_RECORDS = '加班紀錄';
 

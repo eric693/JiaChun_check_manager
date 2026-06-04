@@ -2300,49 +2300,60 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     const params = new URLSearchParams(window.location.search);
     const otoken = params.get('code');
+    const qrTokenFromUrl = params.get('qrToken');
     const translationPromise = loadTranslations(currentLang);
+
+    // 若 URL 帶有 QR Token，先存起來等登入後使用
+    if (qrTokenFromUrl) {
+        sessionStorage.setItem('pendingQRToken', qrTokenFromUrl);
+        history.replaceState({}, '', window.location.pathname);
+    }
+
     if (otoken) {
         try {
             const res = await callApifetch(`getProfile&otoken=${otoken}`);
             if (res.ok && res.sToken) {
                 // 儲存 Session Token
                 localStorage.setItem("sessionToken", res.sToken);
-                
+
                 //  新增：儲存使用者快取
                 localStorage.setItem("cachedUser", JSON.stringify(res.user));
                 localStorage.setItem("cacheTime", Date.now().toString());
                 localStorage.setItem("sessionUserId", res.user.userId);
-                
+
                 // 清除 URL 參數
                 history.replaceState({}, '', window.location.pathname);
-                
+
                 //  關鍵：不需要再呼叫 ensureLogin 或 initApp
                 // 直接顯示介面
-                
+
                 if (res.user.dept === "管理員") {
                   document.getElementById('tab-admin-btn').style.display = 'block';
                 }
-                
+
                 document.getElementById("user-name").textContent = res.user.name;
                 document.getElementById("profile-img").src = res.user.picture;
-                
+
                 document.getElementById('login-section').style.display = 'none';
                 document.getElementById('user-header').style.display = 'flex';
                 document.getElementById('main-app').style.display = 'block';
-                
+
                 //  直接渲染異常記錄（資料已經在 res 裡）
                 if (res.abnormalRecords) {
                   renderAbnormalRecords(res.abnormalRecords);
                 }
-                
+
                 showNotification(t("LOGIN_SUCCESS"), "success");
 
                 //  關鍵：UI 顯示後才載入異常記錄（不阻塞登入）
                 loadAbnormalRecordsInBackground();
-                
+
                 // 初始化生物辨識（背景執行）
                 initBiometricPunch();
-                
+
+                // 登入後處理待執行的 QR 打卡
+                await handlePendingQRPunch();
+
             } else {
                 showNotification(t("ERROR_LOGIN_FAILED", { msg: res.msg || t("UNKNOWN_ERROR") }), "error");
                 loginBtn.style.display = 'block';
@@ -2353,8 +2364,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             loginBtn.style.display = 'block';
         }
     } else {
-        ensureLogin();
+        const loginOk = await ensureLogin();
         initBiometricPunch();
+        if (loginOk) {
+            await handlePendingQRPunch();
+        }
     }
     
     // 綁定按鈕事件
@@ -4931,126 +4945,293 @@ let _isSubmittingHistory = false;
 async function submitHistoryAdjust() {
     if (_isSubmittingHistory) { showNotification('處理中，請勿重複點擊', 'warning'); return; }
     _isSubmittingHistory = true;
+
     const dateInput = document.getElementById('history-adjust-date');
     const typeInput = document.getElementById('history-adjust-type');
     const timeInput = document.getElementById('history-adjust-time');
     const reasonInput = document.getElementById('history-adjust-reason');
     const submitBtn = document.getElementById('submit-history-adjust-btn');
-    
-    const date = dateInput.value;
-    const type = typeInput.value;
-    const time = timeInput.value;
-    const reason = reasonInput.value.trim();
-    
-    // ===== 驗證 =====
-    
-    // 1. 檢查日期
-    if (!date) {
-        showNotification('請選擇補打日期', 'error');
-        dateInput.focus();
-        return;
-    }
-    
-    // 2. 檢查類型
-    if (!type) {
-        showNotification('請選擇補打類型', 'error');
-        typeInput.focus();
-        return;
-    }
-    
-    // 3. 檢查時間
-    if (!time) {
-        showNotification('請選擇實際打卡時間', 'error');
-        timeInput.focus();
-        return;
-    }
-    
-    // 4. 檢查理由長度
-    if (reason.length < 10) {
-        showNotification('補打原因至少需要 10 個字，請詳細說明', 'error');
-        reasonInput.focus();
-        return;
-    }
-    
-    // 5. 驗證日期範圍（本月內且不能未來）
-    const selectedDate = new Date(date);
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    
-    if (selectedDate < monthStart) {
-        showNotification('只能補打本月的打卡記錄', 'error');
-        return;
-    }
-    
-    if (selectedDate > today) {
-        showNotification('不能補打未來的日期', 'error');
-        return;
-    }
-    
-    // 6. 檢查是否是今天（提示使用當日修正）
-    if (selectedDate.getTime() === today.getTime()) {
-        if (!confirm('您選擇的是今天的日期，建議使用「當日異常修正」功能更快速。\n\n確定要繼續使用歷史補打卡嗎？')) {
+
+    try {
+        const date   = dateInput.value;
+        const type   = typeInput.value;
+        const time   = timeInput.value;
+        const reason = reasonInput.value.trim();
+
+        // ===== 驗證 =====
+
+        if (!date) {
+            showNotification('請選擇補打日期', 'error');
+            dateInput.focus();
             return;
         }
-    }
-    
-    // ===== 提交 =====
-    
-    const loadingText = '提交中...';
-    generalButtonState(submitBtn, 'processing', loadingText);
-    
-    try {
+        if (!type) {
+            showNotification('請選擇補打類型', 'error');
+            typeInput.focus();
+            return;
+        }
+        if (!time) {
+            showNotification('請選擇實際打卡時間', 'error');
+            timeInput.focus();
+            return;
+        }
+        if (reason.length < 10) {
+            showNotification('補打原因至少需要 10 個字，請詳細說明', 'error');
+            reasonInput.focus();
+            return;
+        }
+
+        const selectedDate = new Date(date);
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+        if (selectedDate < monthStart) {
+            showNotification('只能補打本月的打卡記錄', 'error');
+            return;
+        }
+        if (selectedDate > today) {
+            showNotification('不能補打未來的日期', 'error');
+            return;
+        }
+        if (selectedDate.getTime() === today.getTime()) {
+            if (!confirm('您選擇的是今天的日期，建議使用「當日異常修正」功能更快速。\n\n確定要繼續使用歷史補打卡嗎？')) {
+                return;
+            }
+        }
+
+        // ===== 提交 =====
+
+        generalButtonState(submitBtn, 'processing', '提交中...');
+
         const sessionToken = localStorage.getItem("sessionToken");
-        
-        // 取得當前位置
+
         const position = await new Promise((resolve, reject) => {
             navigator.geolocation.getCurrentPosition(resolve, reject, {
                 timeout: 10000,
                 enableHighAccuracy: true
             });
         });
-        
+
         const lat = position.coords.latitude;
         const lng = position.coords.longitude;
-        
-        // 組合完整日期時間
-        const datetime = `${date}T${time}:00`;
-        
-        //  加上特殊標記，讓後端知道這是「歷史補打」
+        const datetime    = `${date}T${time}:00`;
         const noteWithTag = `【歷史補打】${reason}`;
-        
+
         const params = new URLSearchParams({
             token: sessionToken,
             type: type,
             lat: lat,
             lng: lng,
             datetime: datetime,
-            note: noteWithTag  // 帶有【歷史補打】標記
+            note: noteWithTag
         });
-        
+
         const res = await callApifetch(`adjustPunch&${params.toString()}`);
-        
+
         if (res.ok) {
-            showNotification(' 歷史補打卡申請已提交！等待主管審核', 'success');
+            showNotification('歷史補打卡申請已提交！等待主管審核', 'success');
             closeHistoryAdjustDialog();
-            
-            // 重新載入異常記錄
             await checkAbnormal();
         } else {
             showNotification(t(res.code) || '提交失敗', 'error');
         }
-        
+
     } catch (err) {
         console.error('歷史補打卡錯誤:', err);
-        
         if (err.code === 1) {
             showNotification('無法取得位置，請確認已開啟定位權限', 'error');
         } else {
             showNotification('提交失敗，請稍後再試', 'error');
         }
-        
     } finally {
+        _isSubmittingHistory = false;
         generalButtonState(submitBtn, 'idle');
     }
 }
+
+// ==================== QR Code 打卡系統 ====================
+
+let _qrCountdownInterval = null;
+let _qrExpiryTime = null;
+let _qrTotalMs = null;
+
+/**
+ * 處理登入後待執行的 QR 打卡
+ */
+async function handlePendingQRPunch() {
+    const pendingToken = sessionStorage.getItem('pendingQRToken');
+    if (!pendingToken) return;
+    sessionStorage.removeItem('pendingQRToken');
+    await performQRPunch(pendingToken);
+}
+
+/**
+ * 員工 QR 打卡（由掃描後的 URL 觸發）
+ */
+async function performQRPunch(qrTokenId) {
+    showNotification('正在處理 QR 打卡...', 'info');
+    try {
+        const token = localStorage.getItem('sessionToken');
+        if (!token) {
+            showNotification('請先登入才能使用 QR 打卡', 'error');
+            return;
+        }
+        const urlParams = new URLSearchParams({ qrToken: qrTokenId });
+        const res = await callApifetch(`qrPunch&${urlParams.toString()}`);
+        if (res.ok) {
+            const type = (res.params && res.params.type) || '';
+            const loc  = (res.params && res.params.location) || '';
+            showNotification(`QR 打卡成功！${type ? ' ' + type : ''}${loc ? ' - ' + loc : ''}`, 'success');
+            // 重新載入異常記錄
+            await loadAbnormalRecordsInBackground();
+        } else {
+            const msgMap = {
+                'ERR_QR_EXPIRED':       'QR Code 已過期，請聯絡管理員重新產生',
+                'ERR_QR_INVALID':       'QR Code 無效或已失效',
+                'ERR_DUPLICATE_PUNCH':  res.msg || '今天已打過此類型的卡',
+                'ERR_SESSION_INVALID':  '請先登入再掃描 QR Code'
+            };
+            showNotification(msgMap[res.code] || res.msg || 'QR 打卡失敗', 'error');
+        }
+    } catch (err) {
+        console.error('QR 打卡錯誤:', err);
+        showNotification('QR 打卡失敗，請稍後再試', 'error');
+    }
+}
+
+/**
+ * 管理員：產生 QR Code
+ */
+async function generateAdminQRCode() {
+    const punchTypeEl = document.querySelector('input[name="qr-punch-type"]:checked');
+    const punchType   = punchTypeEl ? punchTypeEl.value : '上班';
+
+    const validSelect = document.getElementById('qr-valid-minutes');
+    let validMinutes;
+    if (validSelect.value === 'custom') {
+        validMinutes = parseInt(document.getElementById('qr-valid-minutes-custom').value);
+        if (!validMinutes || validMinutes < 1 || validMinutes > 1440) {
+            showNotification('請輸入有效的分鐘數（1~1440）', 'error');
+            return;
+        }
+    } else {
+        validMinutes = parseInt(validSelect.value);
+    }
+
+    const locationName = (document.getElementById('qr-location-name').value || '').trim();
+
+    const btn = document.getElementById('generate-qr-btn');
+    btn.disabled = true;
+    btn.textContent = '產生中...';
+
+    try {
+        const urlParams = new URLSearchParams({
+            punchType:    punchType,
+            validMinutes: validMinutes,
+            locationName: locationName
+        });
+        const res = await callApifetch(`generateQRToken&${urlParams.toString()}`);
+
+        if (res.ok) {
+            // 組成 QR Code 的目標 URL（員工掃描後會開啟此 URL 執行打卡）
+            const redirectUrl = API_CONFIG.redirectUrl.replace(/\/$/, '');
+            const punchUrl    = `${redirectUrl}/?qrToken=${res.tokenId}`;
+
+            // 使用 Google Charts API 產生 QR Code 圖片
+            const qrImageUrl = `https://chart.googleapis.com/chart?chs=250x250&cht=qr&chl=${encodeURIComponent(punchUrl)}&choe=UTF-8`;
+
+            document.getElementById('qr-image').src = qrImageUrl;
+
+            // 標籤顯示
+            const typeBadge = document.getElementById('qr-type-badge');
+            typeBadge.textContent = punchType === '上班' ? '上班打卡' : '下班打卡';
+            typeBadge.className   = punchType === '上班'
+                ? 'inline-block px-3 py-1 rounded-full text-sm font-bold mb-3 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300'
+                : 'inline-block px-3 py-1 rounded-full text-sm font-bold mb-3 bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300';
+
+            const locBadge = document.getElementById('qr-location-badge');
+            if (locationName) {
+                locBadge.textContent = locationName;
+                locBadge.style.display = 'inline-block';
+            } else {
+                locBadge.style.display = 'none';
+            }
+
+            document.getElementById('qr-display-area').style.display  = 'block';
+            document.getElementById('qr-expired-msg').style.display    = 'none';
+            document.getElementById('qr-regenerate-btn').style.display = 'none';
+            document.getElementById('qr-image').style.opacity          = '1';
+            document.getElementById('qr-countdown-container').style.display = 'block';
+
+            // 啟動倒數計時
+            _qrExpiryTime = new Date(res.expiry).getTime();
+            _qrTotalMs    = validMinutes * 60 * 1000;
+            if (_qrCountdownInterval) clearInterval(_qrCountdownInterval);
+            _tickQRCountdown();
+            _qrCountdownInterval = setInterval(_tickQRCountdown, 1000);
+
+            showNotification(`QR Code 已產生，${validMinutes} 分鐘內有效`, 'success');
+        } else {
+            showNotification(res.msg || '產生 QR Code 失敗', 'error');
+        }
+    } catch (err) {
+        console.error('generateAdminQRCode 錯誤:', err);
+        showNotification('產生 QR Code 失敗，請稍後再試', 'error');
+    } finally {
+        btn.disabled    = false;
+        btn.textContent = '產生 QR Code';
+    }
+}
+
+/**
+ * QR Code 倒數計時一次 tick
+ */
+function _tickQRCountdown() {
+    if (!_qrExpiryTime) return;
+    const remaining = _qrExpiryTime - Date.now();
+
+    if (remaining <= 0) {
+        clearInterval(_qrCountdownInterval);
+        _qrCountdownInterval = null;
+        document.getElementById('qr-countdown').textContent = '00:00';
+        document.getElementById('qr-progress-fill').style.width = '0%';
+        document.getElementById('qr-image').style.opacity = '0.3';
+        document.getElementById('qr-countdown-container').style.display = 'none';
+        document.getElementById('qr-expired-msg').style.display    = 'block';
+        document.getElementById('qr-regenerate-btn').style.display = 'block';
+        return;
+    }
+
+    const totalSec   = Math.ceil(remaining / 1000);
+    const mins       = Math.floor(totalSec / 60);
+    const secs       = totalSec % 60;
+    const countdownEl = document.getElementById('qr-countdown');
+    if (countdownEl) {
+        countdownEl.textContent = String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+        // 顏色警示：剩餘 < 1 分鐘時變紅
+        countdownEl.className = remaining < 60000
+            ? 'text-4xl font-bold font-mono text-red-500 dark:text-red-400'
+            : 'text-4xl font-bold font-mono text-indigo-600 dark:text-indigo-400';
+    }
+
+    const pct = _qrTotalMs > 0 ? (remaining / _qrTotalMs) * 100 : 0;
+    const fillEl = document.getElementById('qr-progress-fill');
+    if (fillEl) {
+        fillEl.style.width = Math.max(0, pct) + '%';
+        fillEl.className = remaining < 60000
+            ? 'bg-red-500 h-2 rounded-full transition-all duration-1000'
+            : 'bg-indigo-600 h-2 rounded-full transition-all duration-1000';
+    }
+}
+
+// 初始化自訂分鐘輸入框的顯示邏輯
+document.addEventListener('DOMContentLoaded', () => {
+    const validSelect = document.getElementById('qr-valid-minutes');
+    const customInput = document.getElementById('qr-valid-minutes-custom');
+    if (validSelect && customInput) {
+        validSelect.addEventListener('change', () => {
+            customInput.style.display = validSelect.value === 'custom' ? 'block' : 'none';
+        });
+    }
+});

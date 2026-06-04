@@ -2173,6 +2173,153 @@ function testEmployeeBasicInfo() {
   
   const result2 = handleSetEmployeeBasicInfo(testParams);
   Logger.log('結果: ' + JSON.stringify(result2));
-  
+
   Logger.log('═══════════════════════════════════════');
+}
+
+// ==================== QR 打卡系統 ====================
+
+/**
+ * 取得或建立 QR Token 工作表
+ */
+function getOrCreateQRTokenSheet_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sh = ss.getSheetByName(SHEET_QR_TOKENS);
+  if (!sh) {
+    sh = ss.insertSheet(SHEET_QR_TOKENS);
+    sh.appendRow(['令牌ID', '打卡類型', '地點名稱', '建立時間', '到期時間', '建立者ID', '狀態']);
+    sh.setFrozenRows(1);
+  }
+  return sh;
+}
+
+/**
+ * 管理員生成 QR 打卡 Token
+ */
+function generateQRToken(adminToken, punchType, validMinutes, locationName) {
+  const session = checkSession_(adminToken);
+  if (!session.ok || !session.user) {
+    return { ok: false, msg: '未授權' };
+  }
+  if (session.user.dept !== '管理員') {
+    return { ok: false, msg: '僅限管理員使用' };
+  }
+
+  const sh = getOrCreateQRTokenSheet_();
+  const tokenId = Utilities.getUuid().replace(/-/g, '').substring(0, 16).toUpperCase();
+  const now = new Date();
+  const expiry = new Date(now.getTime() + validMinutes * 60 * 1000);
+
+  sh.appendRow([
+    tokenId,
+    punchType,
+    locationName || '',
+    now,
+    expiry,
+    session.user.userId,
+    '有效'
+  ]);
+
+  Logger.log('QR Token 已生成: ' + tokenId + ' (' + punchType + ', ' + validMinutes + '分鐘)');
+
+  return {
+    ok: true,
+    tokenId: tokenId,
+    punchType: punchType,
+    locationName: locationName || '',
+    expiry: expiry.toISOString(),
+    validMinutes: validMinutes
+  };
+}
+
+/**
+ * 員工使用 QR Code 打卡
+ */
+function qrPunch(sessionToken, qrTokenId) {
+  const session = checkSession_(sessionToken);
+  if (!session.ok || !session.user) {
+    return { ok: false, code: 'ERR_SESSION_INVALID', msg: '請先登入' };
+  }
+  const user = session.user;
+
+  const sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_QR_TOKENS);
+  if (!sh) {
+    return { ok: false, code: 'ERR_QR_INVALID', msg: 'QR Code 無效' };
+  }
+
+  const values = sh.getDataRange().getValues();
+  let tokenRow = null;
+  let tokenRowIndex = -1;
+
+  for (let i = 1; i < values.length; i++) {
+    if (String(values[i][0]).trim() === qrTokenId) {
+      tokenRow = values[i];
+      tokenRowIndex = i + 1;
+      break;
+    }
+  }
+
+  if (!tokenRow) {
+    return { ok: false, code: 'ERR_QR_INVALID', msg: 'QR Code 無效或不存在' };
+  }
+
+  const punchType    = tokenRow[1];
+  const locationName = tokenRow[2] || 'QR打卡';
+  const expiry       = new Date(tokenRow[4]);
+  const status       = tokenRow[6];
+
+  if (status !== '有效') {
+    return { ok: false, code: 'ERR_QR_EXPIRED', msg: 'QR Code 已失效' };
+  }
+
+  const now = new Date();
+  if (now > expiry) {
+    sh.getRange(tokenRowIndex, 7).setValue('已過期');
+    return { ok: false, code: 'ERR_QR_EXPIRED', msg: 'QR Code 已過期，請聯絡管理員重新產生' };
+  }
+
+  // 防重複：同一員工同一天同類型只能打一次
+  const attendanceSh = SpreadsheetApp.getActive().getSheetByName(SHEET_ATTENDANCE);
+  const today = Utilities.formatDate(now, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+  const attendanceValues = attendanceSh.getDataRange().getValues();
+
+  for (let i = 1; i < attendanceValues.length; i++) {
+    const row = attendanceValues[i];
+    if (!row[0]) continue;
+    const rowDate   = Utilities.formatDate(new Date(row[0]), Session.getScriptTimeZone(), 'yyyy-MM-dd');
+    const rowUserId = String(row[1]).trim();
+    const rowType   = String(row[4]).trim();
+    const rowNote   = String(row[7] || '').trim();
+    if (rowNote === '補打卡') continue;
+    if (rowDate === today && rowUserId === user.userId && rowType === punchType) {
+      return {
+        ok: false,
+        code: 'ERR_DUPLICATE_PUNCH',
+        msg: '今天已經打過' + punchType + '卡，請勿重複打卡'
+      };
+    }
+  }
+
+  // 寫入打卡紀錄
+  const punchRow = [
+    now,
+    user.userId,
+    user.dept,
+    user.name,
+    punchType,
+    'QR打卡',
+    locationName,
+    '',
+    '',
+    'QR打卡'
+  ];
+  attendanceSh.getRange(attendanceSh.getLastRow() + 1, 1, 1, punchRow.length).setValues([punchRow]);
+
+  Logger.log('QR打卡成功: ' + user.name + ' - ' + punchType + ' - ' + locationName);
+
+  return {
+    ok: true,
+    code: 'PUNCH_SUCCESS',
+    params: { type: punchType, location: locationName }
+  };
 }
