@@ -5138,8 +5138,8 @@ async function generateAdminQRCode() {
             const redirectUrl = API_CONFIG.redirectUrl.replace(/\/$/, '');
             const punchUrl    = `${redirectUrl}/?qrToken=${res.tokenId}`;
 
-            // 使用 Google Charts API 產生 QR Code 圖片
-            const qrImageUrl = `https://chart.googleapis.com/chart?chs=250x250&cht=qr&chl=${encodeURIComponent(punchUrl)}&choe=UTF-8`;
+            // 使用 qrserver.com API 產生 QR Code 圖片
+            const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=${encodeURIComponent(punchUrl)}&margin=10&format=png`;
 
             document.getElementById('qr-image').src = qrImageUrl;
 
