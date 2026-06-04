@@ -5138,10 +5138,13 @@ async function generateAdminQRCode() {
             const redirectUrl = API_CONFIG.redirectUrl.replace(/\/$/, '');
             const punchUrl    = `${redirectUrl}/?qrToken=${res.tokenId}`;
 
-            // 使用 qrserver.com API 產生 QR Code 圖片
-            const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=${encodeURIComponent(punchUrl)}&margin=10&format=png`;
-
-            document.getElementById('qr-image').src = qrImageUrl;
+            // 使用 qrcode.js 在瀏覽器端直接產生 QR Code（不依賴外部服務）
+            const qrDataUrl = await QRCode.toDataURL(punchUrl, {
+                width: 280,
+                margin: 2,
+                color: { dark: '#1e1b4b', light: '#ffffff' }
+            });
+            document.getElementById('qr-image').src = qrDataUrl;
 
             // 標籤顯示
             const typeBadge = document.getElementById('qr-type-badge');
