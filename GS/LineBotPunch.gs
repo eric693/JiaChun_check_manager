@@ -22,12 +22,10 @@ function handleLineMessage(event) {
     Logger.log(' 員工已註冊: ' + employee.name);
     
     if (text === '上班打卡') {
-      savePunchIntent_(userId, '上班');
-      sendQuickReplyLocationRequest(replyToken, employee.name, '上班');
-    } 
+      sendLinePunchLink(replyToken, userId, employee.name, '上班');
+    }
     else if (text === '下班打卡') {
-      savePunchIntent_(userId, '下班');
-      sendQuickReplyLocationRequest(replyToken, employee.name, '下班');
+      sendLinePunchLink(replyToken, userId, employee.name, '下班');
     }
     else if (text === '取消打卡') {
       clearPunchIntent_(userId);
@@ -821,8 +819,103 @@ function formatDateLabel(dateStr) {
   return `${month}/${day} (${weekday})`;
 }
 /**
- * 使用 Quick Reply 發送位置請求
- * ⭐ 點擊後直接跳出系統位置權限對話框
+ * 產生一次性 LINE 打卡 Token（5 分鐘有效）
+ */
+function generateLinePunchToken_(userId, punchType) {
+  const token = 'LPT' + Utilities.getUuid().replace(/-/g, '').substring(0, 12).toUpperCase();
+  const data = JSON.stringify({
+    userId: userId,
+    punchType: punchType,
+    expiry: new Date().getTime() + 5 * 60 * 1000
+  });
+  PropertiesService.getScriptProperties().setProperty('LPT_' + token, data);
+  Logger.log('LINE 打卡 Token 已生成: ' + token + ' (' + punchType + ')');
+  return token;
+}
+
+/**
+ * 發送網頁打卡連結（取代舊的 LINE 位置 Quick Reply）
+ */
+function sendLinePunchLink(replyToken, userId, employeeName, punchType) {
+  const token = generateLinePunchToken_(userId, punchType);
+  const url = 'https://eric693.github.io/JiaChun_check_manager/?linePunchToken=' + token;
+  const color = punchType === '上班' ? '#4CAF50' : '#FF9800';
+  const emoji = punchType === '上班' ? '🟢' : '🟠';
+
+  const message = {
+    type: 'flex',
+    altText: employeeName + '，請點擊連結進行' + punchType + '打卡',
+    contents: {
+      type: 'bubble',
+      header: {
+        type: 'box',
+        layout: 'vertical',
+        contents: [{
+          type: 'text',
+          text: emoji + ' ' + punchType + '打卡',
+          weight: 'bold',
+          size: 'xl',
+          color: '#FFFFFF',
+          align: 'center'
+        }],
+        backgroundColor: color,
+        paddingAll: '20px'
+      },
+      body: {
+        type: 'box',
+        layout: 'vertical',
+        spacing: 'sm',
+        contents: [
+          {
+            type: 'text',
+            text: employeeName + '，請點擊下方按鈕打卡',
+            size: 'md',
+            weight: 'bold',
+            align: 'center',
+            margin: 'md'
+          },
+          {
+            type: 'text',
+            text: '系統將透過網頁取得您的真實 GPS 位置',
+            size: 'sm',
+            color: '#888888',
+            align: 'center',
+            margin: 'sm',
+            wrap: true
+          },
+          {
+            type: 'text',
+            text: '⏳ 連結 5 分鐘內有效',
+            size: 'sm',
+            color: '#FF5722',
+            align: 'center',
+            margin: 'sm'
+          }
+        ]
+      },
+      footer: {
+        type: 'box',
+        layout: 'vertical',
+        contents: [{
+          type: 'button',
+          style: 'primary',
+          height: 'sm',
+          color: color,
+          action: {
+            type: 'uri',
+            label: '📍 點此' + punchType + '打卡',
+            uri: url
+          }
+        }]
+      }
+    }
+  };
+
+  sendLineReply_(replyToken, [message]);
+}
+
+/**
+ * @deprecated 已改用 sendLinePunchLink（網頁 GPS）
  */
 function sendQuickReplyLocationRequest(replyToken, employeeName, punchType) {
   const message = {
@@ -840,7 +933,7 @@ function sendQuickReplyLocationRequest(replyToken, employeeName, punchType) {
       ]
     }
   };
-  
+
   sendLineReply_(replyToken, [message]);
 }
 
@@ -1127,85 +1220,24 @@ function isEventProcessed_(eventId) {
 function handleLineLocation(event) {
   try {
     const userId = event.source.userId;
-    const lat = event.message.latitude;
-    const lng = event.message.longitude;
     const replyToken = event.replyToken;
-    
-    Logger.log(' 收到位置訊息');
-    Logger.log('   userId: ' + userId);
-    Logger.log('   座標: ' + lat + ', ' + lng);
-    
+
+    Logger.log(' 收到位置訊息（已改用網頁打卡，拒絕 LINE 位置）');
+
     const employee = findEmployeeByLineUserId_(userId);
-    
     if (!employee.ok) {
-      replyMessage(replyToken, ' 您尚未註冊為系統員工');
+      replyMessage(replyToken, '您尚未註冊為系統員工');
       return;
     }
-    
-    //  修正：先嘗試從暫存取得打卡意圖
-    let punchType = getPunchIntent_(userId);
-    
-    // 如果沒有暫存（可能是直接傳送位置），才自動判斷
-    if (!punchType) {
-      punchType = determinePunchType(userId);
-      Logger.log(' 自動判斷打卡類型: ' + punchType);
-    } else {
-      Logger.log(' 使用暫存的打卡類型: ' + punchType);
-    }
-    
-    // 檢查位置
-    const locationCheck = checkPunchLocation(lat, lng);
-    
-    if (!locationCheck.valid) {
-      const message = {
-        type: 'flex',
-        altText: ' 打卡失敗',
-        contents: createPunchFailedMessage(locationCheck.reason, locationCheck.nearestLocation)
-      };
-      
-      sendLineReply_(replyToken, [message]);
-      
-      //  修正：打卡失敗也要清除意圖
-      clearPunchIntent_(userId);
-      return;
-    }
-    
-    Logger.log(' 位置檢查通過: ' + locationCheck.locationName);
-    
-    //  新增：檢查是否為重複打卡
-    if (isDuplicatePunch_(userId, punchType)) {
-      Logger.log(' 重複打卡，已忽略');
-      replyMessage(replyToken, ' 您剛剛已經打過卡了，請勿重複操作');
-      clearPunchIntent_(userId);
-      return;
-    }
-    // 執行打卡
-    const punchResult = executePunch(userId, punchType, lat, lng, locationCheck.locationName);
-    
-    if (punchResult.success) {
-      const message = {
-        type: 'flex',
-        altText: ' 打卡成功',
-        contents: createPunchSuccessMessage(
-          employee.name,
-          punchType,
-          punchResult.time,
-          locationCheck.locationName
-        )
-      };
-      
-      sendLineReply_(replyToken, [message]);
-      
-      //  修正：打卡成功後清除意圖
-      clearPunchIntent_(userId);
-    } else {
-      replyMessage(replyToken, ' 打卡失敗\n\n' + punchResult.message);
-      clearPunchIntent_(userId);
-    }
-    
+
+    // 判斷應該打哪種卡，產生新連結
+    const punchType = getPunchIntent_(userId) || determinePunchType(userId);
+    clearPunchIntent_(userId);
+    sendLinePunchLink(replyToken, userId, employee.name, punchType);
+
   } catch (error) {
     Logger.log(' handleLineLocation 錯誤: ' + error);
-    replyMessage(event.replyToken, ' 系統錯誤，請稍後再試');
+    replyMessage(event.replyToken, '系統錯誤，請稍後再試');
   }
 }
 

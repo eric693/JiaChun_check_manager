@@ -203,6 +203,85 @@ function handlePunch(params) {
 // }
 
 /**
+ * 處理 LINE Bot 網頁打卡（Token 驗證 + GPS 地圍圍欄）
+ * 不需要 sessionToken；LINE 打卡 Token 本身即是身份驗證
+ */
+function handleLinePunchWithToken(params) {
+  try {
+    const { token, lat, lng } = params;
+
+    if (!token || !lat || !lng) {
+      return { ok: false, code: 'ERR_MISSING_PARAMS', msg: '缺少必要參數' };
+    }
+
+    const props = PropertiesService.getScriptProperties();
+    const key = 'LPT_' + token;
+    const dataStr = props.getProperty(key);
+
+    if (!dataStr) {
+      return { ok: false, code: 'ERR_LPT_INVALID', msg: '打卡連結無效或已使用，請重新在 LINE 輸入打卡指令' };
+    }
+
+    const data = JSON.parse(dataStr);
+
+    if (new Date().getTime() > data.expiry) {
+      props.deleteProperty(key);
+      return { ok: false, code: 'ERR_LPT_EXPIRED', msg: '打卡連結已過期（5 分鐘），請重新在 LINE 輸入打卡指令' };
+    }
+
+    // 單次使用：立即刪除 token
+    props.deleteProperty(key);
+
+    const userId    = data.userId;
+    const punchType = data.punchType;
+    const latF      = parseFloat(lat);
+    const lngF      = parseFloat(lng);
+
+    // 地理圍欄驗證
+    const locationCheck = checkPunchLocation(latF, lngF);
+    if (!locationCheck.valid) {
+      const nearest = locationCheck.nearestLocation;
+      const hint = nearest ? `（距離最近地點「${nearest.name}」還有 ${nearest.distance} 公尺）` : '';
+      return { ok: false, code: 'ERR_NOT_IN_RANGE', msg: locationCheck.reason + hint };
+    }
+
+    // 防重複打卡
+    if (isDuplicatePunch_(userId, punchType)) {
+      return { ok: false, code: 'ERR_DUPLICATE_PUNCH', msg: '您剛剛已經打過卡了，請勿重複操作' };
+    }
+
+    // 執行打卡
+    const result = executePunch(userId, punchType, latF, lngF, locationCheck.locationName);
+
+    if (!result.success) {
+      return { ok: false, code: 'ERR_PUNCH_FAILED', msg: result.message };
+    }
+
+    // 推播 LINE 成功通知給本人
+    try {
+      const employee = findEmployeeByLineUserId_(userId);
+      if (employee.ok) {
+        const flexContents = createPunchSuccessMessage(employee.name, punchType, result.time, locationCheck.locationName);
+        sendLineNotification_(userId, { type: 'flex', altText: '打卡成功', contents: flexContents });
+      }
+    } catch (notifyErr) {
+      Logger.log('LINE push 通知失敗（不影響打卡）: ' + notifyErr.message);
+    }
+
+    return {
+      ok: true,
+      punchType: punchType,
+      time: result.time,
+      location: locationCheck.locationName
+    };
+
+  } catch (err) {
+    Logger.log('handleLinePunchWithToken 錯誤: ' + err.message);
+    return { ok: false, code: 'ERR_INTERNAL', msg: '系統錯誤，請稍後再試' };
+  }
+}
+
+/**
  *  處理補打卡（完全修正版 - 強化參數驗證和日誌）
  */
 function handleAdjustPunch(params) {

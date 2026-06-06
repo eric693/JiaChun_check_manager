@@ -2305,6 +2305,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     const qrTokenFromUrl = params.get('qrToken');
     const translationPromise = loadTranslations(currentLang);
 
+    // LINE Bot 網頁打卡：無需登入，直接處理後結束
+    if (params.get('linePunchToken')) {
+        await handleLinePunchFromUrl();
+        // 繼續正常初始化（讓員工可操作 app）
+    }
+
     // 若 URL 帶有 QR Token，先存起來等登入後使用
     if (qrTokenFromUrl) {
         sessionStorage.setItem('pendingQRToken', qrTokenFromUrl);
@@ -5056,6 +5062,76 @@ async function submitHistoryAdjust() {
     } finally {
         _isSubmittingHistory = false;
         generalButtonState(submitBtn, 'idle');
+    }
+}
+
+// ==================== LINE Bot 網頁打卡 ====================
+
+async function handleLinePunchFromUrl() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('linePunchToken');
+    if (!token) return;
+
+    history.replaceState({}, '', window.location.pathname);
+
+    // 全螢幕 overlay
+    const overlay = document.createElement('div');
+    overlay.id = 'line-punch-overlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;';
+    overlay.innerHTML = `
+      <div style="background:#fff;border-radius:16px;padding:32px 24px;max-width:320px;width:90%;text-align:center;">
+        <div id="lpo-icon" style="font-size:48px;margin-bottom:12px;">📍</div>
+        <div id="lpo-title" style="font-size:20px;font-weight:bold;margin-bottom:8px;">正在取得位置...</div>
+        <div id="lpo-sub" style="font-size:14px;color:#666;margin-bottom:16px;">請允許瀏覽器存取您的 GPS 位置</div>
+        <button id="lpo-close" style="display:none;margin-top:8px;padding:10px 28px;border-radius:8px;border:none;background:#4CAF50;color:#fff;font-size:16px;cursor:pointer;">關閉</button>
+      </div>`;
+    document.body.appendChild(overlay);
+
+    const setResult = (icon, title, sub, btnColor) => {
+        overlay.querySelector('#lpo-icon').textContent = icon;
+        overlay.querySelector('#lpo-title').textContent = title;
+        overlay.querySelector('#lpo-sub').textContent = sub;
+        const btn = overlay.querySelector('#lpo-close');
+        btn.style.display = 'inline-block';
+        btn.style.background = btnColor || '#4CAF50';
+        btn.onclick = () => overlay.remove();
+    };
+
+    try {
+        const position = await new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, {
+                timeout: 15000,
+                enableHighAccuracy: true
+            });
+        });
+
+        overlay.querySelector('#lpo-title').textContent = '正在打卡...';
+        overlay.querySelector('#lpo-sub').textContent = '';
+
+        const params = new URLSearchParams({
+            token: token,
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+        });
+
+        const res = await callApifetch(`linePunch&${params.toString()}`);
+
+        if (res.ok) {
+            const typeText = res.punchType === '上班' ? '🟢 上班打卡' : '🟠 下班打卡';
+            setResult('✅', typeText + ' 成功！', `${res.location ? res.location + '｜' : ''}${res.time || ''}`, '#4CAF50');
+            await loadAbnormalRecordsInBackground();
+        } else {
+            const msgMap = {
+                ERR_LPT_INVALID:  '連結無效或已使用，請重新在 LINE 輸入打卡指令',
+                ERR_LPT_EXPIRED:  '連結已過期（5 分鐘），請重新在 LINE 輸入打卡指令',
+                ERR_NOT_IN_RANGE: res.msg || '不在打卡範圍內',
+                ERR_DUPLICATE_PUNCH: '您剛剛已打過卡了'
+            };
+            setResult('❌', '打卡失敗', msgMap[res.code] || res.msg || '請稍後再試', '#f44336');
+        }
+    } catch (err) {
+        const geoErrors = { 1: '請允許位置存取權限後重試', 3: 'GPS 逾時，請確認定位已開啟' };
+        setResult('❌', '無法取得位置', geoErrors[err.code] || '請確認 GPS 已開啟', '#f44336');
     }
 }
 

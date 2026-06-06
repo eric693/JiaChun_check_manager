@@ -34,6 +34,8 @@ function doGet(e) {
       // ==================== 打卡系統 ====================
       case "punch":
         return respond1(handlePunch(e.parameter));
+      case "linePunch":
+        return respond1(handleLinePunchWithToken(e.parameter));
       case "adjustPunch":
         return respond1(handleAdjustPunch(e.parameter));
       case "getAbnormalRecords":
