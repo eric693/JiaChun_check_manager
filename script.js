@@ -1103,20 +1103,22 @@ function formatHours(hours) {
 async function submitAdjustPunch(date, type, note) {
     try {
         showNotification("正在提交補打卡...", "info");
-        
+
         const sessionToken = localStorage.getItem("sessionToken");
-        
-        // 取得當前位置
-        const position = await new Promise((resolve, reject) => {
-            navigator.geolocation.getCurrentPosition(resolve, reject);
-        });
-        
-        const lat = position.coords.latitude;
-        const lng = position.coords.longitude;
-        
+
+        // 嘗試取得位置（非必要，失敗不影響補打卡）
+        let lat = 0, lng = 0;
+        try {
+            const position = await new Promise((resolve, reject) => {
+                navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 });
+            });
+            lat = position.coords.latitude;
+            lng = position.coords.longitude;
+        } catch (_) {}
+
         // 設定預設時間
         const datetime = `${date}T${type === '上班' ? '09:00:00' : '18:00:00'}`;
-        
+
         const params = new URLSearchParams({
             token: sessionToken,
             type: type,
@@ -2590,17 +2592,20 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (!validateAdjustTime(datetime)) return;
             
             generalButtonState(button, 'processing', loadingText);
-            
+
             try {
                 const sessionToken = localStorage.getItem("sessionToken");
-                
-                const position = await new Promise((resolve, reject) => {
-                    navigator.geolocation.getCurrentPosition(resolve, reject);
-                });
-                
-                const lat = position.coords.latitude;
-                const lng = position.coords.longitude;
-                
+
+                // 嘗試取得位置（非必要，失敗不影響補打卡）
+                let lat = 0, lng = 0;
+                try {
+                    const position = await new Promise((resolve, reject) => {
+                        navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 });
+                    });
+                    lat = position.coords.latitude;
+                    lng = position.coords.longitude;
+                } catch (_) {}
+
                 const params = new URLSearchParams({
                     token: sessionToken,
                     type: type,
@@ -5006,15 +5011,19 @@ async function submitHistoryAdjust() {
 
         const sessionToken = localStorage.getItem("sessionToken");
 
-        const position = await new Promise((resolve, reject) => {
-            navigator.geolocation.getCurrentPosition(resolve, reject, {
-                timeout: 10000,
-                enableHighAccuracy: true
+        // 嘗試取得位置（非必要，失敗不影響補打卡）
+        let lat = 0, lng = 0;
+        try {
+            const position = await new Promise((resolve, reject) => {
+                navigator.geolocation.getCurrentPosition(resolve, reject, {
+                    timeout: 5000,
+                    enableHighAccuracy: false
+                });
             });
-        });
+            lat = position.coords.latitude;
+            lng = position.coords.longitude;
+        } catch (_) {}
 
-        const lat = position.coords.latitude;
-        const lng = position.coords.longitude;
         const datetime    = `${date}T${time}:00`;
         const noteWithTag = `【歷史補打】${reason}`;
 
