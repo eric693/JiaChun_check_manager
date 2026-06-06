@@ -1775,3 +1775,88 @@ function notifyAdminsNewOvertimeRequest(employeeName, overtimeDate, startTime, e
   );
   notifyAllAdmins_(message);
 }
+
+/**
+ * 補打卡新申請通知（給管理員）
+ */
+function createNewAdjustPunchRequestNotification_(employeeName, date, time, punchType, reason) {
+  return {
+    type: "flex",
+    altText: `📋 ${employeeName} 提出補打卡申請，請前往審核`,
+    contents: {
+      type: "bubble",
+      size: "mega",
+      header: {
+        type: "box",
+        layout: "vertical",
+        contents: [{
+          type: "text",
+          text: "📋 新補打卡申請待審核",
+          weight: "bold",
+          size: "xl",
+          color: "#FFFFFF",
+          align: "center"
+        }],
+        backgroundColor: "#9C27B0",
+        paddingAll: "20px"
+      },
+      body: {
+        type: "box",
+        layout: "vertical",
+        contents: [
+          { type: "text", text: "有新的補打卡申請等待您審核", size: "sm", color: "#666666", margin: "md" },
+          { type: "separator", margin: "lg" },
+          {
+            type: "box",
+            layout: "vertical",
+            margin: "lg",
+            spacing: "sm",
+            contents: [
+              { type: "box", layout: "baseline", spacing: "sm", contents: [
+                { type: "text", text: "申請人", color: "#999999", size: "sm", flex: 2 },
+                { type: "text", text: employeeName, wrap: true, color: "#333333", size: "sm", flex: 5, weight: "bold" }
+              ]},
+              { type: "box", layout: "baseline", spacing: "sm", contents: [
+                { type: "text", text: "日期", color: "#999999", size: "sm", flex: 2 },
+                { type: "text", text: String(date), wrap: true, color: "#333333", size: "sm", flex: 5, weight: "bold" }
+              ]},
+              { type: "box", layout: "baseline", spacing: "sm", contents: [
+                { type: "text", text: "時間", color: "#999999", size: "sm", flex: 2 },
+                { type: "text", text: String(time), wrap: true, color: "#333333", size: "sm", flex: 5 }
+              ]},
+              { type: "box", layout: "baseline", spacing: "sm", contents: [
+                { type: "text", text: "類型", color: "#999999", size: "sm", flex: 2 },
+                { type: "text", text: "補打" + punchType + "卡", wrap: true, color: "#9C27B0", size: "sm", flex: 5, weight: "bold" }
+              ]},
+              { type: "box", layout: "baseline", spacing: "sm", contents: [
+                { type: "text", text: "原因", color: "#999999", size: "sm", flex: 2 },
+                { type: "text", text: reason || "未填寫", wrap: true, color: "#333333", size: "sm", flex: 5 }
+              ]}
+            ]
+          }
+        ]
+      },
+      footer: {
+        type: "box",
+        layout: "vertical",
+        contents: [{
+          type: "button",
+          style: "primary",
+          height: "sm",
+          action: { type: "uri", label: "前往審核", uri: "https://eric693.github.io/JiaChun_check_manager/" },
+          color: "#9C27B0"
+        }]
+      }
+    }
+  };
+}
+
+/**
+ * 對外呼叫：通知管理員有新補打卡申請
+ */
+function notifyAdminsNewAdjustPunchRequest(employeeName, date, time, punchType, reason) {
+  const message = createNewAdjustPunchRequestNotification_(
+    employeeName, date, time, punchType, reason
+  );
+  notifyAllAdmins_(message);
+}

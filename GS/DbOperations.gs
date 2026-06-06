@@ -580,6 +580,13 @@ function punchAdjusted(sessionToken, type, punchDate, lat, lng, note) {
   Logger.log('補打卡申請已提交: ' + user.name + ' - ' + dateOnly + ' ' + type);
   Logger.log('   理由: ' + note);
 
+  // 通知所有管理員有新的補打卡申請
+  try {
+    notifyAdminsNewAdjustPunchRequest(user.name, dateOnly, timeOnly, type, note);
+  } catch (notifyErr) {
+    Logger.log(' LINE 通知管理員失敗（不影響申請）: ' + notifyErr.message);
+  }
+
   return {
     ok: true,
     code: "ADJUST_PUNCH_SUCCESS",
