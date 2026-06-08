@@ -5221,7 +5221,7 @@ async function generateAdminQRCode() {
         // 純前端產生 token，不呼叫後端
         const expiryMs  = Date.now() + validMinutes * 60 * 1000;
         const expiryHex = expiryMs.toString(16).toUpperCase();
-        const random    = Math.random().toString(16).substr(2, 8).toUpperCase();
+        const random    = Math.random().toString(16).slice(2, 10).toUpperCase();
         const tokenId   = `${typeCode}_${expiryHex}_${random}`;
 
         // 組成員工掃描後開啟的 URL
@@ -5229,13 +5229,17 @@ async function generateAdminQRCode() {
         const locParam    = locationName ? `&loc=${encodeURIComponent(locationName)}` : '';
         const punchUrl    = `${redirectUrl}/?qrToken=${tokenId}${locParam}`;
 
-        // 使用 qrcode.js 在瀏覽器端直接產生 QR Code
-        const qrDataUrl = await QRCode.toDataURL(punchUrl, {
-            width: 280,
-            margin: 2,
-            color: { dark: '#1e1b4b', light: '#ffffff' }
+        // 使用 qrcodejs 在瀏覽器端直接產生 QR Code（同步，不需要 Promise）
+        const qrContainer = document.getElementById('qr-image');
+        qrContainer.innerHTML = '';  // 清除上一次的 QR Code
+        new QRCode(qrContainer, {
+            text: punchUrl,
+            width: 250,
+            height: 250,
+            colorDark: '#1e1b4b',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.M
         });
-        document.getElementById('qr-image').src = qrDataUrl;
 
         // 標籤顯示
         const typeBadge = document.getElementById('qr-type-badge');
