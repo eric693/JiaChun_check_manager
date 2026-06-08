@@ -2314,6 +2314,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 若 URL 帶有 QR Token，先存起來等登入後使用
     if (qrTokenFromUrl) {
         sessionStorage.setItem('pendingQRToken', qrTokenFromUrl);
+        const qrLocFromUrl = params.get('loc');
+        if (qrLocFromUrl) sessionStorage.setItem('pendingQRLoc', qrLocFromUrl);
         history.replaceState({}, '', window.location.pathname);
     }
 
@@ -5162,7 +5164,10 @@ async function performQRPunch(qrTokenId) {
             showNotification('請先登入才能使用 QR 打卡', 'error');
             return;
         }
+        const qrLoc = sessionStorage.getItem('pendingQRLoc') || '';
+        sessionStorage.removeItem('pendingQRLoc');
         const urlParams = new URLSearchParams({ qrToken: qrTokenId });
+        if (qrLoc) urlParams.append('loc', qrLoc);
         const res = await callApifetch(`qrPunch&${urlParams.toString()}`);
         if (res.ok) {
             const type = (res.params && res.params.type) || '';
@@ -5186,11 +5191,13 @@ async function performQRPunch(qrTokenId) {
 }
 
 /**
- * 管理員：產生 QR Code
+ * 管理員：產生 QR Code（純前端，不需要後端 API）
+ * Token 格式：{I|O}_{到期毫秒HEX}_{8位亂數HEX}
  */
 async function generateAdminQRCode() {
     const punchTypeEl = document.querySelector('input[name="qr-punch-type"]:checked');
     const punchType   = punchTypeEl ? punchTypeEl.value : '上班';
+    const typeCode    = punchType === '上班' ? 'I' : 'O';
 
     const validSelect = document.getElementById('qr-valid-minutes');
     let validMinutes;
@@ -5207,62 +5214,59 @@ async function generateAdminQRCode() {
     const locationName = (document.getElementById('qr-location-name').value || '').trim();
 
     const btn = document.getElementById('generate-qr-btn');
-    btn.disabled = true;
+    btn.disabled    = true;
     btn.textContent = '產生中...';
 
     try {
-        const urlParams = new URLSearchParams({
-            punchType:    punchType,
-            validMinutes: validMinutes,
-            locationName: locationName
+        // 純前端產生 token，不呼叫後端
+        const expiryMs  = Date.now() + validMinutes * 60 * 1000;
+        const expiryHex = expiryMs.toString(16).toUpperCase();
+        const random    = Math.random().toString(16).substr(2, 8).toUpperCase();
+        const tokenId   = `${typeCode}_${expiryHex}_${random}`;
+
+        // 組成員工掃描後開啟的 URL
+        const redirectUrl = API_CONFIG.redirectUrl.replace(/\/$/, '');
+        const locParam    = locationName ? `&loc=${encodeURIComponent(locationName)}` : '';
+        const punchUrl    = `${redirectUrl}/?qrToken=${tokenId}${locParam}`;
+
+        // 使用 qrcode.js 在瀏覽器端直接產生 QR Code
+        const qrDataUrl = await QRCode.toDataURL(punchUrl, {
+            width: 280,
+            margin: 2,
+            color: { dark: '#1e1b4b', light: '#ffffff' }
         });
-        const res = await callApifetch(`generateQRToken&${urlParams.toString()}`);
+        document.getElementById('qr-image').src = qrDataUrl;
 
-        if (res.ok) {
-            // 組成 QR Code 的目標 URL（員工掃描後會開啟此 URL 執行打卡）
-            const redirectUrl = API_CONFIG.redirectUrl.replace(/\/$/, '');
-            const punchUrl    = `${redirectUrl}/?qrToken=${res.tokenId}`;
+        // 標籤顯示
+        const typeBadge = document.getElementById('qr-type-badge');
+        typeBadge.textContent = punchType === '上班' ? '上班打卡' : '下班打卡';
+        typeBadge.className   = punchType === '上班'
+            ? 'inline-block px-3 py-1 rounded-full text-sm font-bold mb-3 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300'
+            : 'inline-block px-3 py-1 rounded-full text-sm font-bold mb-3 bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300';
 
-            // 使用 qrcode.js 在瀏覽器端直接產生 QR Code（不依賴外部服務）
-            const qrDataUrl = await QRCode.toDataURL(punchUrl, {
-                width: 280,
-                margin: 2,
-                color: { dark: '#1e1b4b', light: '#ffffff' }
-            });
-            document.getElementById('qr-image').src = qrDataUrl;
-
-            // 標籤顯示
-            const typeBadge = document.getElementById('qr-type-badge');
-            typeBadge.textContent = punchType === '上班' ? '上班打卡' : '下班打卡';
-            typeBadge.className   = punchType === '上班'
-                ? 'inline-block px-3 py-1 rounded-full text-sm font-bold mb-3 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300'
-                : 'inline-block px-3 py-1 rounded-full text-sm font-bold mb-3 bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300';
-
-            const locBadge = document.getElementById('qr-location-badge');
-            if (locationName) {
-                locBadge.textContent = locationName;
-                locBadge.style.display = 'inline-block';
-            } else {
-                locBadge.style.display = 'none';
-            }
-
-            document.getElementById('qr-display-area').style.display  = 'block';
-            document.getElementById('qr-expired-msg').style.display    = 'none';
-            document.getElementById('qr-regenerate-btn').style.display = 'none';
-            document.getElementById('qr-image').style.opacity          = '1';
-            document.getElementById('qr-countdown-container').style.display = 'block';
-
-            // 啟動倒數計時
-            _qrExpiryTime = new Date(res.expiry).getTime();
-            _qrTotalMs    = validMinutes * 60 * 1000;
-            if (_qrCountdownInterval) clearInterval(_qrCountdownInterval);
-            _tickQRCountdown();
-            _qrCountdownInterval = setInterval(_tickQRCountdown, 1000);
-
-            showNotification(`QR Code 已產生，${validMinutes} 分鐘內有效`, 'success');
+        const locBadge = document.getElementById('qr-location-badge');
+        if (locationName) {
+            locBadge.textContent = locationName;
+            locBadge.style.display = 'inline-block';
         } else {
-            showNotification(res.msg || '產生 QR Code 失敗', 'error');
+            locBadge.style.display = 'none';
         }
+
+        document.getElementById('qr-display-area').style.display       = 'block';
+        document.getElementById('qr-expired-msg').style.display         = 'none';
+        document.getElementById('qr-regenerate-btn').style.display      = 'none';
+        document.getElementById('qr-image').style.opacity               = '1';
+        document.getElementById('qr-countdown-container').style.display = 'block';
+
+        // 啟動倒數計時
+        _qrExpiryTime = expiryMs;
+        _qrTotalMs    = validMinutes * 60 * 1000;
+        if (_qrCountdownInterval) clearInterval(_qrCountdownInterval);
+        _tickQRCountdown();
+        _qrCountdownInterval = setInterval(_tickQRCountdown, 1000);
+
+        showNotification(`QR Code 已產生，${validMinutes} 分鐘內有效`, 'success');
+
     } catch (err) {
         console.error('generateAdminQRCode 錯誤:', err);
         showNotification('產生 QR Code 失敗，請稍後再試', 'error');
