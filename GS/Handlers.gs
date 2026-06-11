@@ -261,8 +261,21 @@ function handleLinePunchWithToken(params) {
     try {
       const employee = findEmployeeByLineUserId_(userId);
       if (employee.ok) {
-        const flexContents = createPunchSuccessMessage(employee.name, punchType, result.time, locationCheck.locationName);
-        sendLineNotification_(userId, { type: 'flex', altText: '打卡成功', contents: flexContents });
+        const emoji = punchType === '上班' ? '🟢' : '🟠';
+        const loc   = locationCheck.locationName || '';
+        const notifyResult = sendLineNotification_(userId, {
+          type: 'flex',
+          altText: emoji + ' ' + punchType + '打卡成功',
+          contents: createPunchSuccessMessage(employee.name, punchType, result.time, loc)
+        });
+        if (!notifyResult.ok) {
+          // Flex 失敗時改用純文字
+          sendLineNotification_(userId, {
+            type: 'text',
+            text: emoji + ' ' + punchType + '打卡成功！\n👤 ' + employee.name +
+                  '\n⏰ ' + result.time + (loc ? '\n📍 ' + loc : '')
+          });
+        }
       }
     } catch (notifyErr) {
       Logger.log('LINE push 通知失敗（不影響打卡）: ' + notifyErr.message);

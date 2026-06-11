@@ -5120,7 +5120,32 @@ async function handleLinePunchFromUrl() {
 
         if (res.ok) {
             const typeText = res.punchType === '上班' ? '🟢 上班打卡' : '🟠 下班打卡';
-            setResult('✅', typeText + ' 成功！', `${res.location ? res.location + '｜' : ''}${res.time || ''}`, '#4CAF50');
+            const detailText = `${res.location ? res.location + '｜' : ''}${res.time || ''}`;
+            setResult('✅', typeText + ' 成功！', detailText, '#4CAF50');
+
+            // 3 秒倒數後自動關閉，並嘗試返回上一頁
+            const card = overlay.querySelector('div');
+            const countdownEl = document.createElement('div');
+            countdownEl.style.cssText = 'font-size:12px;color:#aaa;margin-top:10px;';
+            card.appendChild(countdownEl);
+            let secs = 3;
+            countdownEl.textContent = `${secs} 秒後自動關閉`;
+            const autoCloseTimer = setInterval(() => {
+                secs--;
+                if (secs <= 0) {
+                    clearInterval(autoCloseTimer);
+                    overlay.remove();
+                    try { window.history.back(); } catch(e) {}
+                } else {
+                    countdownEl.textContent = `${secs} 秒後自動關閉`;
+                }
+            }, 1000);
+            overlay.querySelector('#lpo-close').onclick = () => {
+                clearInterval(autoCloseTimer);
+                overlay.remove();
+                try { window.history.back(); } catch(e) {}
+            };
+
             await loadAbnormalRecordsInBackground();
         } else {
             const msgMap = {
